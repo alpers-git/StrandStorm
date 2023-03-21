@@ -10,8 +10,8 @@ namespace ssCore
 		
 		vertexShader = new Shader(GL_VERTEX_SHADER);
 		fragmentShader = new Shader(GL_FRAGMENT_SHADER);
-        
-        glEnable(GL_DEBUG_OUTPUT);
+
+        //glEnable(GL_DEBUG_OUTPUT);
     }
 
     OpenGLProgram::~OpenGLProgram()

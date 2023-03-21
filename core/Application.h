@@ -13,6 +13,7 @@ namespace ssCore
         {
             // Initialize
             printf("Running StrandStrom\n");
+            renderer = std::make_unique<R>();
 
             // We can parse command line arguments here using something like argparse orother libraries
         }
@@ -41,6 +42,7 @@ namespace ssCore
             }
 
             // Clean up here
+            renderer->Terminate();
         }
 
     private:
