@@ -24,7 +24,6 @@ namespace ssCore
             eventHandler.InitAndCreateWindow(1280, 720, "StrandStrom");
 
             // Initialize here
-
             renderer->Initialize();
 
             // Application loop

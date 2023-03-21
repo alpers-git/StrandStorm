@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glad/glad.h>
+#include <OpenGLProgram.h>
 #include <stdio.h>
 #include <EventHandler.h>
 
@@ -37,9 +37,8 @@ namespace ssCore
                 printf("Failed to initialize OpenGL context\n");
                 return;
             }
-            //program = std::make_unique<OpenGLProgram>();
+            program = std::make_unique<OpenGLProgram>();
 
-            //glEnable(GL_DEBUG_OUTPUT);
 		    static_cast<T*>(this)->Start();
         }
 
@@ -52,7 +51,7 @@ namespace ssCore
             EventHandler::GetInstance().SwapBuffers();
 
             // Clear the screen
-            //program->Clear();
+            program->Clear();
 
             // First render pass: Shadows, reflections etc.
             static_cast<T*>(this)->RenderFirstPass();
@@ -70,7 +69,7 @@ namespace ssCore
         }
 
     protected:
-        //std::unique_ptr<OpenGLProgram> program;
+        std::unique_ptr<OpenGLProgram> program;
 	    //std::shared_ptr<Scene> scene;
         long int frameCount = 0;
 
@@ -119,6 +118,16 @@ namespace ssCore
         void RenderMainPass()
         {
             printf("TestRenderer::RenderMainPass()\n");
+            const glm::vec3 clearColor1(0.09f, 0.30f, 0.55f);
+            const glm::vec3 clearColor2(1.0f, 0.76f, 0.03f);
+            float time = EventHandler::GetInstance().GetTime() * 10.0f;
+            //put time into a sin wave to get a value between 0 and 1
+            float value = (sin(time) + 1.0f) / 2.0f;
+            //lerp between the two colors
+            program->SetClearColor(glm::vec4(glm::mix(
+                clearColor1,
+                clearColor2,
+                value), 1.0f));
         }
 
         void End()

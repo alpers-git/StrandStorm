@@ -63,8 +63,8 @@ include_directories(
 add_executable(strandStorm 
     core/EntryPoint.cpp
     core/EventHandler.cpp
+    core/OpenGLProgram.cpp
 #    core/Scene.cpp
-#    core/OpenGLProgram.cpp
 )
     
 # Set executable dependency libraries
