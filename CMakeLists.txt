@@ -62,7 +62,7 @@ include_directories(
 #========== Targets Configurations ===========#
 add_executable(strandStorm 
     core/EntryPoint.cpp
-#    core/GLFWHandler.cpp
+    core/EventHandler.cpp
 #    core/Scene.cpp
 #    core/OpenGLProgram.cpp
 )

@@ -1,7 +1,8 @@
-#include <iostream>
+#include <Application.h>
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Running StrandStrom" << std::endl;
+    ssCore::Application<ssCore::TestRenderer> app(argc, argv);
+    app.Run();
     return 0;
 }
