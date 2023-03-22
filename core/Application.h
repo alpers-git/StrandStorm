@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <Renderer.h>
+#include <GUIManager.h>
 #include <EventHandler.h>
 
 namespace ssCore
@@ -11,9 +12,10 @@ namespace ssCore
     public:
         Application(int argc, char *argv[])
         {
-            // Initialize
+            // Initialize the application and its subsystems
             printf("Running StrandStrom\n");
             renderer = std::make_unique<R>();
+            gui = std::make_unique<GUIManager>();
 
             // We can parse command line arguments here using something like argparse orother libraries
         }
@@ -26,6 +28,7 @@ namespace ssCore
 
             // Initialize here
             renderer->Initialize();
+            gui->Initialize();
 
             // Application loop
             while (eventHandler.IsRunning())
@@ -36,7 +39,7 @@ namespace ssCore
                 renderer->Render();
 
                 // Draw GUI here
-
+                gui->Draw();
                 // Handle events here
                 eventHandler.DispatchEvents();
             }
@@ -47,7 +50,7 @@ namespace ssCore
 
     private:
         std::unique_ptr<R> renderer;
-        // std::unique_ptr<G> guiManager;
+        std::unique_ptr<GUIManager> gui;
         // std::unique_ptr<P> physicsIntegrator;
         // std::shared_ptr<Scene> scene;
     };

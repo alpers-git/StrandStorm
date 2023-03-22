@@ -64,6 +64,7 @@ add_executable(strandStorm
     core/EntryPoint.cpp
     core/EventHandler.cpp
     core/OpenGLProgram.cpp
+    core/GUIManager.cpp
 #    core/Scene.cpp
 )
     
