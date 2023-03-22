@@ -3,6 +3,7 @@
 #include <OpenGLProgram.h>
 #include <stdio.h>
 #include <EventHandler.h>
+#include <Scene.h>
 
 namespace ssCore
 {
@@ -19,7 +20,8 @@ namespace ssCore
     * The derived class must also have a constructor and destructor
     */
     public:
-        Renderer()
+        Renderer(std::shared_ptr<Scene> scene)
+		    :scene(scene)
         {
         }
         ~Renderer()
@@ -70,7 +72,7 @@ namespace ssCore
 
     protected:
         std::unique_ptr<OpenGLProgram> program;
-	    //std::shared_ptr<Scene> scene;
+	    std::shared_ptr<Scene> scene;
         long int frameCount = 0;
 
     //==============================================================
@@ -97,8 +99,8 @@ namespace ssCore
     class TestRenderer : public Renderer<TestRenderer>
     {
     public:
-        TestRenderer()
-            : Renderer<TestRenderer>()
+        TestRenderer(std::shared_ptr<Scene> scene)
+            : Renderer<TestRenderer>(scene)
         {
         }
         ~TestRenderer()

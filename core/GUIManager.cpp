@@ -81,7 +81,8 @@ namespace ssCore
         style.ChildRounding = 4;
     }
 
-    GUIManager::GUIManager()
+    GUIManager::GUIManager(std::shared_ptr<Scene> scene)
+		:scene(scene)
     {
         windowName = "Control Panel";
         windowFlags = ImGuiWindowFlags_NoMove; //| ImGuiWindowFlags_NoResize;

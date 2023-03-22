@@ -1,17 +1,21 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
+
 #include <imgui.h>
 #include <glad/glad.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+
+#include <Scene.h>
 
 namespace ssCore
 {
     class GUIManager
     {
     public:
-        GUIManager();
+        GUIManager(std::shared_ptr<Scene> scene);
         ~GUIManager();
 
         /*
@@ -33,6 +37,9 @@ namespace ssCore
 		std::string windowName = "GUI";
 
         private:
+        std::shared_ptr<Scene> scene;
+
         void NewFrame();
+        //Other ui components draw functions here
     };
 } // namespace ssCore

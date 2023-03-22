@@ -65,7 +65,7 @@ add_executable(strandStorm
     core/EventHandler.cpp
     core/OpenGLProgram.cpp
     core/GUIManager.cpp
-#    core/Scene.cpp
+    core/Scene.cpp
 )
     
 # Set executable dependency libraries
