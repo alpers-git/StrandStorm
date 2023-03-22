@@ -12,7 +12,7 @@ namespace ssCore
     public:
         Application(int argc, char *argv[])
         {
-            // We can parse command line arguments here using something like argparse orother libraries
+            // We can parse command line arguments here using something like argparse or other libraries
 
             //Init scene from arguments
             scene = std::make_shared<Scene>();
@@ -43,12 +43,14 @@ namespace ssCore
 
                 // Draw GUI here
                 gui->Draw();
+
                 // Handle events here
                 windowEventHandler.DispatchEvents();
             }
 
             // Clean up here
             renderer->Terminate();
+            gui->Terminate();
         }
 
     private:
