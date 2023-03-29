@@ -1,10 +1,12 @@
 #pragma once
+#include <memory>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <fstream>
 #include <functional>
+#include <cstring>
 #include <string>
 #include <vector>
 
