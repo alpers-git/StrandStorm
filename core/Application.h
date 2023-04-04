@@ -17,7 +17,7 @@ namespace ssCore
             //Init scene from arguments
             scene = std::make_shared<Scene>();
             // Initialize the application and its subsystems
-            printf("Running StrandStrom\n");
+            spdlog::info("Running StrandStrom");
             renderer = std::make_unique<R>(scene);
             gui = std::make_unique<GUIManager>(scene);
 

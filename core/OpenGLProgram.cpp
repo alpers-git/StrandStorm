@@ -31,6 +31,7 @@ namespace ssCore
 		
 		AttachVertexShader();
 		AttachFragmentShader();
+        return true;
 	}
 
     bool OpenGLProgram::CreatePipeline()
@@ -40,6 +41,7 @@ namespace ssCore
 
 		AttachVertexShader();
 		AttachFragmentShader();
+        return true;
 	}
 
     bool OpenGLProgram::AttachVertexShader()

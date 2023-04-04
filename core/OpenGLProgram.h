@@ -9,17 +9,12 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <Logging.hpp>
 
 //define a macro that takes a function calls it and ctaches opengl errors
 #define GL_CALL(func) \
 do { \
-    func; \
-    GLenum error = glGetError(); \
-    if (error != GL_NO_ERROR) { \
-        const char* errorString = (const char*)glad_glGetString(GL_VERSION); \
-        const char* description = (const char*)glfwGetError(NULL); \
-        printf("OpenGL error 0x%08x (%s) at %s:%d - %s\n", error, errorString, __FILE__, __LINE__, description); \
-    } \
+    func; _checkGLError(__FILE__, __LINE__); \
 } while (false)
 
 namespace ssCore

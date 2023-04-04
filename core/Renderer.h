@@ -36,9 +36,10 @@ namespace ssCore
             // Initialize OpenGL
             if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             {
-                printf("Failed to initialize OpenGL context\n");
+                spdlog::info("Failed to initialize OpenGL context");
                 return;
             }
+            GL_CALL(glDebugMessageCallback(GLDebugMessageCallback, NULL));
             program = std::make_unique<OpenGLProgram>();
 
 		    static_cast<T*>(this)->Start();
@@ -109,17 +110,15 @@ namespace ssCore
 
         void Start()
         {
-            printf("TestRenderer::Start()\n");
+            spdlog::debug("TestRenderer::Start()");
         }
 
         void RenderFirstPass()
         {
-            printf("TestRenderer::RenderFirstPass()\n");
         }
 
         void RenderMainPass()
         {
-            printf("TestRenderer::RenderMainPass()\n");
             const glm::vec3 clearColor1(0.09f, 0.30f, 0.55f);
             const glm::vec3 clearColor2(1.0f, 0.76f, 0.03f);
             float time = EventHandler::GetInstance().GetTime() * 10.0f;
@@ -134,7 +133,6 @@ namespace ssCore
 
         void End()
         {
-            printf("TestRenderer::End()\n");
         }
     };
 } // namespace ssCore

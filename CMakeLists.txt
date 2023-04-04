@@ -56,17 +56,13 @@ include_directories(
     submodules/glfw/include
     submodules/cyCodeBase
     submodules/eigen
+    submodules/spdlog
     core
 #    physics
 )
 #========== Targets Configurations ===========#
-add_executable(strandStorm 
-    core/EntryPoint.cpp
-    core/EventHandler.cpp
-    core/OpenGLProgram.cpp
-    core/GUIManager.cpp
-    core/Scene.cpp
-)
+file(GLOB_RECURSE SOURCES core/*.cpp)
+add_executable(strandStorm ${SOURCES})
     
 # Set executable dependency libraries
 target_link_libraries(strandStorm
@@ -76,5 +72,6 @@ target_link_libraries(strandStorm
     PRIVATE glm::glm
     PRIVATE Eigen3::Eigen
     PRIVATE EnTT::EnTT
+    PRIVATE spdlog
     PUBLIC ImGui
 )
