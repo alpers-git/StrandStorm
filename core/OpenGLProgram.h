@@ -27,25 +27,23 @@ namespace ssCore
 struct Shader
 {
 	GLuint glID;
-	char* source;
+	std::string source;
 
-	Shader(GLuint shader_type, char* source = nullptr)
+	Shader(GLuint shader_type, std::string source = "")
 		:source(source)
 	{
-		//glID = 0;
 		GL_CALL(glID = glCreateShader(shader_type));
 	}
 
 	~Shader()
 	{
-		if (source)
-			delete[] source;
 		GL_CALL(glDeleteShader(glID));
 	}
 
 	bool Compile()
 	{
-		GL_CALL(glShaderSource(glID, 1, &source, NULL));
+		const char* sourceCharArr = this->source.c_str();
+		GL_CALL(glShaderSource(glID, 1, &sourceCharArr, NULL));
 		GL_CALL(glCompileShader(glID));
 		int success;
 		GL_CALL(glGetShaderiv(glID, GL_COMPILE_STATUS, &success));
@@ -75,24 +73,13 @@ struct Shader
 		return true;
 	}
 
-	void SetSource(const char* src, bool compile = false)
+	void SetSource(const std::string& src, bool compile = false)
 	{
-		if (src && source)
-			delete[] source;
+		this->source = src;
 
-		if (src)
-		{
-			//set source to src
-			source = new char[strlen(src) + 1];
-			strcpy(source, src);
+		if (compile) {
+			this->Compile();
 		}
-
-		//print source
-		printf("------Shader source:------\n");
-		std::cout << source << std::endl;
-
-		if (compile)
-			Compile();
 	}
 
 	void SetSourceFromFile(const char* filePath, bool compile = false)
@@ -112,7 +99,7 @@ struct Shader
 		}
 
 		fileStream.close();
-		SetSource(content.c_str(), compile);
+		SetSource(content, compile);
 	}
 };
 
@@ -146,8 +133,8 @@ public:
 	void SetVertexShaderSourceFromFile(const char* filePath, bool compile = false);
 	void SetFragmentShaderSourceFromFile(const char* filePath, bool compile = false);
 
-	void SetVertexShader(Shader* shader);
-	void SetFragmentShader(Shader* shader);
+	void SetVertexShader(Shader& shader);
+	void SetFragmentShader(Shader& shader);
 	
 	bool CompileShaders();
 	
@@ -174,8 +161,8 @@ public:
 	
 private:
 	GLuint glID;
-	Shader* vertexShader;
-	Shader* fragmentShader;
+	Shader vertexShader = {GL_VERTEX_SHADER};
+	Shader fragmentShader = {GL_FRAGMENT_SHADER};
 	GLbitfield clearFlags = GL_COLOR_BUFFER_BIT;
 	glm::vec4 clearColor = glm::vec4(0.02f, 0.02f, 0.02f, 1.f);
 };

@@ -7,18 +7,13 @@ namespace ssCore
         GL_CALL(glID = glCreateProgram());
 		GL_CALL(glEnable(GL_DEPTH_TEST));
 		GL_CALL(glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w));
-		
-		vertexShader = new Shader(GL_VERTEX_SHADER);
-		fragmentShader = new Shader(GL_FRAGMENT_SHADER);
-
+	
         //glEnable(GL_DEBUG_OUTPUT);
     }
 
     OpenGLProgram::~OpenGLProgram()
 	{
 		GL_CALL(glDeleteProgram(glID));
-		delete vertexShader;
-		delete fragmentShader;
 	};
 
     void OpenGLProgram::Use()
@@ -49,8 +44,8 @@ namespace ssCore
 
     bool OpenGLProgram::AttachVertexShader()
     {
-        if (vertexShader->AttachShader(glID))
-            GL_CALL(glDeleteShader(vertexShader->glID)); // Lets drivers know we don't need this shader objects anymore.
+        if (vertexShader.AttachShader(glID))
+            GL_CALL(glDeleteShader(vertexShader.glID)); // Lets drivers know we don't need this shader objects anymore.
         else
             return false;
 
@@ -59,8 +54,8 @@ namespace ssCore
 
     bool OpenGLProgram::AttachFragmentShader()
     {
-        if (fragmentShader->AttachShader(glID))
-            GL_CALL(glDeleteShader(fragmentShader->glID)); // Lets drivers know we don't need this shader objects anymore.
+        if (fragmentShader.AttachShader(glID))
+            GL_CALL(glDeleteShader(fragmentShader.glID)); // Lets drivers know we don't need this shader objects anymore.
         else
             return false;
         return true;
@@ -68,41 +63,39 @@ namespace ssCore
 
     void OpenGLProgram::SetVertexShaderSource(const char *src, bool compile)
     {
-        vertexShader->SetSource(src, compile);
+        vertexShader.SetSource(src, compile);
     }
 
     void OpenGLProgram::SetFragmentShaderSource(const char *src, bool compile)
     {
-        fragmentShader->SetSource(src, compile);
+        fragmentShader.SetSource(src, compile);
     }
 
     void OpenGLProgram::SetVertexShaderSourceFromFile(const char *filePath, bool compile)
     {
-        vertexShader->SetSourceFromFile(filePath, compile);
+        vertexShader.SetSourceFromFile(filePath, compile);
     }
 
     void OpenGLProgram::SetFragmentShaderSourceFromFile(const char *filePath, bool compile)
     {
-        fragmentShader->SetSourceFromFile(filePath, compile);
+        fragmentShader.SetSourceFromFile(filePath, compile);
     }
 
-    void OpenGLProgram::SetVertexShader(Shader *shader)
+    void OpenGLProgram::SetVertexShader(Shader& shader)
     {
-        delete vertexShader;
-        vertexShader = shader;
+        vertexShader = std::move(shader);
     }
 
-    void OpenGLProgram::SetFragmentShader(Shader *shader)
+    void OpenGLProgram::SetFragmentShader(Shader& shader)
     {
-        delete fragmentShader;
-        fragmentShader = shader;
+        fragmentShader = std::move(shader);
     }
 
     bool OpenGLProgram::CompileShaders()
     {
-        if (!vertexShader->Compile())
+        if (!vertexShader.Compile())
             return false;
-        if (!fragmentShader->Compile())
+        if (!fragmentShader.Compile())
             return false;
         return true;
     };
