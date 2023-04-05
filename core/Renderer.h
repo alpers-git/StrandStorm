@@ -111,6 +111,8 @@ namespace ssCore
         void Start()
         {
             spdlog::debug("TestRenderer::Start()");
+            scene->hairMesh.loadFromFile("resources/suzanne.obj");
+            scene->hairMesh.build();
         }
 
         void RenderFirstPass()
@@ -129,6 +131,7 @@ namespace ssCore
                 clearColor1,
                 clearColor2,
                 value), 1.0f));
+            scene->hairMesh.draw(*program);
         }
 
         void End()
