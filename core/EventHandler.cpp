@@ -1,5 +1,5 @@
 #include <iostream>
-#include <EventHandler.h>
+#include <EventHandler.hpp>
 
 EventHandler::EventHandler()
 {

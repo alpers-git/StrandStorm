@@ -1,7 +1,20 @@
-#version 450
+#version 460
 
-out vec4 color;
-layout (location = 2) in float dist;
-void main() {
-     color = vec4(1/dist, dist, 1.0f,  1.0f);
+in vec3 vPos;
+in vec3 vNormal;
+
+out VertexData {
+     vec3 normal;   // World normal
+     vec3 pos;      // World position
+} V;
+
+uniform mat4 uTModel;
+uniform mat4 uTProj;
+uniform mat4 uTView;
+
+void main()
+{
+     V.normal = mat3(uTModel) * vNormal;
+     V.pos = (uTModel * vec4(vPos, 1.0)).xyz;
+     gl_Position = uTProj * uTView * uTModel * vec4(vPos, 1.0);
 }

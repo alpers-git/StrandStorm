@@ -1,9 +1,7 @@
 #pragma once
 
-#include <OpenGLProgram.h>
+#include <OpenGLProgram.hpp>
 #include <cyTriMesh.h>
-
-using namespace ssCore;
 
 class HairMesh
 {

@@ -1,10 +1,21 @@
-#include <Application.h>
+#include <App.hpp>
 #include <Logging.hpp>
 
 int main(int argc, char* argv[])
 {
     setupLogging();
-    ssCore::Application<ssCore::TestRenderer> app(argc, argv);
-    app.Run();
+    
+    EventHandler &eventHandler = EventHandler::GetInstance();
+    eventHandler.InitAndCreateWindow(1280, 720, "StrandStrom");
+
+    // Initialize OpenGL
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        spdlog::info("Failed to initialize OpenGL context");
+        return -1;
+    }
+    GL_CALL(glDebugMessageCallback(GLDebugMessageCallback, NULL));
+
+    App app(argc, argv);
+    app.Run(eventHandler);
     return 0;
 }

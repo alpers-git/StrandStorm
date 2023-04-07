@@ -1,10 +1,14 @@
-#version 450
+#version 460
 
-layout (location = 0) in vec3 pos;
-layout(location = 1) uniform mat4 mvp;
-layout (location = 2) out float distance;
+in VertexData {
+    vec3 normal;   // World normal
+    vec3 pos;      // World position
+} V;
+
+out vec4 fragColor;
 
 void main() {
-    gl_Position = mvp * vec4(pos, 1.0);
-    distance = gl_Position.z;
+    vec3 normal = normalize(V.normal);
+    
+    fragColor = vec4(normal, 1.0);
 }

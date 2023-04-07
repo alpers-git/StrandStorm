@@ -1,17 +1,16 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <Util.hpp>
 
 class Camera
 {
-private:
-    glm::vec3 pos;
-    glm::vec3 rot;
+public:
+    glm::vec3 pos = {0.0f, 0.0f, 0.0f};
+    glm::vec3 rot = {0.0f, 0.0f, 0.0f};
     float near = 0.01f;
     float far = 10000.0f;
     float fov = 1.1f;
 
-public:
     // Returns view matrix
     glm::mat4 view() const;
     // Returns projection matrix

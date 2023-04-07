@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <queue>
 #include "imgui.h"
-//#include <entt/entt.hpp>
 
 struct Event
 {

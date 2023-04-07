@@ -17,8 +17,6 @@ do { \
     func; _checkGLError(__FILE__, __LINE__); \
 } while (false)
 
-namespace ssCore
-{
 struct Shader
 {
 	GLuint glID;
@@ -49,6 +47,7 @@ struct Shader
 			std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
 			return false;
 		}
+		spdlog::debug("Shader compiled successfully");
 		return true;
 	}
 
@@ -57,11 +56,11 @@ struct Shader
 		GL_CALL(glAttachShader(program, glID));
 		GL_CALL(glLinkProgram(program));
 		int status;
-		GL_CALL(glGetProgramiv(glID, GL_LINK_STATUS, &status));
+		GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &status));
 		if (!status)
 		{
 			char infoLog[512];
-			GL_CALL(glGetProgramInfoLog(glID, 512, NULL, infoLog));
+			GL_CALL(glGetProgramInfoLog(program, 512, NULL, infoLog));
 			std::cout << "ERROR::SHADER::ATTACH_FAILED\n" << infoLog << std::endl;
 			return false;
 		}
@@ -135,16 +134,16 @@ public:
 	
 	GLuint GetID();
 
-	void SetUniform(const char* name, int value);
-	void SetUniform(const char* name, float value);
+	void SetUniform(const char* name, int value) const;
+	void SetUniform(const char* name, float value) const;
 
-	void SetUniform(const char* name, glm::vec2 value);
-	void SetUniform(const char* name, glm::vec3 value);
-	void SetUniform(const char* name, glm::vec4 value);
+	void SetUniform(const char* name, glm::vec2 value) const;
+	void SetUniform(const char* name, glm::vec3 value) const;
+	void SetUniform(const char* name, glm::vec4 value) const;
 
-	void SetUniform(const char* name, glm::mat2 value);
-	void SetUniform(const char* name, glm::mat3 value);
-	void SetUniform(const char* name, glm::mat4 value);
+	void SetUniform(const char* name, glm::mat2 value) const;
+	void SetUniform(const char* name, glm::mat3 value) const;
+	void SetUniform(const char* name, glm::mat4 value) const;
 
 	void SetGLClearFlags(GLbitfield flags);
 	void SetClearColor(glm::vec4 color);
@@ -161,5 +160,3 @@ private:
 	GLbitfield clearFlags = GL_COLOR_BUFFER_BIT;
 	glm::vec4 clearColor = glm::vec4(0.02f, 0.02f, 0.02f, 1.f);
 };
-
-}
