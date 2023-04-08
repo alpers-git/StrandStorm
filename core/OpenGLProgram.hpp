@@ -149,6 +149,7 @@ public:
 	void SetClearColor(glm::vec4 color);
 	glm::vec4 GetClearColor();
 	
+	GLuint AttribLocation(const char* attributeName) const;
 
 	void Clear();
 	

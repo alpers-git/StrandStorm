@@ -7,5 +7,5 @@ glm::mat4 Camera::view() const
 
 glm::mat4 Camera::proj() const
 {
-    return glm::mat4();
+    return glm::perspective(this->fov, 1.0f, this->near, this->far);
 }

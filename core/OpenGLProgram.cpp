@@ -218,6 +218,15 @@ glm::vec4 OpenGLProgram::GetClearColor()
     return clearColor;
 }
 
+GLuint OpenGLProgram::AttribLocation(const char *attributeName) const
+{
+    GLint loc = glGetAttribLocation(this->glID, attributeName);
+    if (loc == -1) {
+        spdlog::error("OpenGLProgram::AttribLocation: Attribute {} not found", attributeName);
+    }
+    return (GLuint)loc;
+}
+
 void OpenGLProgram::Clear()
 {
     GL_CALL(glClear(clearFlags));

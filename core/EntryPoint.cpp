@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
         spdlog::info("Failed to initialize OpenGL context");
         return -1;
     }
+    glEnable(GL_DEBUG_OUTPUT);
     GL_CALL(glDebugMessageCallback(GLDebugMessageCallback, NULL));
 
     App app(argc, argv);

@@ -10,6 +10,7 @@ void App::Run(EventHandler &eventHandler)
 {
     
     while (eventHandler.IsRunning()) {
+        eventHandler.SwapBuffers();
         // Update physics here
 
         // Render the scene here

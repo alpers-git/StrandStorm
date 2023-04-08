@@ -2,11 +2,14 @@
 
 #include <OpenGLProgram.hpp>
 #include <cyTriMesh.h>
+#include <Renderer.hpp>
 
 class HairMesh
 {
 private:
+    GLuint vao;
     GLuint vbo;
+    GLuint ebo;
 
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
@@ -20,8 +23,8 @@ public:
 
     // Loads mesh from file
     void loadFromFile(const std::string& modelPath);
-    // Builds the VBO
-    void build();
+    // Builds the buffers
+    void build(const OpenGLProgram& prog);
     // Draws the hair mesh
     void draw(const OpenGLProgram& prog);
 };

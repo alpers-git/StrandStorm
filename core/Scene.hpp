@@ -12,7 +12,7 @@ public:
     Scene();
 
     // Called by Renderer::Initialize()
-    void init();
+    void init(const OpenGLProgram& prog);
     void draw(const OpenGLProgram& prog);
 private:
     /* data */

@@ -2,13 +2,13 @@
 
 Scene::Scene()
 {
-    cam.pos = {0.0f, 0.0f, -2.0f};
+    cam.pos = {0.0f, 0.0f, 2.0f};
 }
 
-void Scene::init()
+void Scene::init(const OpenGLProgram& prog)
 {
     hairMesh.loadFromFile("resources/suzanne.obj");
-    hairMesh.build();
+    hairMesh.build(prog);
 }
 
 void Scene::draw(const OpenGLProgram &prog)

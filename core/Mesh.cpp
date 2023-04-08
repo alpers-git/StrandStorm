@@ -11,6 +11,7 @@ void HairMesh::loadFromFile(const std::string &modelPath)
         spdlog::error("Failed to load mesh from file: {}", modelPath);
         return;
     }
+    mesh.ComputeNormals();
 
     // Grow the control hairs from the stored vertices
     this->vertices.reserve(mesh.NV());
@@ -20,25 +21,37 @@ void HairMesh::loadFromFile(const std::string &modelPath)
             {mesh.VN(i).x, mesh.VN(i).y, mesh.VN(i).z});
     }
 
-    // Create the VBO
+    GL_CALL(glGenVertexArrays(1, &this->vao));
     GL_CALL(glGenBuffers(1, &this->vbo));
+    GL_CALL(glGenBuffers(1, &this->ebo));
 }
 
-void HairMesh::build()
+void HairMesh::build(const OpenGLProgram& prog)
 {
+    GL_CALL(glBindVertexArray(vao));
+
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, this->vbo));
     GL_CALL(glBufferData(GL_ARRAY_BUFFER,
         this->vertices.size() * sizeof(glm::vec3), this->vertices.data(), GL_STATIC_DRAW));
+
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo));
+    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW));
+
+    GLuint attrib_vPos = prog.AttribLocation("vPos");
+    GL_CALL(glEnableVertexAttribArray(attrib_vPos));
+    GL_CALL(glVertexAttribPointer(attrib_vPos, 3, GL_FLOAT, GL_FALSE, 0u, (void*)0u));
+
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, GL_NONE));
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE));
 }
 
 void HairMesh::draw(const OpenGLProgram& prog)
 {
+    GL_CALL(glBindVertexArray(this->vao));
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, this->vbo));
-    GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
-    GL_CALL(glEnableVertexAttribArray(0));
-    GL_CALL(glDrawElements(GL_LINE_STRIP, this->indices.size(), GL_UNSIGNED_INT, this->indices.data()));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, GL_NONE));
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo));
+    GL_CALL(glDrawElements(GL_LINE_STRIP, this->indices.size(), GL_UNSIGNED_INT, nullptr));
 }
 
 void HairMesh::growControlHair(const glm::vec3& root, const glm::vec3& dir)
@@ -48,6 +61,6 @@ void HairMesh::growControlHair(const glm::vec3& root, const glm::vec3& dir)
     for (int i = 0; i < 10; i++) {
         this->indices.push_back(this->vertices.size());
         this->vertices.push_back(v);
-        v += dir * 0.1f;
+        v += dir * 0.01f;
     }
 }
