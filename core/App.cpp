@@ -2,25 +2,19 @@
 
 App::App(int argc, char *argv[])
 {
-    renderer.Initialize(scene);
+    scene = std::make_shared<Scene>();
+    renderer.scene = scene;
+    renderer.Initialize();
     gui.Initialize();
 }
 
 void App::Run(EventHandler &eventHandler)
 {
-    
     while (eventHandler.IsRunning()) {
         eventHandler.SwapBuffers();
-        // Update physics here
-
-        // Render the scene here
-        renderer.Render(scene);
-
-        // Draw GUI here
+        eventHandler.DispatchEvents(renderer);
+        renderer.Render();
         gui.Draw();
-
-        // Handle events here
-        eventHandler.DispatchEvents();
     }
 
     // Clean up here

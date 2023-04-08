@@ -1,6 +1,74 @@
 #include <OpenGLProgram.hpp>
 #include <Logging.hpp>
 
+Shader::Shader(GLuint shader_type, std::string source)
+    :source(source)
+{
+    glID = glCreateShader(shader_type); $gl_chk
+}
+
+Shader::~Shader()
+{
+    glDeleteShader(glID); $gl_chk
+}
+
+bool Shader::Compile()
+{
+    const char* sourceCharArr = this->source.c_str();
+    glShaderSource(glID, 1, &sourceCharArr, NULL); $gl_chk
+    glCompileShader(glID); $gl_chk
+    int success;
+    glGetShaderiv(glID, GL_COMPILE_STATUS, &success); $gl_chk
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(glID, 512, NULL, infoLog); $gl_chk
+        spdlog::error("shader compilation failed:\n{}", infoLog);
+    }
+    return true;
+}
+
+bool Shader::AttachShader(GLuint program)
+{
+    glAttachShader(program, glID); $gl_chk
+    glLinkProgram(program); $gl_chk
+    int status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status); $gl_chk
+    if (!status) {
+        char infoLog[512];
+        glGetProgramInfoLog(program, 512, NULL, infoLog); $gl_chk
+        spdlog::error("shader compilation failed:\n{}", infoLog);
+    }
+    return true;
+}
+
+void Shader::SetSource(const std::string& src, bool compile)
+{
+    this->source = src;
+
+    if (compile) {
+        this->Compile();
+    }
+}
+
+void Shader::SetSourceFromFile(const char* filePath, bool compile)
+{
+    std::string content;
+    std::ifstream fileStream(filePath, std::ios::in);
+
+    if (!fileStream.is_open()) {
+        spdlog::error("Could not read file {}.", filePath);
+    }
+
+    std::string line = "";
+    while (!fileStream.eof()) {
+        std::getline(fileStream, line);
+        content.append(line + "\n");
+    }
+
+    fileStream.close();
+    SetSource(content, compile);
+}
+
 OpenGLProgram::OpenGLProgram()
 {
     glID = glCreateProgram(); $gl_chk

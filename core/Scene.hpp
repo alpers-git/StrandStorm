@@ -3,6 +3,8 @@
 #include <Mesh.hpp>
 #include <Camera.hpp>
 
+class Renderer;
+
 class Scene
 {
 public:
@@ -12,8 +14,10 @@ public:
     Scene();
 
     // Called by Renderer::Initialize()
-    void init(const OpenGLProgram& prog);
-    void draw(const OpenGLProgram& prog);
+    void init(const Renderer& r);
+    void draw(const Renderer& r);
+    void OnMouseButton(int button, int action, int mods);
 private:
     /* data */
+    bool dragging = false;
 };

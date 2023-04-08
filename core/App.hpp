@@ -14,5 +14,5 @@ public:
 private:
     Renderer renderer;
     GUIManager gui;
-    Scene scene;
+    std::shared_ptr<Scene> scene;
 };
