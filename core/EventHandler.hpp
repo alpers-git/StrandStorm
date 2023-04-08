@@ -72,18 +72,6 @@ struct Event
 			int count;
 			const char** paths;
 		} drop;
-		
-		// struct
-		// {
-		// 	entt::entity e;//todo
-		// 	bool toBeRemoved;
-		// } geometryChange;
-		// struct
-		// {
-		// 	entt::entity e;//todo
-		// 	bool toBeRemoved;
-		// 	//ImageMap::BindingSlot slot;
-		// } textureChange;
 	};
 };
 
@@ -201,8 +189,7 @@ public:
 	static inline float GetTime() { return glfwGetTime(); }
 	
 private:
-	EventHandler();
-	~EventHandler();
+	EventHandler() = default;
 	GLFWwindow* windowHandle=NULL;
 	std::queue<Event> eventQueue;
 	

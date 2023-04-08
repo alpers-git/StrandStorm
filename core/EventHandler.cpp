@@ -1,20 +1,11 @@
 #include <iostream>
 #include <EventHandler.hpp>
-
-EventHandler::EventHandler()
-{
-}
-
-EventHandler::~EventHandler()
-{
-}
+#include <Logging.hpp>
 
 void EventHandler::InitAndCreateWindow(int width, int height, const char* title)
 {
-	if (!glfwInit())
-	{
-		std::cout << "Failed to initialize GLFW" << std::endl;
-		return;
+	if (!glfwInit()) {
+		spdlog::error("Failed to initialize GLFW");
 	}
 	
 	windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);

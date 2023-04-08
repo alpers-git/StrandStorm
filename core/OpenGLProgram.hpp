@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <glad/glad.h>
+#include <Util.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
@@ -11,11 +11,7 @@
 #include <vector>
 #include <Logging.hpp>
 
-//define a macro that takes a function calls it and ctaches opengl errors
-#define GL_CALL(func) \
-do { \
-    func; _checkGLError(__FILE__, __LINE__); \
-} while (false)
+#define $gl_chk _checkGLError(__FILE__, __LINE__);
 
 struct Shader
 {
@@ -25,44 +21,39 @@ struct Shader
 	Shader(GLuint shader_type, std::string source = "")
 		:source(source)
 	{
-		GL_CALL(glID = glCreateShader(shader_type));
+		glID = glCreateShader(shader_type); $gl_chk
 	}
 
 	~Shader()
 	{
-		GL_CALL(glDeleteShader(glID));
+		glDeleteShader(glID); $gl_chk
 	}
 
 	bool Compile()
 	{
 		const char* sourceCharArr = this->source.c_str();
-		GL_CALL(glShaderSource(glID, 1, &sourceCharArr, NULL));
-		GL_CALL(glCompileShader(glID));
+		glShaderSource(glID, 1, &sourceCharArr, NULL); $gl_chk
+		glCompileShader(glID); $gl_chk
 		int success;
-		GL_CALL(glGetShaderiv(glID, GL_COMPILE_STATUS, &success));
-		if (!success)
-		{
-			GLchar infoLog[512];
-			GL_CALL(glGetShaderInfoLog(glID, 512, NULL, infoLog));
-			std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-			return false;
+		glGetShaderiv(glID, GL_COMPILE_STATUS, &success); $gl_chk
+		if (!success) {
+			char infoLog[512];
+			glGetShaderInfoLog(glID, 512, NULL, infoLog); $gl_chk
+			spdlog::error("shader compilation failed:\n{}", infoLog);
 		}
-		spdlog::debug("Shader compiled successfully");
 		return true;
 	}
 
 	bool AttachShader(GLuint program)
 	{
-		GL_CALL(glAttachShader(program, glID));
-		GL_CALL(glLinkProgram(program));
+		glAttachShader(program, glID); $gl_chk
+		glLinkProgram(program); $gl_chk
 		int status;
-		GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &status));
-		if (!status)
-		{
+		glGetProgramiv(program, GL_LINK_STATUS, &status); $gl_chk
+		if (!status) {
 			char infoLog[512];
-			GL_CALL(glGetProgramInfoLog(program, 512, NULL, infoLog));
-			std::cout << "ERROR::SHADER::ATTACH_FAILED\n" << infoLog << std::endl;
-			return false;
+			glGetProgramInfoLog(program, 512, NULL, infoLog); $gl_chk
+			spdlog::error("shader compilation failed:\n{}", infoLog);
 		}
 		return true;
 	}
@@ -82,8 +73,7 @@ struct Shader
 		std::ifstream fileStream(filePath, std::ios::in);
 
 		if (!fileStream.is_open()) {
-			std::cerr << "Could not read file " << filePath << ". File does not exist." << std::endl;
-			return;
+			spdlog::error("Could not read file {}.", filePath);
 		}
 
 		std::string line = "";

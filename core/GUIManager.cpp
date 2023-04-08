@@ -96,7 +96,6 @@ void GUIManager::Draw()
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
     // Actual GUI code goes here
-    ImGui::ShowDemoWindow();
 
     ImGui::End();
     ImGui::Render();

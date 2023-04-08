@@ -3,8 +3,8 @@
 
 void Renderer::Initialize(Scene& scene)
 {
-    glLineWidth(3.0f);
-
+    glLineWidth(3.0f); $gl_chk
+    glEnable(GL_DEPTH_TEST); $gl_chk
 
     prog.CreatePipelineFromFiles("shaders/simple.vert", "shaders/simple.frag");
     prog.Use();

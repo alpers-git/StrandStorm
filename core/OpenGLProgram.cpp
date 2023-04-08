@@ -1,23 +1,21 @@
 #include <OpenGLProgram.hpp>
+#include <Logging.hpp>
 
 OpenGLProgram::OpenGLProgram()
 {
-    GL_CALL(glID = glCreateProgram());
-    GL_CALL(glEnable(GL_DEPTH_TEST));
-    GL_CALL(glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w));
-
-    //glEnable(GL_DEBUG_OUTPUT);
+    glID = glCreateProgram(); $gl_chk
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w); $gl_chk
 }
 
 OpenGLProgram::~OpenGLProgram()
 {
-    GL_CALL(glDeleteProgram(glID));
+    glDeleteProgram(glID); $gl_chk
     spdlog::debug("destroyed OpenGLProgram {}", glID);
 };
 
 void OpenGLProgram::Use()
 {
-    GL_CALL(glUseProgram(glID));
+    glUseProgram(glID); $gl_chk
 }
 
 bool OpenGLProgram::CreatePipelineFromFiles(const char* filePathVert, const char* filePathFrag)
@@ -109,97 +107,81 @@ GLuint OpenGLProgram::GetID()
 void OpenGLProgram::SetUniform(const char *name, int value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniform1i(location, value));
+    glUniform1i(location, value); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char *name, float value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniform1f(location, value));
+    glUniform1f(location, value); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec2 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniform2f(location, value.x, value.y));
+    glUniform2f(location, value.x, value.y); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec3 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniform3f(location, value.x, value.y, value.z));
+    glUniform3f(location, value.x, value.y, value.z); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec4 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniform4f(location, value.x, value.y, value.z, value.w));
+    glUniform4f(location, value.x, value.y, value.z, value.w); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat2 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]));
+    glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat3 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]));
+    glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat4 value) const
 {
     GLint location;
-    GL_CALL(location = glGetUniformLocation(glID, name));
-    if (location == -1)
-    {
-        std::cout << "ERROR::SHADER::UNIFORM::" << name << "::NOT_FOUND" << std::endl;
-        return;
+    location = glGetUniformLocation(glID, name); $gl_chk
+    if (location == -1) {
+        spdlog::error("uniform {} not found", name);
     }
-    GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]));
+    glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
 }
 
 void OpenGLProgram::SetGLClearFlags(GLbitfield flags)
@@ -210,7 +192,7 @@ void OpenGLProgram::SetGLClearFlags(GLbitfield flags)
 void OpenGLProgram::SetClearColor(glm::vec4 color)
 {
     clearColor = color;
-    GL_CALL(glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w));
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w); $gl_chk
 }
 
 glm::vec4 OpenGLProgram::GetClearColor()
@@ -229,5 +211,5 @@ GLuint OpenGLProgram::AttribLocation(const char *attributeName) const
 
 void OpenGLProgram::Clear()
 {
-    GL_CALL(glClear(clearFlags));
+    glClear(clearFlags); $gl_chk
 }

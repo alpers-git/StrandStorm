@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
         return -1;
     }
     glEnable(GL_DEBUG_OUTPUT);
-    GL_CALL(glDebugMessageCallback(GLDebugMessageCallback, NULL));
+    glDebugMessageCallback(GLDebugMessageCallback, NULL); $gl_chk
 
     App app(argc, argv);
     app.Run(eventHandler);
