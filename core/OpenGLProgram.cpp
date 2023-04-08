@@ -46,7 +46,7 @@ bool OpenGLProgram::CreatePipeline()
 bool OpenGLProgram::AttachVertexShader()
 {
     if (vertexShader.AttachShader(glID))
-        GL_CALL(glDeleteShader(vertexShader.glID)); // Lets drivers know we don't need this shader objects anymore.
+        return true;
     else
         return false;
 
@@ -56,7 +56,7 @@ bool OpenGLProgram::AttachVertexShader()
 bool OpenGLProgram::AttachFragmentShader()
 {
     if (fragmentShader.AttachShader(glID))
-        GL_CALL(glDeleteShader(fragmentShader.glID)); // Lets drivers know we don't need this shader objects anymore.
+        return true;
     else
         return false;
     return true;

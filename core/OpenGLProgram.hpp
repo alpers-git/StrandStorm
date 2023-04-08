@@ -158,6 +158,6 @@ private:
 	GLuint glID;
 	Shader vertexShader = {GL_VERTEX_SHADER};
 	Shader fragmentShader = {GL_FRAGMENT_SHADER};
-	GLbitfield clearFlags = GL_COLOR_BUFFER_BIT;
+	GLbitfield clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 	glm::vec4 clearColor = glm::vec4(0.02f, 0.02f, 0.02f, 1.f);
 };

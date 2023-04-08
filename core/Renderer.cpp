@@ -18,7 +18,7 @@ void Renderer::Render(Scene& scene)
 
     this->frameCount += 1;
     prog.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
-    // prog.Clear();
+    prog.Clear();
 
     scene.draw(prog);
 }

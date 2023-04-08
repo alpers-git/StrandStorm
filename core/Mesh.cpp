@@ -51,16 +51,17 @@ void HairMesh::draw(const OpenGLProgram& prog)
     GL_CALL(glBindVertexArray(this->vao));
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, this->vbo));
     GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo));
-    GL_CALL(glDrawElements(GL_LINE_STRIP, this->indices.size(), GL_UNSIGNED_INT, nullptr));
+    GL_CALL(glDrawElements(GL_LINES, this->indices.size(), GL_UNSIGNED_INT, nullptr));
 }
 
 void HairMesh::growControlHair(const glm::vec3& root, const glm::vec3& dir)
 {
     glm::vec3 v = root;
-    this->indices.push_back(this->vertices.size());
     for (int i = 0; i < 10; i++) {
         this->indices.push_back(this->vertices.size());
         this->vertices.push_back(v);
+        this->indices.push_back(this->vertices.size());
         v += dir * 0.01f;
     }
+    this->vertices.push_back(v);
 }
