@@ -11,6 +11,9 @@ void Scene::init(const Renderer& r)
 {
     hairMesh.loadFromFile("resources/suzanne.obj");
     hairMesh.build(r.prog);
+
+    surfaceMesh.loadFromFile("resources/suzanne.obj");
+    surfaceMesh.build(r.prog);
 }
 
 void Scene::draw(const Renderer& r)
@@ -28,6 +31,7 @@ void Scene::draw(const Renderer& r)
     r.prog.SetUniform("uTProj", cam.proj({r.window}));
 
     hairMesh.draw(r.prog);
+    surfaceMesh.draw(r.prog);
 }
 
 void Scene::OnMouseButton(int button, int action, int mods)

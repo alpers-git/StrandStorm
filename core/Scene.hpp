@@ -9,6 +9,7 @@ class Scene
 {
 public:
     HairMesh hairMesh;
+    SurfaceMesh surfaceMesh;
     Camera cam;
     
     Scene();

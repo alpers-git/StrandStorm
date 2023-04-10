@@ -28,3 +28,24 @@ public:
     // Draws the hair mesh
     void draw(const OpenGLProgram& prog);
 };
+
+class SurfaceMesh
+{
+private:
+    GLuint vao;
+    GLuint vbo;
+    GLuint ebo;
+
+public:
+    std::vector<glm::vec3> vertices;
+    std::vector<GLuint> indices;
+
+    SurfaceMesh() = default;
+
+    // Loads mesh from file
+    void loadFromFile(const std::string& modelPath);
+    // Builds the buffers
+    void build(const OpenGLProgram& prog);
+    // Draws the hair mesh
+    void draw(const OpenGLProgram& prog);
+};
