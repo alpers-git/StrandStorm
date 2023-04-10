@@ -45,6 +45,10 @@ add_library("ImGui" STATIC ${IMGUI_SOURCES}
 target_include_directories("ImGui" PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends glfw)
 #---------------------------------------------#
 
+#--------------------spdlog---------------------#
+add_subdirectory(submodules/spdlog)
+#---------------------------------------------#
+
 #--------------------EnTT---------------------#
 add_subdirectory(submodules/entt)
 add_compile_options(-DENTT_BUILD_DOCS=ON)
