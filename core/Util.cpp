@@ -75,3 +75,29 @@ void APIENTRY GLDebugMessageCallback(
         spdlog::log(lvl, "GL[{}|{}|{}] {}", _type, _severity, _source, msg);
     }
 }
+
+/* Random Number Generator Class */
+RNG::RNG(uint32_t seed) : seed(seed), gen(seed) {
+}
+int RNG::range(int a, int b) {
+    const std::uniform_int_distribution<int>::param_type params(a, b);
+    return this->idist(gen, params);
+}
+float RNG::range(float a, float b) {
+    const std::uniform_real_distribution<float>::param_type params(a, b);
+    return this->rdist(gen, params);
+}
+glm::vec3 RNG::vec(const glm::vec3& min, const glm::vec3& max) {
+    return {this->range(min.x, max.x), this->range(min.y, max.y), this->range(min.z, max.z)};
+}
+glm::vec3 RNG::vec(const glm::vec3& max) {
+    return this->vec({0.0f, 0.0f, 0.0f}, max);
+}
+glm::vec3 RNG::rotation()
+{
+    return {this->range(0.0f, tau), this->range(0.0f, tau), this->range(0.0f, tau)};
+}
+bool RNG::test(float probability) {
+    const std::uniform_real_distribution<float>::param_type params(0, 1);
+    return this->rdist(gen, params) < probability;
+}

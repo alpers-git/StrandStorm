@@ -7,6 +7,7 @@
 class HairMesh
 {
 private:
+    RNG rng = {0};
     GLuint vao;
     GLuint vbo;
     GLuint ebo;

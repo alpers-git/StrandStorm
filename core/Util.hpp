@@ -1,5 +1,6 @@
 #pragma once
 
+#include <random>
 #include <algorithm>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -23,3 +24,36 @@ inline glm::vec3 spherePoint(float phi, float theta) {
         std::cos(theta) * std::cos(phi),
     };
 }
+
+// Random number generation helper class
+class RNG
+{
+public:
+    const uint32_t seed;
+
+private:
+    std::minstd_rand gen;
+    std::uniform_real_distribution<float> rdist;
+    std::uniform_int_distribution<int> idist;
+public:
+    //Default constructor, uses specified seed for number generation
+    RNG(uint32_t seed);
+    //Generate a random number between 0 and 1, returns if this number is less than given probability value
+    bool test(float probability);
+    //Random range from a to b, inclusive
+    int range(int a, int b);
+    //Random range from a to b, inclusive
+    float range(float a, float b);
+    //Random vector3
+    glm::vec3 vec(const glm::vec3& min, const glm::vec3& max);
+    //Random vector3 with min 0,0,0
+    glm::vec3 vec(const glm::vec3& max);
+    //Random euler angles
+    glm::vec3 rotation();
+    //Choose random from list of items
+    template <class T> T choose(const std::initializer_list<T> items) {
+        auto it = items.begin();
+        std::advance(it, range(0, items.size() - 1));
+        return *it;
+    };
+};

@@ -16,9 +16,11 @@ void HairMesh::loadFromFile(const std::string &modelPath)
     // Grow the control hairs from the stored vertices
     this->vertices.reserve(mesh.NV());
     for (int i = 0; i < mesh.NV(); i++) {
-        this->growControlHair(
-            {mesh.V(i).x, mesh.V(i).y, mesh.V(i).z},
-            {mesh.VN(i).x, mesh.VN(i).y, mesh.VN(i).z});
+        glm::vec3 dir(mesh.VN(i).x, mesh.VN(i).y, mesh.VN(i).z);
+        if (glm::dot(dir, {0.0f, 1.0f, 0.0f}) > 0.0f)
+            this->growControlHair(
+                {mesh.V(i).x, mesh.V(i).y, mesh.V(i).z},
+                dir);
     }
 
     glGenVertexArrays(1, &this->vao); $gl_chk
@@ -57,11 +59,11 @@ void HairMesh::draw(const OpenGLProgram& prog)
 void HairMesh::growControlHair(const glm::vec3& root, const glm::vec3& dir)
 {
     glm::vec3 v = root;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
         this->indices.push_back(this->vertices.size());
         this->vertices.push_back(v);
         this->indices.push_back(this->vertices.size());
-        v += dir * 0.01f;
+        v += dir * 0.1f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.05f;
     }
     this->vertices.push_back(v);
 }
