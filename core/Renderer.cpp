@@ -6,18 +6,25 @@ void Renderer::Initialize()
     glLineWidth(3.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
 
-    prog.CreatePipelineFromFiles("shaders/simple.vert", "shaders/simple.frag");
-    prog.Use();
-    prog.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+    hairProg.CreatePipelineFromFiles("shaders/simple.vert", "shaders/simple.frag");
+    hairProg.Use();
+    hairProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+
+    surfaceProg.CreatePipelineFromFiles("shaders/surface.vert", "shaders/surface.frag");
+    surfaceProg.Use();
+    surfaceProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
 
     scene->init(*this);
 }
 
 void Renderer::Render()
 {
-    prog.Use();
-    prog.Clear();
     this->frameCount += 1;
+    hairProg.Use();
+    hairProg.Clear();
+
+    surfaceProg.Use();
+    surfaceProg.Clear();
 
     scene->draw(*this);
 }

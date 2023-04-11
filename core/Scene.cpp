@@ -10,10 +10,10 @@ Scene::Scene()
 void Scene::init(const Renderer& r)
 {
     hairMesh.loadFromFile("resources/suzanne.obj");
-    hairMesh.build(r.prog);
+    hairMesh.build(r.hairProg);
 
     surfaceMesh.loadFromFile("resources/suzanne.obj");
-    surfaceMesh.build(r.prog);
+    surfaceMesh.build(r.surfaceProg);
 }
 
 void Scene::draw(const Renderer& r)
@@ -26,12 +26,21 @@ void Scene::draw(const Renderer& r)
     }
     cam.control({0.0f, 0.0f}, dragDelta, {0.0f, 0.0f});
 
-    r.prog.SetUniform("uTModel", glm::mat4(1.0f));
-    r.prog.SetUniform("uTView", cam.view());
-    r.prog.SetUniform("uTProj", cam.proj({r.window}));
+    // r.hairProg.SetUniform("uTModel", glm::mat4(1.0f));
+    // r.hairProg.SetUniform("uTView", cam.view());
+    // r.hairProg.SetUniform("uTProj", cam.proj({r.window}));
 
-    hairMesh.draw(r.prog);
-    surfaceMesh.draw(r.prog);
+    // hairMesh.draw(r.hairProg);
+
+    //-----------------------------------------------------
+    glm::mat4 to_screen_space = cam.proj({r.window}) * cam.view();
+    glm::mat4 to_view_space = cam.view();
+    glm::mat3 normals_to_view_space = glm::mat3(glm::transpose(glm::inverse(to_view_space)));
+    r.surfaceProg.SetUniform("to_screen_space", to_screen_space);
+    r.surfaceProg.SetUniform("to_view_space", to_view_space);
+    r.surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);
+
+    surfaceMesh.draw(r.surfaceProg);
 }
 
 void Scene::OnMouseButton(int button, int action, int mods)

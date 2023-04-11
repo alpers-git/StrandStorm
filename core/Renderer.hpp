@@ -9,7 +9,8 @@ class Scene;
 class Renderer
 {
 public:
-    OpenGLProgram prog;
+    OpenGLProgram hairProg;
+    OpenGLProgram surfaceProg;
     long int frameCount = 0;
     glm::ivec2 window;
     glm::vec2 mouse;

@@ -96,12 +96,38 @@ void GUIManager::Draw()
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
     // Actual GUI code goes here
+    DrawHairMeshControls();
+    DrawSurfaceMeshControls();
 
     ImGui::End();
     ImGui::Render();
     ImGuiIO& io = ImGui::GetIO();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void GUIManager::DrawHairMeshControls()
+{
+   if(ImGui::CollapsingHeader("Hair Mesh Controls"))
+   {
+        ImGui::Checkbox("Show Hair Mesh", nullptr);
+        ImGui::SameLine();
+        ImGui::Checkbox("Show Control Hairs", nullptr);
+        ImGui::InputInt("Guide hair count", nullptr);
+        ImGui::InputFloat("Guide hair length", nullptr);
+   }
+}
+
+void GUIManager::DrawSurfaceMeshControls()
+{
+    if(ImGui::CollapsingHeader("Surface Mesh Controls"))
+    {
+        ImGui::Checkbox("Show Surface Mesh", nullptr);
+        ImGui::SeparatorText("Surface Mesh Material");
+        ImGui::ColorPicker3("Specular", nullptr);
+        ImGui::ColorPicker3("Diffuse", nullptr);
+        ImGui::ColorPicker3("Ambient", nullptr);
+    }
 }
 
 void GUIManager::Terminate()

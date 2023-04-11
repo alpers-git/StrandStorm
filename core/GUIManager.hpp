@@ -23,6 +23,7 @@ public:
     */
     void Draw();
 
+
     /*
     * Called after the application loop ends cleans up ImGui
     */
@@ -34,4 +35,6 @@ public:
 private:
     void NewFrame();
     //Other ui components draw functions here
+    void DrawHairMeshControls();
+    void DrawSurfaceMeshControls();
 };
