@@ -92,6 +92,8 @@ void GUIManager::Initialize()
 
 void GUIManager::Draw()
 {
+    //place the window in the top left corner
+    ImGui::SetWindowPos(windowName.c_str(), ImVec2(10, 10), ImGuiCond_Once);
     NewFrame();
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
