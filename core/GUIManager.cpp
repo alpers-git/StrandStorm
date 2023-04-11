@@ -96,8 +96,9 @@ void GUIManager::Draw()
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
     // Actual GUI code goes here
-    DrawHairMeshControls();
+    //DrawHairMeshControls();
     DrawSurfaceMeshControls();
+    DrawLightControls();
 
     ImGui::End();
     ImGui::Render();
@@ -108,7 +109,7 @@ void GUIManager::Draw()
 
 void GUIManager::DrawHairMeshControls()
 {
-   if(ImGui::CollapsingHeader("Hair Mesh Controls"))
+   if(ImGui::CollapsingHeader("Hair Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
    {
         ImGui::Checkbox("Show Hair Mesh", nullptr);
         ImGui::SameLine();
@@ -120,13 +121,33 @@ void GUIManager::DrawHairMeshControls()
 
 void GUIManager::DrawSurfaceMeshControls()
 {
-    if(ImGui::CollapsingHeader("Surface Mesh Controls"))
+    if(ImGui::CollapsingHeader("Surface Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::Checkbox("Show Surface Mesh", nullptr);
+        //ImGui::Checkbox("Show Surface Mesh", nullptr);
         ImGui::SeparatorText("Surface Mesh Material");
-        ImGui::ColorPicker3("Specular", nullptr);
-        ImGui::ColorPicker3("Diffuse", nullptr);
-        ImGui::ColorPicker3("Ambient", nullptr);
+        ImGui::ColorEdit3("Specular", &scene->surfaceMesh.material.specular[0]);
+        ImGui::ColorEdit3("Diffuse", &scene->surfaceMesh.material.diffuse[0]);
+        ImGui::ColorEdit3("Ambient", &scene->surfaceMesh.material.ambient[0]);
+    }
+}
+
+void GUIManager::DrawLightControls()
+{
+    if(ImGui::CollapsingHeader("Light Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::SeparatorText("Light 1");
+        auto width = ImGui::GetContentRegionAvail().x;
+        ImGui::PushItemWidth(width * 0.10f);
+        ImGui::DragFloat("Intensity", &scene->light.intensity, 0.01f, 0.0f, 1.0f);
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+        ImGui::PushItemWidth(width * 0.55f);
+        ImGui::ColorEdit3("Color", &scene->light.color[0]);
+        ImGui::PopItemWidth();
+        ImGui::DragFloat3("Position", &scene->light.pos[0]);
+        // ImGui::SeparatorText("Light 2");
+        // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
+        // ImGui::InputFloat3("Position", &scene->light2.position[0]);
     }
 }
 

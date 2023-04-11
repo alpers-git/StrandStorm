@@ -3,8 +3,11 @@
 App::App(int argc, char *argv[])
 {
     scene = std::make_shared<Scene>();
+    
     renderer.scene = scene;
     renderer.Initialize();
+
+    gui.scene = scene;
     gui.Initialize();
 }
 

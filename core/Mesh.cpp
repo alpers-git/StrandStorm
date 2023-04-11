@@ -124,9 +124,6 @@ void HairMesh::draw(const OpenGLProgram &prog)
     glBindVertexArray(this->vao);
     $gl_chk;
 
-    glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-    $gl_chk;
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo);
     $gl_chk;
 

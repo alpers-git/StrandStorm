@@ -26,4 +26,12 @@ public:
     void dragStart();
     // Universal camera control
     void control(const glm::vec2& rotateDelta, const glm::vec2& dragDelta, const glm::vec2& moveDelta);
+    // Zooms in and out
+    void zoom(float delta);
+    //rotates camera
+    void pan(glm::vec2 delta);
+    //strafes camera
+    void strafe(glm::vec2 delta);
+    //orients camera
+    void orient(glm::vec2 delta);
 };
