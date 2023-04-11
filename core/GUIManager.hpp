@@ -23,6 +23,7 @@ public:
     */
     void Draw();
 
+
     /*
     * Called after the application loop ends cleans up ImGui
     */
@@ -31,7 +32,11 @@ public:
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove;
     std::string windowName = "GUI";
 
+    std::shared_ptr<Scene> scene;   
 private:
     void NewFrame();
     //Other ui components draw functions here
+    void DrawHairMeshControls();
+    void DrawSurfaceMeshControls();
+    void DrawLightControls();
 };

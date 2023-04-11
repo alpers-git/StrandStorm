@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#define $gl_chk _checkGLError(__FILE__, __LINE__);
+#define $gl_chk ;_checkGLError(__FILE__, __LINE__);
 
 struct Shader
 {

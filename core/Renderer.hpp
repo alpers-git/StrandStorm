@@ -9,13 +9,21 @@ class Scene;
 class Renderer
 {
 public:
-    OpenGLProgram prog;
+    OpenGLProgram hairProg;
+    OpenGLProgram surfaceProg;
     long int frameCount = 0;
-    glm::ivec2 window;
-    glm::vec2 mouse;
-    glm::vec2 mouseDelta;
-    glm::vec2 mouseDragDelta;
-    glm::vec2 mouseDragStart;
+    glm::ivec2 windowSize;
+
+    struct mouseInteraction {
+        bool leftButton = false;
+        bool rightButton = false;
+        bool middleButton = false;
+
+        glm::vec2 lastPos;
+        glm::vec2 delta;
+
+    } mouseInteraction;
+
     std::shared_ptr<Scene> scene;
 
     void Initialize();
@@ -23,4 +31,8 @@ public:
     void OnWindowResize(int width, int height);
     void OnMouseMove(double x, double y);
     void OnMouseButton(int button, int action, int mods);
+
+    private:
+    void RenderHairs();
+    void RenderSurfaces();
 };
