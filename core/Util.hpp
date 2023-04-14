@@ -2,10 +2,13 @@
 
 #include <random>
 #include <algorithm>
+#include <filesystem>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+
+namespace fs = std::filesystem;
 
 void _checkGLError(const char *file, int line);
 

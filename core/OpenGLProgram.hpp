@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <optional>
 #include <Util.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -16,11 +17,13 @@ struct Shader
 {
     GLuint glID;
     std::string source;
+    std::string label = "(unlabeled shader)";
+    mutable bool compiled = false;
 
-    Shader(GLuint shader_type, std::string source = "");
+    Shader(GLenum type) : glID(glCreateShader(type)) {};
     ~Shader();
-    bool Compile();
-    bool AttachShader(GLuint program);
+    bool Compile() const;
+    bool Attach(GLuint programID) const;
     void SetSource(const std::string& src, bool compile = false);
     void SetSourceFromFile(const char* filePath, bool compile = false);
 };
@@ -33,30 +36,18 @@ public:
     ~OpenGLProgram();
 
     void Use();
+
+    bool CreatePipelineFromFiles(
+        const char* vertPath,
+        const char* fragPath,
+        const char* geomPath = nullptr,
+        const char* tescPath = nullptr,
+        const char* tesePath = nullptr);
     
-    /*
-    * Read compile and attach shaders to the opengl program.
-    */
-    bool CreatePipelineFromFiles(const char* filePathVert, const char* filePathFrag);
+    bool AttachShader(GLenum type);
+    bool Link();
 
-    /*
-    * Assuming shader sources are already set this function will
-    compile and attach shaders to the opengl program.
-    */
-    bool CreatePipeline();
-    
-
-    bool AttachVertexShader();
-    bool AttachFragmentShader();
-
-    void SetVertexShaderSource(const char* src, bool compile = false);
-    void SetFragmentShaderSource(const char* src, bool compile = false);
-
-    void SetVertexShaderSourceFromFile(const char* filePath, bool compile = false);
-    void SetFragmentShaderSourceFromFile(const char* filePath, bool compile = false);
-
-    void SetVertexShader(Shader& shader);
-    void SetFragmentShader(Shader& shader);
+    void SetShaderSource(GLenum type, const fs::path& path, bool compile = false); 
     
     bool CompileShaders();
     
@@ -83,9 +74,8 @@ public:
     
     
 private:
-    GLuint glID;
-    Shader vertexShader = {GL_VERTEX_SHADER};
-    Shader fragmentShader = {GL_FRAGMENT_SHADER};
+    GLuint programID;
+    std::unordered_map<GLenum, Shader> shaders;
     GLbitfield clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
     glm::vec4 clearColor = glm::vec4(0.02f, 0.02f, 0.02f, 1.f);
 };

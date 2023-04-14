@@ -95,41 +95,12 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     $gl_chk;
 }
 
-// void HairMesh::build(const OpenGLProgram& prog)
-// {
-//     glBindVertexArray(vao)$gl_ch;k
-
-//     glBindBuffer(GL_ARRAY_BUFFER, this->vbo)$gl_chk;
-
-//     glBufferData(GL_ARRAY_BUFFER,
-//         this->vertices.size() * sizeof(glm::vec3), this->vertices.data(), GL_STATIC_DRAW)$gl_ch;k
-
-//     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo)$gl_chk;
-
-//     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-//         this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW)$gl_ch;k
-
-//     GLuint attrib_vPos = prog.AttribLocation("vPos");
-//     glEnableVertexAttribArray(attrib_vPos)$gl_chk;
-
-//     glVertexAttribPointer(attrib_vPos, 3, GL_FLOAT, GL_FALSE, 0u, (void*)0u)$gl_ch;k
-
-//     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)$gl_chk;
-
-//     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE)$gl_chk;
-
-// }
-
 void HairMesh::draw(const OpenGLProgram &prog)
 {
-    glBindVertexArray(this->vao);
-    $gl_chk;
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo);
-    $gl_chk;
-
-    glDrawElements(GL_LINES, this->indices.size(), GL_UNSIGNED_INT, nullptr);
-    $gl_chk;
+    glBindVertexArray(this->vao) $gl_chk;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
+    glPatchParameteri(GL_PATCH_VERTICES, 4) $gl_chk;
+    glDrawElements(GL_PATCHES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;
 }
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)

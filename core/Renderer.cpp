@@ -6,7 +6,12 @@ void Renderer::Initialize()
     glLineWidth(3.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
 
-    hairProg.CreatePipelineFromFiles("shaders/simple.vert", "shaders/simple.frag");
+    hairProg.CreatePipelineFromFiles(
+        "shaders/hair.vert",
+        "shaders/hair.frag",
+        nullptr,
+        "shaders/hair.tesc",
+        "shaders/hair.tese");
     hairProg.Use();
     hairProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
 

@@ -8,9 +8,10 @@ in VertexData {
     vec3 pos;
 } v_in[];
 
+// Output is 4 bezier control points
 out VertexData {
     vec3 pos;
-} v_out[];
+} controlPoints[];
 
 void main() {
     if (gl_InvocationID == 0) {
@@ -19,8 +20,24 @@ void main() {
         gl_TessLevelOuter[1] = 5.0;
     }
 
-    v_out[gl_InvocationID].pos = v_in[gl_InvocationID].pos;
+    // Compute tangent along the central vertex
+    vec3 tangent = normalize(v_in[2].pos - v_in[0].pos);
 
-    // Compute tangent of the central vertex
-    
+    // Place control point
+    vec3 controlPoint;
+    switch(gl_InvocationID) {
+        case 0:
+            controlPoint = v_in[0].pos;
+            break;
+        case 1:
+            controlPoint = v_in[1].pos - tangent * length(v_in[1].pos - v_in[0].pos) * 0.5;
+            break;
+        case 2:
+            controlPoint = v_in[1].pos + tangent * length(v_in[2].pos - v_in[1].pos) * 0.5;
+            break;
+        case 4:
+            controlPoint = v_in[2].pos;
+            break;
+    }
+    controlPoints[gl_InvocationID].pos = controlPoint;
 }

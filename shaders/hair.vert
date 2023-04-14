@@ -7,11 +7,9 @@ out VertexData {
 } V;
 
 uniform mat4 uTModel;
-uniform mat4 uTProj;
-uniform mat4 uTView;
 
 void main()
 {
      V.pos = (uTModel * vec4(vPos, 1.0)).xyz;
-     gl_Position = uTProj * uTView * uTModel * vec4(vPos, 1.0);
+     gl_Position = uTModel * vec4(vPos, 1.0);
 }
