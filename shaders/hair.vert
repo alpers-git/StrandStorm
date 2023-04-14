@@ -2,14 +2,7 @@
 
 in vec3 vPos;
 
-out VertexData {
-     vec3 pos;      // World position
-} V;
-
-uniform mat4 uTModel;
-
 void main()
 {
-     V.pos = (uTModel * vec4(vPos, 1.0)).xyz;
-     gl_Position = uTModel * vec4(vPos, 1.0);
+     gl_Position = vec4(vPos, 1.0);
 }

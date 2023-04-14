@@ -3,16 +3,6 @@
 // Generate 4 bezier control points
 layout(vertices = 4) out;
 
-// Patch in is 3 vertices of a line
-in VertexData {
-    vec3 pos;
-} v_in[];
-
-// Output is 4 bezier control points
-out VertexData {
-    vec3 pos;
-} controlPoints[];
-
 void main() {
     if (gl_InvocationID == 0) {
         // Isolines only uses first two outer levels
@@ -20,24 +10,31 @@ void main() {
         gl_TessLevelOuter[1] = 5.0;
     }
 
+    const vec4 p[4] = {
+        gl_in[0].gl_Position,
+        gl_in[1].gl_Position,
+        gl_in[2].gl_Position,
+        gl_in[3].gl_Position
+    };
+
     // Compute tangent along the central vertex
-    vec3 tangent = normalize(v_in[2].pos - v_in[0].pos);
+    const vec4 tangent = vec4(normalize(p[2].xyz - p[0].xyz), 1.0);
 
     // Place control point
-    vec3 controlPoint;
+    vec4 controlPoint;
     switch(gl_InvocationID) {
         case 0:
-            controlPoint = v_in[0].pos;
+            controlPoint = p[0];
             break;
         case 1:
-            controlPoint = v_in[1].pos - tangent * length(v_in[1].pos - v_in[0].pos) * 0.5;
+            controlPoint = p[1] - tangent * length(p[1] - p[0]) * 0.5;
             break;
         case 2:
-            controlPoint = v_in[1].pos + tangent * length(v_in[2].pos - v_in[1].pos) * 0.5;
+            controlPoint = p[1] + tangent * length(p[2] - p[1]) * 0.5;
             break;
         case 4:
-            controlPoint = v_in[2].pos;
+            controlPoint = p[2];
             break;
     }
-    controlPoints[gl_InvocationID].pos = controlPoint;
+    gl_out[gl_InvocationID].gl_Position = controlPoint;
 }
