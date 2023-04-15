@@ -1,0 +1,91 @@
+#version 460
+
+// Group: one control hair, thread: 3 vertices (segment) of control hair, stride of 1
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+// Control hairs input buffer
+layout(std430, binding = 0) readonly buffer InPos {
+    vec4 inV[];
+};
+// Bezier control points buffer
+layout(std430, binding = 1) coherent buffer ControlPoints {
+    vec4 controlBuf[];
+};
+// Smooth hairs output buffer - will contain control points during execution
+layout(std430, binding = 1) writeonly buffer OutPos {
+    vec4 outV[];
+};
+
+// Number of vertices in each control hair
+uniform uint N;
+
+// Number of output vertices per control hair vertex (minimum 2)
+const uint M = 7;
+
+/* 
+In order to ensure # control points is div by 4:
+    * N vertices in control hair (odd number)
+    * N-2 segments / threads
+    * 3N-2 control points (tangent points are inner P1,P2, vertices are P0,P4)
+    * N*(M-1) output vertices
+ */
+
+void main() {
+    // Thread index
+    const uint i = gl_LocalInvocationID.x;
+    if (i >= N-2) {
+        return;
+    }
+
+    // Offset into control points buffer
+    uint ctrlOffset = gl_WorkGroupID.x * (N*3 - 2) + 2;
+
+    // --- 1. Compute control points for this hair segment
+    //        Each thread gens 3 control points, except for first and last which gen 5
+    const vec3 p[3] = {
+        inV[i + 0].xyz,
+        inV[i + 1].xyz,
+        inV[i + 2].xyz
+    };
+    const vec3 tangent = normalize(p[2] - p[0]);
+
+    if (i == 0) {
+        // First thread, add 2 control points at start
+        controlBuf[ctrlOffset - 2] = vec4(p[0], 1.0);
+        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
+    }
+    
+    // Add control points: one for each end of tangent, one for vertex
+    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
+    controlBuf[ctrlOffset + 1] = vec4(p[1], 1.0);
+    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
+    
+    if (i == N-3) {
+        // Last thread, add 2 control points at end
+        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
+        controlBuf[ctrlOffset + 4] = vec4(p[2], 1.0);
+    }
+
+    // --- 2. Sync threads, then interpolate between control points to get smooth hair
+    memoryBarrierBuffer();
+    const vec3 ctrl[4] = {
+        controlBuf[ctrlOffset + 0].xyz,
+        controlBuf[ctrlOffset + 1].xyz,
+        controlBuf[ctrlOffset + 2].xyz,
+        controlBuf[ctrlOffset + 3].xyz
+    };
+    for (uint j = 0; j < M; j++) {
+        ///TODO: This can be optimized greatly by computing pows of t using int fractions j/(M-1)
+        const float t = float(j) / float(M-1);
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float mt = 1.0 - t;
+        float mt2 = mt * mt;
+        float mt3 = mt2 * mt;
+        outV[gl_WorkGroupID.x * (N*M) + i*M + j] = vec4(
+            mt3 *           ctrl[0] +
+            3.0 * mt2 * t * ctrl[1] +
+            3.0 * mt * t2 * ctrl[2] +
+            t3 *            ctrl[3], 1.0);
+    }
+}
