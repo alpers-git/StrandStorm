@@ -3,22 +3,29 @@
 
 void Renderer::Initialize()
 {
-    glLineWidth(1.0f); $gl_chk
+    glLineWidth(5.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
     
     // enable alpha blending
-    glEnable(GL_BLEND); $gl_chk
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); $gl_chk
 
     hairProg.CreatePipelineFromFiles(
         "shaders/hair.vert",
         "shaders/hair.frag");
     hairProg.Use();
-    hairProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+    hairProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
-    surfaceProg.CreatePipelineFromFiles("shaders/surface.vert", "shaders/surface.frag");
+    surfaceProg.CreatePipelineFromFiles(
+        "shaders/surface.vert",
+        "shaders/surface.frag");
     surfaceProg.Use();
-    surfaceProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+    surfaceProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
+
+
+    hairShadowProg.CreatePipelineFromFiles(
+        "shaders/hair_shadow.vert",
+        "shaders/hair_shadow.frag");
+    hairShadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
     scene->init(*this);
 
@@ -35,13 +42,30 @@ void Renderer::Initialize()
     csHair.run({H, 1, 1});
 }
 
+void Renderer::RenderFirstPass()
+{
+    //render hair shadow map
+    hairShadowProg.Use();
+    surfaceProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
+    scene->light.hairShadowTexture->Render([&]() {
+            scene->hairMesh.draw(hairShadowProg);
+        });
+} 
+
+void Renderer::RenderMainPass()
+{
+    RenderSurfaces();
+    RenderHairs();
+}
+
 void Renderer::Render()
 {
     this->frameCount += 1;
-    surfaceProg.Clear();
 
-    RenderHairs();
-    RenderSurfaces();
+    hairShadowProg.Clear();
+    RenderFirstPass();
+    hairProg.Clear();
+    RenderMainPass();
 }
 
 void Renderer::OnWindowResize(int width, int height)
@@ -82,12 +106,14 @@ void Renderer::OnMouseButton(int button, int action, int mods)
 void Renderer::RenderHairs()
 {
     hairProg.Use();
+    glEnable(GL_BLEND); $gl_chk
 
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
 
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
+    glDisable(GL_BLEND); $gl_chk
 }
 
 
@@ -101,8 +127,21 @@ void Renderer::RenderSurfaces()
     surfaceProg.SetUniform("to_screen_space", to_screen_space);// mvp
     surfaceProg.SetUniform("to_view_space", to_view_space);//mv
     surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
+    surfaceProg.SetUniform("to_world_space", glm::mat4(1.0f));//m For future use
 
-    surfaceProg.SetUniform("light_pos", scene->light.pos);
+    const glm::mat4 shadowMatrix = glm::mat4(
+						0.5, 0.0, 0.0, 0.0,
+						0.0, 0.5, 0.0, 0.0,
+						0.0, 0.0, 0.5, 0.0,
+						0.5, 0.5, 0.49999, 1.0
+					) * scene->light.CalculateLightSpaceMatrix();
+
+    surfaceProg.SetUniform("to_light_view_space", shadowMatrix);
+
+    surfaceProg.SetUniform("shadow_map", (int)scene->light.hairShadowTexture->texUnit - GL_TEXTURE0);
+    scene->light.hairShadowTexture->Bind();
+
+    surfaceProg.SetUniform("light_dir", scene->light.dir);
     surfaceProg.SetUniform("light_color", scene->light.color);
     surfaceProg.SetUniform("light_intensity", scene->light.intensity);
     surfaceProg.SetUniform("ambient", scene->surfaceMesh.material.ambient);

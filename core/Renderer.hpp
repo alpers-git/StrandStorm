@@ -13,6 +13,9 @@ public:
     ComputeShader csHair;
     OpenGLProgram hairProg;
     OpenGLProgram surfaceProg;
+
+    OpenGLProgram hairShadowProg;
+
     long int frameCount = 0;
     glm::ivec2 windowSize;
 
@@ -37,4 +40,7 @@ public:
     private:
     void RenderHairs();
     void RenderSurfaces();
+
+    void RenderFirstPass();
+    void RenderMainPass();
 };
