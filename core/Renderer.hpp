@@ -11,7 +11,10 @@ class Renderer
 public:
     OpenGLProgram hairProg;
     OpenGLProgram surfaceProg;
+
     OpenGLProgram hairShadowProg;
+    std::unique_ptr<ShadowTexture> hairShadowTexture;
+
     long int frameCount = 0;
     glm::ivec2 windowSize;
 
@@ -36,4 +39,7 @@ public:
     private:
     void RenderHairs();
     void RenderSurfaces();
+
+    void RenderFirstPass();
+    void RenderMainPass();
 };

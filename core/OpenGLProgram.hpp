@@ -28,6 +28,25 @@ struct Shader
     void SetSourceFromFile(const char* filePath, bool compile = false);
 };
 
+struct ShadowTexture
+{
+    ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5);
+    ~ShadowTexture() {};
+
+    void Bind();
+    void Delete();
+
+    void Render(std::function <void()> renderFunc);
+
+    GLuint frameBufferID;
+	//GLuint depthBufferID;
+	GLuint glID;
+	glm::uvec2 dims;
+
+	GLuint texUnit;
+};
+
+
 class OpenGLProgram
 {
 public:
