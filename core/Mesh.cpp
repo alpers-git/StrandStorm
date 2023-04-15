@@ -75,7 +75,7 @@ void HairMesh::draw(const OpenGLProgram &prog)
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
     glm::vec3 v = root;
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < controlHairLen; i++) {
         this->indices.push_back(this->vertices.size());
         this->vertices.push_back(v);
         this->indices.push_back(this->vertices.size());

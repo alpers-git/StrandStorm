@@ -10,12 +10,11 @@ class Mesh
 {
 protected:
     RNG rng = {0};
-    GLuint vao;
     bool vaoInitialized = false;
+public:
+    GLuint vao;
     GLuint vbo;
     GLuint ebo;
-
-public:
     std::vector<glm::vec3> vertices;
     std::vector<GLuint> indices;
 
@@ -38,14 +37,17 @@ private:
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
+    static constexpr uint32_t controlHairLen = 21;
+    static constexpr uint32_t subdivide = 7;
+
     HairMesh() = default;
 
     // Loads mesh from file
     void loadFromFile(const std::string& modelPath, bool compNormals = true);
-    // Builds the buffers
-    //void build(const OpenGLProgram& prog);
     // Draws the hair mesh
     void draw(const OpenGLProgram& prog) override;
+    // Returns number of hairs
+    inline size_t numHairs() const { return vertices.size() / controlHairLen; }
 };
 
 class SurfaceMesh : public Mesh

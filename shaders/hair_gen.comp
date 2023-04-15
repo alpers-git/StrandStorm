@@ -5,14 +5,14 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 // Control hairs input buffer
 layout(std430, binding = 0) readonly buffer InPos {
-    vec4 inV[];
+    vec3 inV[];
 };
 // Bezier control points buffer
 layout(std430, binding = 1) coherent buffer ControlPoints {
     vec4 controlBuf[];
 };
 // Smooth hairs output buffer - will contain control points during execution
-layout(std430, binding = 1) writeonly buffer OutPos {
+layout(std430, binding = 2) writeonly buffer OutPos {
     vec4 outV[];
 };
 
@@ -20,7 +20,7 @@ layout(std430, binding = 1) writeonly buffer OutPos {
 uniform uint N;
 
 // Number of output vertices per control hair vertex (minimum 2)
-const uint M = 7;
+uniform uint M;
 
 /* 
 In order to ensure # control points is div by 4:

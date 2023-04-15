@@ -3,12 +3,14 @@
 #include <OpenGLProgram.hpp>
 #include <EventHandler.hpp>
 #include <Camera.hpp>
+#include <ComputeShader.hpp>
 
 class Scene;
 
 class Renderer
 {
 public:
+    ComputeShader csHair;
     OpenGLProgram hairProg;
     OpenGLProgram surfaceProg;
     long int frameCount = 0;

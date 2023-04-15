@@ -21,6 +21,18 @@ void Renderer::Initialize()
     surfaceProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
 
     scene->init(*this);
+
+    const GLuint N = HairMesh::controlHairLen;
+    const GLuint M = HairMesh::subdivide;
+    const GLuint H = scene->hairMesh.numHairs();
+    csHair.compile("shaders/hair_gen.comp");
+    csHair.assocBuffer(0, scene->hairMesh.vbo); // InPos
+    csHair.createBuffer(1, (3*N - 2) * H * sizeof(glm::vec4)); // ControlPoints
+    csHair.createBuffer(2, (N-1) * M * H * sizeof(glm::vec4)); // OutPos
+    csHair.setUniform("N", N);
+    csHair.setUniform("M", M);
+    csHair.bindBuffers();
+    csHair.run({H, 1, 1});
 }
 
 void Renderer::Render()
