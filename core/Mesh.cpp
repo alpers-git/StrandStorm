@@ -49,8 +49,8 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
             v[j] = glm::make_vec3(&mesh.V(mesh.F(i).v[j])[0]);
             n[j] = glm::make_vec3(&mesh.VN(mesh.FN(i).v[j])[0]);
         }
-        const auto vertices = tessTriangleGrid<4>(v);
-        const auto normals = tessTriangleGrid<4>(n);
+        const auto vertices = tessTriangleGrid<9>(v);
+        const auto normals = tessTriangleGrid<9>(n);
         for (size_t i = 0; i < vertices.size(); i++) {
             growControlHair(vertices[i], normals[i]);
         }
@@ -170,14 +170,6 @@ void SurfaceMesh::build(const OpenGLProgram &prog)
     GLuint attrib_vNormal = prog.AttribLocation("vNormal");
     glEnableVertexAttribArray(attrib_vNormal) $gl_chk;
     glVertexAttribPointer(attrib_vNormal, 3, GL_FLOAT, GL_FALSE, 0u, (void *)0u) $gl_chk;
-
-    // Bind normal buffer and set attribute pointer
-    // glBindBuffer(GL_ARRAY_BUFFER, this->textureVbo) $gl_chk;
-    // glBufferData(GL_ARRAY_BUFFER,
-    //              this->textureCoords.size() * sizeof(glm::vec2), this->textureCoords.data(), GL_STATIC_DRAW) $gl_chk;
-    // GLuint attrib_vTexCoord = prog.AttribLocation("vTexCoord");
-    // glEnableVertexAttribArray(attrib_vTexCoord) $gl_chk;
-    // glVertexAttribPointer(attrib_vTexCoord, 2, GL_FLOAT, GL_FALSE, 0u, (void *)0u) $gl_chk;
 
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE) $gl_chk;

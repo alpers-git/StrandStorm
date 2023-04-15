@@ -13,7 +13,6 @@ public:
     OpenGLProgram surfaceProg;
 
     OpenGLProgram hairShadowProg;
-    std::unique_ptr<ShadowTexture> hairShadowTexture;
 
     long int frameCount = 0;
     glm::ivec2 windowSize;

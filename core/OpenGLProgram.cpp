@@ -66,7 +66,7 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
     glBindTexture(GL_TEXTURE_2D, glID) $gl_chk
 
     glTexImage2D(GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT,
+        0, GL_DEPTH_COMPONENT32,
          dims.x, dims.y, 
          0, GL_DEPTH_COMPONENT,
           GL_FLOAT, NULL) $gl_chk;

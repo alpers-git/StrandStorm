@@ -14,17 +14,15 @@ void Scene::init(const Renderer& r)
 
     surfaceMesh.loadFromFile("resources/suzanne.obj");
     surfaceMesh.build(r.surfaceProg);
+
+    light.hairShadowTexture = std::make_shared<ShadowTexture>(glm::uvec2(1024, 1024));
 }
-// void Scene::OnMouseButton(int button, int action, int mods)
-// {
-//     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-//     {
-//         cam.dragStart();
-//         dragging = true;
-//     }
-//     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-//     {
-//         cam.dragStart();
-//         dragging = false;
-//     }
-// }
+
+glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const
+{
+    const glm::mat4 lightProjection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 0.01f, 20.f);
+    const glm::mat4 lightView = glm::lookAt(-glm::normalize(dir) * 20.f,
+                                            glm::vec3(0.0f, 0.0f, 0.0f),
+                                            glm::vec3(0.0f, 0.0f, 1.0f));
+    return lightProjection * lightView;
+}

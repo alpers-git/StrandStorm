@@ -3,7 +3,7 @@
 
 void Renderer::Initialize()
 {
-    glLineWidth(2.0f); $gl_chk
+    glLineWidth(5.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
     
     // enable alpha blending
@@ -13,19 +13,19 @@ void Renderer::Initialize()
         "shaders/hair.vert",
         "shaders/hair.frag");
     hairProg.Use();
-    hairProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+    hairProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
     surfaceProg.CreatePipelineFromFiles(
         "shaders/surface.vert",
         "shaders/surface.frag");
     surfaceProg.Use();
-    surfaceProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
+    surfaceProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
 
     hairShadowProg.CreatePipelineFromFiles(
         "shaders/hair_shadow.vert",
         "shaders/hair_shadow.frag");
-    hairShadowTexture = std::make_unique<ShadowTexture>(glm::uvec2(800, 800));
+    hairShadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
     scene->init(*this);
 }
@@ -34,12 +34,8 @@ void Renderer::RenderFirstPass()
 {
     //render hair shadow map
     hairShadowProg.Use();
-    const glm::mat4 lightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, 0.01f, 50.f);
-    const glm::mat4 lightView = glm::lookAt(-glm::normalize(scene->light.dir) * 2.f,
-				glm::vec3(0.0f, 0.0f, 0.0f),
-				glm::vec3(0.0f, 0.0f, 1.0f));
-    surfaceProg.SetUniform("to_screen_space", lightProjection * lightView);// mvp
-    hairShadowTexture->Render([&]() {
+    surfaceProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
+    scene->light.hairShadowTexture->Render([&]() {
             scene->hairMesh.draw(hairShadowProg);
         });
 } 
@@ -56,8 +52,6 @@ void Renderer::Render()
 
     hairShadowProg.Clear();
     RenderFirstPass();
-    
-    surfaceProg.Clear();
     hairProg.Clear();
     RenderMainPass();
 }
@@ -119,25 +113,21 @@ void Renderer::RenderSurfaces()
     glm::mat4 to_view_space = scene->cam.view();
     glm::mat3 normals_to_view_space = glm::mat3(glm::transpose(glm::inverse(to_view_space)));
     surfaceProg.SetUniform("to_screen_space", to_screen_space);// mvp
-    //surfaceProg.SetUniform("to_view_space", to_view_space);//mv
+    surfaceProg.SetUniform("to_view_space", to_view_space);//mv
     surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
     surfaceProg.SetUniform("to_world_space", glm::mat4(1.0f));//m For future use
 
-    const glm::mat4 lightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, 0.01f, 50.f);
-    const glm::mat4 lightView = glm::lookAt(-glm::normalize(scene->light.dir) * 2.f,
-				glm::vec3(0.0f, 0.0f, 0.0f),
-				glm::vec3(0.0f, 0.0f, 1.0f));
     const glm::mat4 shadowMatrix = glm::mat4(
 						0.5, 0.0, 0.0, 0.0,
 						0.0, 0.5, 0.0, 0.0,
 						0.0, 0.0, 0.5, 0.0,
 						0.5, 0.5, 0.49999, 1.0
-					) * lightProjection * lightView;
+					) * scene->light.CalculateLightSpaceMatrix();
 
     surfaceProg.SetUniform("to_light_view_space", shadowMatrix);
 
-    surfaceProg.SetUniform("shadow_map", (int)hairShadowTexture->texUnit - GL_TEXTURE0);
-    hairShadowTexture->Bind();
+    surfaceProg.SetUniform("shadow_map", (int)scene->light.hairShadowTexture->texUnit - GL_TEXTURE0);
+    scene->light.hairShadowTexture->Bind();
 
     surfaceProg.SetUniform("light_dir", scene->light.dir);
     surfaceProg.SetUniform("light_color", scene->light.color);

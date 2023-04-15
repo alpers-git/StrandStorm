@@ -15,6 +15,8 @@ public:
         glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.1f);
         glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
         float intensity = 1.0f;
+        std::shared_ptr<ShadowTexture> hairShadowTexture;
+        glm::mat4 CalculateLightSpaceMatrix() const;
     } light;
     
     Scene();
