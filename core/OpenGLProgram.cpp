@@ -136,7 +136,7 @@ void OpenGLProgram::SetShaderSource(GLenum type, const fs::path& path, bool comp
     if (!shaders.count(type)) {
         shaders.emplace(type, type);
     }
-    shaders.at(type).SetSourceFromFile(path.c_str(), compile);
+    shaders.at(type).SetSourceFromFile((const char*)path.c_str(), compile);
     shaders.at(type).label = path.filename().string();
 }
 

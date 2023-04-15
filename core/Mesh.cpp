@@ -1,6 +1,7 @@
 #include <Mesh.hpp>
 #include <Logging.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <array>
 
 uint64_t cantor(uint32_t x, uint32_t y) {
     return ((x + y) * (x + y + 1u)) / 2u + y;
