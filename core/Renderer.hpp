@@ -11,6 +11,7 @@ class Renderer
 public:
     OpenGLProgram hairProg;
     OpenGLProgram surfaceProg;
+    OpenGLProgram hairShadowProg;
     long int frameCount = 0;
     glm::ivec2 windowSize;
 

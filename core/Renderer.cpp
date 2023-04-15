@@ -91,7 +91,7 @@ void Renderer::RenderSurfaces()
     surfaceProg.SetUniform("to_view_space", to_view_space);//mv
     surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
 
-    surfaceProg.SetUniform("light_pos", scene->light.pos);
+    surfaceProg.SetUniform("light_dir", scene->light.dir);
     surfaceProg.SetUniform("light_color", scene->light.color);
     surfaceProg.SetUniform("light_intensity", scene->light.intensity);
     surfaceProg.SetUniform("ambient", scene->surfaceMesh.material.ambient);

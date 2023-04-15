@@ -146,7 +146,7 @@ void GUIManager::DrawLightControls()
         ImGui::PushItemWidth(width * 0.55f);
         ImGui::ColorEdit3("Color", &scene->light.color[0]);
         ImGui::PopItemWidth();
-        ImGui::DragFloat3("Position", &scene->light.pos[0]);
+        ImGui::DragFloat3("Position", &scene->light.dir[0]);
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
         // ImGui::InputFloat3("Position", &scene->light2.position[0]);

@@ -12,7 +12,7 @@ public:
     SurfaceMesh surfaceMesh;
     Camera cam;
     struct Light {
-        glm::vec3 pos = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.1f);
         glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
         float intensity = 1.0f;
     } light;
