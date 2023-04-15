@@ -7,7 +7,6 @@ void Renderer::Initialize()
     glEnable(GL_DEPTH_TEST); $gl_chk
     
     // enable alpha blending
-    glEnable(GL_BLEND); $gl_chk
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); $gl_chk
 
     hairProg.CreatePipelineFromFiles(
@@ -28,8 +27,8 @@ void Renderer::Render()
     this->frameCount += 1;
     surfaceProg.Clear();
 
-    RenderHairs();
     RenderSurfaces();
+    RenderHairs();
 }
 
 void Renderer::OnWindowResize(int width, int height)
@@ -70,12 +69,14 @@ void Renderer::OnMouseButton(int button, int action, int mods)
 void Renderer::RenderHairs()
 {
     hairProg.Use();
+    glEnable(GL_BLEND); $gl_chk
 
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
 
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
+    glDisable(GL_BLEND); $gl_chk
 }
 
 

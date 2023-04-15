@@ -49,8 +49,8 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
             v[j] = glm::make_vec3(&mesh.V(mesh.F(i).v[j])[0]);
             n[j] = glm::make_vec3(&mesh.VN(mesh.FN(i).v[j])[0]);
         }
-        const auto vertices = tessTriangleGrid<8>(v);
-        const auto normals = tessTriangleGrid<8>(n);
+        const auto vertices = tessTriangleGrid<4>(v);
+        const auto normals = tessTriangleGrid<4>(n);
         for (size_t i = 0; i < vertices.size(); i++) {
             growControlHair(vertices[i], normals[i]);
         }
