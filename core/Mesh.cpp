@@ -2,41 +2,6 @@
 #include <Logging.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// void Mesh::loadFromFile(const std::string& modelPath, bool compNormals)
-// {
-//     if (modelPath.empty() || !fs::exists(modelPath)) {
-//         spdlog::error("Model path is incorrect");
-//         return;
-//     }
-
-//     // Load the mesh
-//     cyTriMesh mesh;
-//     if (!mesh.LoadFromFileObj(modelPath.c_str())) {
-//         spdlog::error("Failed to load mesh from file: {}", modelPath);
-//         return;
-//     }
-
-//     this->vertices.resize(mesh.NV());
-//     for (int i = 0; i < mesh.NV(); i++) {
-//         this->vertices[i] = glm::vec3(mesh.V(i).x, mesh.V(i).y, mesh.V(i).z);
-//     }
-
-//     this->indices.resize(mesh.NF() * 3);
-//     for (int i = 0; i < mesh.NF(); i++) {
-//         this->indices[i + 0] = (mesh.F(i).v[0]);
-//         this->indices[i + 1] = (mesh.F(i).v[1]);
-//         this->indices[i + 2] = (mesh.F(i).v[2]);
-//     }
-
-//     if (!isVAOInitialized())
-//         glGenVertexArrays(1, &this->vao)$gl_chk;
-
-//     glGenBuffers(1, &this->vbo)$gl_chk;
-
-//     glGenBuffers(1, &this->ebo)$gl_chk;
-
-// }
-
 uint64_t cantor(uint32_t x, uint32_t y) {
     return ((x + y) * (x + y + 1u)) / 2u + y;
 }
@@ -77,12 +42,17 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
     // Grow the control hairs from the stored vertices
     this->vertices.reserve(mesh.NV());
-    for (int i = 0; i < mesh.NV(); i++) {
-        glm::vec3 dir(mesh.VN(i).x, mesh.VN(i).y, mesh.VN(i).z);
-        if (glm::dot(dir, {0.0f, 1.0f, 0.0f}) > 0.0f)
-            this->growControlHair(
-                {mesh.V(i).x, mesh.V(i).y, mesh.V(i).z},
-                dir);
+    for (int i = 0; i < mesh.NF(); i++) {
+        std::array<glm::vec3, 3> v, n;
+        for (size_t j = 0; j < 3; j++) {
+            v[j] = glm::make_vec3(&mesh.V(mesh.F(i).v[j])[0]);
+            n[j] = glm::make_vec3(&mesh.VN(mesh.FN(i).v[j])[0]);
+        }
+        const auto vertices = tessTriangleGrid<8>(v);
+        const auto normals = tessTriangleGrid<8>(n);
+        for (size_t i = 0; i < vertices.size(); i++) {
+            growControlHair(vertices[i], normals[i]);
+        }
     }
 
     glGenVertexArrays(1, &this->vao);
@@ -99,18 +69,17 @@ void HairMesh::draw(const OpenGLProgram &prog)
 {
     glBindVertexArray(this->vao) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
-    glPatchParameteri(GL_PATCH_VERTICES, 4) $gl_chk;
-    glDrawElements(GL_PATCHES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;
+    glDrawElements(GL_LINES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;
 }
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
     glm::vec3 v = root;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 20; i++) {
         this->indices.push_back(this->vertices.size());
         this->vertices.push_back(v);
         this->indices.push_back(this->vertices.size());
-        v += dir * 0.1f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.05f;
+        v += dir * 0.01f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.01f;
     }
     this->vertices.push_back(v);
 }

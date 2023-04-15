@@ -60,3 +60,21 @@ public:
         return *it;
     };
 };
+
+// Generate a triangular grid of points between given triangle vertices
+template<size_t N>
+std::array<glm::vec3, (N * (N + 1)) / 2> tessTriangleGrid(
+    const std::array<glm::vec3, 3>& p)
+{
+    std::array<glm::vec3, (N * (N + 1)) / 2> grid;
+    size_t i = 0;
+    for (size_t n = 0; n < N; n++) {
+        for (size_t m = 0; m < N - n; m++) {
+            float u = (float)m / (float)(N - n - 1);
+            float v = (float)n / (float)(N - 1);
+            float w = 1.0f - u - v;
+            grid[i++] = p[0] * u + p[1] * v + p[2] * w;
+        }
+    }
+    return std::move(grid);
+}

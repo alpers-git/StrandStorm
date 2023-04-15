@@ -3,15 +3,16 @@
 
 void Renderer::Initialize()
 {
-    glLineWidth(3.0f); $gl_chk
+    glLineWidth(1.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
+    
+    // enable alpha blending
+    glEnable(GL_BLEND); $gl_chk
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); $gl_chk
 
     hairProg.CreatePipelineFromFiles(
         "shaders/hair.vert",
-        "shaders/hair.frag",
-        nullptr,
-        "shaders/hair.tesc",
-        "shaders/hair.tese");
+        "shaders/hair.frag");
     hairProg.Use();
     hairProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
 
@@ -26,7 +27,6 @@ void Renderer::Render()
 {
     this->frameCount += 1;
     surfaceProg.Clear();
-    hairProg.Clear();
 
     RenderHairs();
     RenderSurfaces();
