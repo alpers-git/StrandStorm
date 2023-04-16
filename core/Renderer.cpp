@@ -46,10 +46,10 @@ void Renderer::RenderFirstPass()
 {
     //render hair shadow map
     shadowProg.Use();
-    surfaceProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
+    surfaceProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// mvp
     scene->light.hairShadowTexture->Render([&]() {
             scene->surfaceMesh.draw(shadowProg);
-            scene->hairMesh.draw(shadowProg);
+            scene->hairMesh.draw(shadowProg);//to be removed when opacity shadowmaps are done
         });
 } 
 
@@ -122,10 +122,10 @@ void Renderer::RenderSurfaces()
 {
     surfaceProg.Use();
 
-    glm::mat4 to_screen_space = scene->cam.proj({windowSize}) * scene->cam.view();
+    glm::mat4 to_clip_space = scene->cam.proj({windowSize}) * scene->cam.view();
     glm::mat4 to_view_space = scene->cam.view();
     glm::mat3 normals_to_view_space = glm::mat3(glm::transpose(glm::inverse(to_view_space)));
-    surfaceProg.SetUniform("to_screen_space", to_screen_space);// mvp
+    surfaceProg.SetUniform("to_clip_space", to_clip_space);// mvp
     surfaceProg.SetUniform("to_view_space", to_view_space);//mv
     surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
     surfaceProg.SetUniform("to_world_space", glm::mat4(1.0f));//m For future use
