@@ -13,7 +13,7 @@ public:
     ComputeShader csHair;
     OpenGLProgram hairProg = {"hair"};
     OpenGLProgram surfaceProg = {"surface"};
-    OpenGLProgram hairShadowProg = {"hair shadow"};
+    OpenGLProgram shadowProg = {"shadow"};
 
     long int frameCount = 0;
     glm::ivec2 windowSize;
