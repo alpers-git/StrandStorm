@@ -15,6 +15,7 @@ public:
     OpenGLProgram surfaceProg;
 
     OpenGLProgram shadowProg;
+    OpenGLProgram opacityShadowProg;
 
     long int frameCount = 0;
     glm::ivec2 windowSize;

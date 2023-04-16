@@ -4,14 +4,14 @@ precision highp float;
 in vec3 v_space_pos;
 
 uniform float dk;
-uniform sampler2D depth;
+uniform sampler2D depth_map;
 uniform vec2 screen_res;
 
 out vec4 opacities;
 
 void main()
 {
-    float depth_val = texture(depth, gl_FragCoord.xy / screen_res).r;
+    float depth_val = texture(depth_map, gl_FragCoord.xy / screen_res).r;
     if(depth_val + dk > v_space_pos.z )
     {
         opacities.r = v_space_pos.z - depth_val;

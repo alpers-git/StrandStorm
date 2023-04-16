@@ -27,30 +27,52 @@ void Renderer::Initialize()
         "shaders/shadow.frag");
     shadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
+    opacityShadowProg.CreatePipelineFromFiles(
+        "shaders/opacity_sh.vert",
+        "shaders/opacity_sh.frag");
+    opacityShadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
+
     scene->init(*this);
 
-    const GLuint N = HairMesh::controlHairLen;
-    const GLuint M = HairMesh::subdivide;
-    const GLuint H = scene->hairMesh.numHairs();
-    csHair.compile("shaders/hair_gen.comp");
-    csHair.assocBuffer(0, scene->hairMesh.vbo); // InPos
-    csHair.createBuffer(1, (3*N - 2) * H * sizeof(glm::vec4)); // ControlPoints
-    csHair.createBuffer(2, (N-1) * M * H * sizeof(glm::vec4)); // OutPos
-    csHair.setUniform("N", N);
-    csHair.setUniform("M", M);
-    csHair.bindBuffers();
-    csHair.run({H, 1, 1});
+    // const GLuint N = HairMesh::controlHairLen;
+    // const GLuint M = HairMesh::subdivide;
+    // const GLuint H = scene->hairMesh.numHairs();
+    // csHair.compile("shaders/hair_gen.comp");
+    // csHair.assocBuffer(0, scene->hairMesh.vbo); // InPos
+    // csHair.createBuffer(1, (3*N - 2) * H * sizeof(glm::vec4)); // ControlPoints
+    // csHair.createBuffer(2, (N-1) * M * H * sizeof(glm::vec4)); // OutPos
+    // csHair.setUniform("N", N);
+    // csHair.setUniform("M", M);
+    // csHair.bindBuffers();
+    // csHair.run({H, 1, 1});
 }
 
 void Renderer::RenderFirstPass()
 {
-    //render hair shadow map
+    //render shadow map
     shadowProg.Use();
-    surfaceProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// mvp
-    scene->light.hairShadowTexture->Render([&]() {
+    shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// mvp
+    scene->light.shadowTexture->Render([&]() {
             scene->surfaceMesh.draw(shadowProg);
             scene->hairMesh.draw(shadowProg);//to be removed when opacity shadowmaps are done
         });
+
+    //render depthTexture for opacity shadowmap
+    auto& depthTex =  scene->light.opacityShadowMaps.depthTex;
+    shadowProg.Use();
+    //shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix()); we dont have to set mvp again
+    // depthTex->Render([&]() {
+    //         scene->hairMesh.draw(shadowProg);
+    //     });
+    //render opacitymaps for opacity shadowmap
+    opacityShadowProg.Use();
+    //opacityShadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix()); we dont have to set mvp again
+    opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0);
+    opacityShadowProg.SetUniform("screen_res", depthTex->dims);
+    opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
+    // scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
+    //         scene->hairMesh.draw(opacityShadowProg);
+    //     });
 } 
 
 void Renderer::RenderMainPass()
@@ -139,8 +161,8 @@ void Renderer::RenderSurfaces()
 
     surfaceProg.SetUniform("to_light_view_space", shadowMatrix);
 
-    surfaceProg.SetUniform("shadow_map", (int)scene->light.hairShadowTexture->texUnit - GL_TEXTURE0);
-    scene->light.hairShadowTexture->Bind();
+    surfaceProg.SetUniform("shadow_map", (int)scene->light.shadowTexture->texUnit - GL_TEXTURE0);
+    scene->light.shadowTexture->Bind();
 
     surfaceProg.SetUniform("light_dir", scene->light.dir);
     surfaceProg.SetUniform("light_color", scene->light.color);
