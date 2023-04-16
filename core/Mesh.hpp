@@ -29,7 +29,7 @@ private:
     // Random number gen for making control hairs
     RNG rng = {0};
     // Vertices for control hairs
-    std::vector<glm::vec3> controlVerts;
+    std::vector<glm::vec4> controlVerts;
     // VBO for control hairs
     GLuint vboControl = GL_INVALID_INDEX;
     // VBO for interpolated hairs
@@ -41,7 +41,7 @@ private:
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 21;
+    static constexpr uint32_t controlHairLen = 13;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes endpoints, so needs to be >=2
     static constexpr uint32_t subdivide = 7;

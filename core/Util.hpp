@@ -86,7 +86,9 @@ namespace glm {
 
 namespace gl {
     GLuint buffer(GLenum target, size_t bytes, const void* data = nullptr, GLenum usage = GL_STATIC_DRAW);
-    GLuint buffer(GLenum target, const std::vector<glm::vec3>& data, GLenum usage = GL_STATIC_DRAW);
-    GLuint buffer(GLenum target, const std::vector<glm::vec2>& data, GLenum usage = GL_STATIC_DRAW);
-    GLuint buffer(GLenum target, const std::vector<GLuint>& data, GLenum usage = GL_STATIC_DRAW);
+    template<typename T>
+    GLuint buffer(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
+    {
+        return gl::buffer(target, (size_t)(data.size() * sizeof(T)), (const void*)data.data(), usage);
+    }
 };

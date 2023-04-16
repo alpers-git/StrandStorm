@@ -8,5 +8,5 @@ uniform mat4 uTProj;
 
 void main()
 {
-     gl_Position = uTProj * uTView * uTModel * vPos;
+     gl_Position = uTProj * uTView * uTModel * vec4(vPos.xyz, 1.0);
 }

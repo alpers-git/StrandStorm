@@ -5,7 +5,7 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 // Control hairs input buffer
 layout(std430, binding = 0) readonly buffer ControlHairs {
-    vec3 inV[];
+    vec4 inV[];
 };
 // Bezier control points buffer
 layout(std430, binding = 1) coherent buffer ControlPoints {
@@ -27,7 +27,7 @@ uniform uint M;
 
 /* 
 Per hair (for H hairs):
-    * N               : control vertices
+    * N               : control hair vertices
     * N-2             : segments / invocations
     * 3N-2            : control points
     * N(M-1)          : output vertices
@@ -38,6 +38,7 @@ void main() {
     // Thread (hair segment) index
     const uint i = gl_LocalInvocationID.x;
     if (i >= N-2) {
+        memoryBarrierBuffer();
         return;
     }
 
@@ -46,50 +47,54 @@ void main() {
 
     // Offset into control points buffer
     uint ctrlOffset = h * (N*3 - 2) + 2 + i*3;
+    // Offset into input vertices buffer
+    uint vertOffset = h * N + i;
 
     // --- 1. Compute control points for this hair segment
     //        Each invocation gens 3 control points, except for first and last which gen 5
     const vec3 p[3] = {
-        inV[i + 0].xyz,
-        inV[i + 1].xyz,
-        inV[i + 2].xyz
+        inV[vertOffset + 0].xyz,
+        inV[vertOffset + 1].xyz,
+        inV[vertOffset + 2].xyz
     };
     const vec3 tangent = normalize(p[2] - p[0]);
+    const float _debug = float(ctrlOffset);
 
     if (i == 0) {
         // First invocation, add 2 control points at start
-        controlBuf[ctrlOffset - 2] = vec4(p[0], 1.0);
-        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
+        controlBuf[ctrlOffset - 2] = vec4(p[0], _debug);
+        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, _debug);
     }
     
     // Add control points: one for each end of tangent, one for vertex
-    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
-    controlBuf[ctrlOffset + 1] = vec4(p[1], 1.0);
-    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
+    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, _debug);
+    controlBuf[ctrlOffset + 1] = vec4(p[1], _debug);
+    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, _debug);
     
     if (i == N-3) {
         // Last invocation, add 2 control points at end
-        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
-        controlBuf[ctrlOffset + 4] = vec4(p[2], 1.0);
+        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, _debug);
+        controlBuf[ctrlOffset + 4] = vec4(p[2], _debug);
     }
 
     // --- 2. Sync threads, then interpolate between control points to get smooth hair
     memoryBarrierBuffer();
+    const uint ctrlReadOffset = h * (N*3 - 2) + i*3;
     const vec3 ctrl[4] = {
-        controlBuf[ctrlOffset + 0].xyz,
-        controlBuf[ctrlOffset + 1].xyz,
-        controlBuf[ctrlOffset + 2].xyz,
-        controlBuf[ctrlOffset + 3].xyz
+        controlBuf[ctrlReadOffset + 0].xyz,
+        controlBuf[ctrlReadOffset + 1].xyz,
+        controlBuf[ctrlReadOffset + 2].xyz,
+        controlBuf[ctrlReadOffset + 3].xyz
     };
     for (uint j = 0; j < M; j++) {
         ///TODO: This can be optimized greatly by computing pows of t using int fractions j/(M-1)
-        const float t = float(j) / float(M-1);
+        const float t = float(j) / float(M);
         float t2 = t * t;
         float t3 = t2 * t;
         float mt = 1.0 - t;
         float mt2 = mt * mt;
         float mt3 = mt2 * mt;
-        const uint vIdx = h * (N*M) + i*M + j;
+        const uint vIdx = h * (N*(M - 1)) + i*M + j;
         outV[vIdx] = vec4(
             mt3 *           ctrl[0] +
             3.0 * mt2 * t * ctrl[1] +
@@ -98,9 +103,6 @@ void main() {
         const uint eIdx = h * (2*(N*(M-1)-1)) + i*M*2 + j*2;
         if (i + j > 0) {
             indices[eIdx + 0] = vIdx - 1;
-            indices[eIdx + 1] = vIdx;
-        } else {
-            indices[eIdx + 0] = vIdx;
             indices[eIdx + 1] = vIdx;
         }
     }

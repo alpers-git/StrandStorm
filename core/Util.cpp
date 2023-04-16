@@ -122,18 +122,3 @@ GLuint gl::buffer(GLenum target, size_t bytes, const void *data, GLenum usage)
     glBindBuffer(target, GL_NONE) $gl_chk;
     return bufferID;
 }
-
-GLuint gl::buffer(GLenum target, const std::vector<glm::vec3> &data, GLenum usage)
-{
-    return gl::buffer(target, (size_t)(data.size() * sizeof(glm::vec3)), (const void*)data.data(), usage);
-}
-
-GLuint gl::buffer(GLenum target, const std::vector<glm::vec2>& data, GLenum usage)
-{
-    return gl::buffer(target, (size_t)(data.size() * sizeof(glm::vec2)), (const void*)data.data(), usage);
-}
-
-GLuint gl::buffer(GLenum target, const std::vector<GLuint>& data, GLenum usage)
-{
-    return gl::buffer(target, (size_t)(data.size() * sizeof(GLuint)), (const void*)data.data(), usage);
-}

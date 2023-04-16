@@ -15,8 +15,8 @@ void HairMesh::build(const OpenGLProgram &prog)
     this->vaoInitialized = true;
     glGenVertexArrays(1, &this->vao) $gl_chk;
     glBindVertexArray(vao) $gl_chk;
-    this->vboInterp = gl::buffer(GL_ARRAY_BUFFER, numInterpVertices());
-    this->eboInterp = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, numInterpElements());
+    this->vboInterp = gl::buffer(GL_ARRAY_BUFFER, numInterpVertices() * sizeof(glm::vec4));
+    this->eboInterp = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, numInterpElements() * sizeof(GLuint));
     this->vboControl = gl::buffer(GL_ARRAY_BUFFER, this->controlVerts, GL_DYNAMIC_DRAW);
     
     prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
@@ -33,10 +33,12 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     }
 
     // Grow the control hairs from the stored vertices
-    this->controlVerts.reserve(mesh.NV());
     for (int i = 0; i < mesh.NV(); i++) {
         growControlHair(glm::make_vec3(mesh.V(i)), glm::make_vec3(mesh.VN(i)));
     }
+
+    spdlog::debug("{}: {} control hairs, {} output vertices, {} output elems, {} bezier control points",
+        modelPath, numHairs(), numInterpVertices(), numInterpElements(), numControlPoints());
 }
 
 void HairMesh::draw(const OpenGLProgram &prog)
@@ -62,8 +64,8 @@ void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
-        this->controlVerts.push_back(v);
-        v += dir * 0.01f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.0025f;
+        this->controlVerts.push_back({v, 1.0f});
+        v += dir * 0.1f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.1f;
     }
 }
 
