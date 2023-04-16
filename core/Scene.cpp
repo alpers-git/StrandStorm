@@ -15,7 +15,15 @@ void Scene::init(const Renderer& r)
     surfaceMesh.loadFromFile("resources/suzanne.obj");
     surfaceMesh.build(r.surfaceProg);
 
-    light.hairShadowTexture = std::make_shared<ShadowTexture>(glm::uvec2(1024, 1024));
+    TextureParams params;
+    params.wrapS = GL_CLAMP_TO_BORDER;
+    params.wrapT = GL_CLAMP_TO_BORDER;
+    params.internalFormat = GL_DEPTH_COMPONENT32;
+    params.format = GL_DEPTH_COMPONENT;
+    params.type = GL_FLOAT;
+    light.hairShadowTexture = std::make_shared<ShadowTexture>(
+        glm::uvec2(1024, 1024), GL_TEXTURE10, 
+        params);
 }
 
 glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const

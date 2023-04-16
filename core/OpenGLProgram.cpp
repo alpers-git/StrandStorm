@@ -59,25 +59,41 @@ void Shader::SetSourceFromFile(const char* filePath, bool compile)
 
 //--------------------------------------------------------------------------------
 
-ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
+Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : dims(dims), texUnit(texUnit)
 {
     glGenTextures(1, &glID); $gl_chk
-    glBindTexture(GL_TEXTURE_2D, glID) $gl_chk
+    glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
 
-    glTexImage2D(GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT32,
-         dims.x, dims.y, 
-         0, GL_DEPTH_COMPONENT,
-          GL_FLOAT, NULL) $gl_chk;
+    glTexImage2D(GL_TEXTURE_2D, 0, 
+        params.internalFormat, 
+        dims.x, dims.y, 
+        0, params.format, 
+        params.type, NULL); $gl_chk
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER) $gl_chk;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, params.wrapS); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, params.wrapT); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, params.wrapR); $gl_chk//?
+}
+
+void Texture::Bind()
+{
+    glActiveTexture(texUnit); $gl_chk
+    glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
+}
+
+void Texture::Delete()
+{
+    glDeleteTextures(1, &glID); $gl_chk
+}
+
+ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+    : Texture(dims, texUnit, params)
+{
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) $gl_chk;
-    
 
     //save the renderer state
     GLint origFB;
@@ -86,27 +102,20 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
     //configure FB
     glGenFramebuffers(1, &frameBufferID) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
-    // float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor); $gl_chk
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, glID, 0) $gl_chk;
     glDrawBuffer(GL_NONE) $gl_chk;
     glReadBuffer(GL_NONE) $gl_chk; //? may need it later
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-		//preserve render state
+    //preserve render state
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-void ShadowTexture::Bind()
-{
-    glActiveTexture(texUnit) $gl_chk;
-    glBindTexture(GL_TEXTURE_2D, glID) $gl_chk;
-}
 
 void ShadowTexture::Delete()
 {
-    glDeleteTextures(1, &glID) $gl_chk;
+    Texture::Delete();
     glDeleteFramebuffers(1, &frameBufferID) $gl_chk;
 }
 
@@ -338,3 +347,4 @@ void OpenGLProgram::Clear()
 {
     glClear(clearFlags); $gl_chk
 }
+

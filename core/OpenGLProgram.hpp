@@ -28,24 +28,45 @@ struct Shader
     void SetSourceFromFile(const char* filePath, bool compile = false);
 };
 
-struct ShadowTexture
+struct TextureParams
 {
-    ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5);
-    ~ShadowTexture() {};
+    TextureParams() {};
+    GLenum minFilter = GL_LINEAR;
+    GLenum magFilter = GL_LINEAR;
+    GLenum wrapS = GL_CLAMP_TO_EDGE;
+    GLenum wrapT = GL_CLAMP_TO_EDGE;
+    GLenum wrapR = GL_CLAMP_TO_EDGE;
+    GLenum internalFormat = GL_RGBA;
+    GLenum format = GL_RGBA;
+    GLenum type = GL_UNSIGNED_BYTE;
+};
+
+struct Texture
+{
+    //Texture(const char* path, GLenum texUnit = GL_TEXTURE0);
+    Texture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE0, TextureParams params = TextureParams());
+    ~Texture() {};
 
     void Bind();
+    void Delete();
+
+    GLuint glID;
+    glm::uvec2 dims;
+
+    GLuint texUnit;
+};
+
+struct ShadowTexture : public Texture
+{
+    ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
+    ~ShadowTexture() {};
+
     void Delete();
 
     void Render(std::function <void()> renderFunc);
 
     GLuint frameBufferID;
-	//GLuint depthBufferID;
-	GLuint glID;
-	glm::uvec2 dims;
-
-	GLuint texUnit;
 };
-
 
 class OpenGLProgram
 {
