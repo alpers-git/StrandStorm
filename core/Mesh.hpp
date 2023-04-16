@@ -30,12 +30,16 @@ private:
     RNG rng = {0};
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;
+    // Triangles for interpolating hairs
+    std::vector<GLuint> tris;
     // VBO for control hairs
     GLuint vboControl = GL_INVALID_INDEX;
     // VBO for interpolated hairs
     GLuint vboInterp = GL_INVALID_INDEX;
     // EBO for interpolated hairs
     GLuint eboInterp = GL_INVALID_INDEX;
+    // EBO for triangles
+    GLuint eboTris = GL_INVALID_INDEX;
 
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
@@ -44,7 +48,9 @@ public:
     static constexpr uint32_t controlHairLen = 5;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes endpoints, so needs to be >=2
-    static constexpr uint32_t subdivide = 7;
+    static constexpr uint32_t subdivide = 3;
+    // Number of additional hairs to interpolate across each face
+    static constexpr uint32_t interpDensity = 6;
 
     bool drawControlHairs = false;
 
@@ -56,21 +62,29 @@ public:
 
     void bindToComputeShader(ComputeShader& cs) const;
 
-    // Returns number of hairs (H)
-    inline size_t numHairs() const {
+    // Returns number of control hairs (H)
+    inline size_t numControlHairs() const {
         return controlVerts.size() / controlHairLen;
+    }
+    // Returns total number of triangles
+    inline size_t numTris() const {
+        return tris.size() / 3;
+    }
+    // Returns total number of interpolated hairs
+    inline size_t numInterpHairs() const {
+        return interpDensity * numTris() + numControlHairs();
     }
     // Number of elements in the interpolated hair buffer
     inline size_t numInterpElements() const {
-        return 2 * (controlHairLen * (subdivide - 1) - 1) * numHairs();
+        return 2 * (controlHairLen * (subdivide - 1) - 1) * numInterpHairs();
     }
     // Number of interpolated vertices (elements in vboInterp)
     inline size_t numInterpVertices() const {
-        return (controlHairLen - 1) * subdivide * numHairs();
+        return (controlHairLen - 1) * subdivide * numInterpHairs();
     }
     // Number of bezier control points
     inline size_t numControlPoints() const {
-        return (3 * controlHairLen - 2) * numHairs();
+        return (3 * controlHairLen - 2) * numControlHairs();
     }
 };
 

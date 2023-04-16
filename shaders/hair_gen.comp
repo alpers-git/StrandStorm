@@ -12,18 +12,28 @@ layout(std430, binding = 1) coherent buffer ControlPoints {
     vec4 controlBuf[];
 };
 // Smooth hairs output buffer - will contain control points during execution
-layout(std430, binding = 2) writeonly buffer InterpPoints {
+layout(std430, binding = 2) coherent buffer InterpPoints {
     vec4 outV[];
 };
 // Hair index buffer (EBO)
 layout(std430, binding = 3) writeonly buffer InterpIndices {
     uint indices[];
 };
+// Triangle elements
+layout(std430, binding = 4) readonly buffer TriIndices {
+    uint tris[];
+};
 
+// Number of control hairs
+uniform uint H;
 // Number of vertices in each control hair
 uniform uint N;
 // Number of output vertices per control hair vertex (minimum 2)
 uniform uint M;
+// Number of surface triangles
+uniform uint T;
+// Hair duplication / interpolation level across triangle face
+uniform uint D;
 
 /* 
 Per hair (for H hairs):
@@ -34,78 +44,123 @@ Per hair (for H hairs):
     * 2(N(M-1)-1)     : output indices
  */
 
+// Compute index into output vertex buffer
+//  h : hair index
+//  i : segment index
+//  j : subdiv vertex index
+uint hairToOutVidx(uint h, uint i, uint j) {
+    return h * (N*(M - 1)) + i*M + j;
+}
+
+// Compute index into output index buffer
+//  h : hair index
+//  i : segment index
+//  j : subdiv vertex index
+uint hairToOutEidx(uint h, uint i, uint j) {
+    return 2 * (h * (N*(M-1)-1) + i*M + j);
+}
+
 void main() {
     // Thread (hair segment) index
     const uint i = gl_LocalInvocationID.x;
     if (i >= N-2) {
-        memoryBarrierBuffer();
         return;
     }
 
     // Hair index
     const uint h = gl_WorkGroupID.x;
 
-    // Offset into control points buffer
-    uint ctrlOffset = h * (N*3 - 2) + 2 + i*3;
-    // Offset into input vertices buffer
-    uint vertOffset = h * N + i;
+    if (h < H) {
 
-    // --- 1. Compute control points for this hair segment
-    //        Each invocation gens 3 control points, except for first and last which gen 5
-    const vec3 p[3] = {
-        inV[vertOffset + 0].xyz,
-        inV[vertOffset + 1].xyz,
-        inV[vertOffset + 2].xyz
-    };
-    const vec3 tangent = normalize(p[2] - p[0]);
+        // Offset into control points buffer
+        uint ctlIdx = h * (N*3 - 2) + 2 + i*3;
+        // Offset into input vertices buffer
+        uint vertOffset = h * N + i;
 
-    if (i == 0) {
-        // First invocation, add 2 control points at start
-        controlBuf[ctrlOffset - 2] = vec4(p[0], 1.0);
-        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
-    }
-    
-    // Add control points: one for each end of tangent, one for vertex
-    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
-    controlBuf[ctrlOffset + 1] = vec4(p[1], 1.0);
-    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
-    
-    if (i == N-3) {
-        // Last invocation, add 2 control points at end
-        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
-        controlBuf[ctrlOffset + 4] = vec4(p[2], 1.0);
-    }
+        // --- 1. Compute control points for this hair segment
+        //        Each invocation gens 3 control points, except for first and last which gen 5
+        const vec3 p[3] = {
+            inV[vertOffset + 0].xyz,
+            inV[vertOffset + 1].xyz,
+            inV[vertOffset + 2].xyz
+        };
+        const vec3 tangent = normalize(p[2] - p[0]);
 
-    // --- 2. Sync threads, then interpolate between control points to get smooth hair
-    memoryBarrierBuffer();
-    const uint ctrlReadOffset = h * (N*3 - 2) + i*3;
-    const vec3 ctrl[4] = {
-        controlBuf[ctrlReadOffset + 0].xyz,
-        controlBuf[ctrlReadOffset + 1].xyz,
-        controlBuf[ctrlReadOffset + 2].xyz,
-        controlBuf[ctrlReadOffset + 3].xyz
-    };
-    for (uint j = 0; j < M; j++) {
-        ///TODO: This can be optimized greatly by computing pows of t using int fractions j/(M-1)
-        const float t = float(j) / float(M);
-        float t2 = t * t;
-        float t3 = t2 * t;
-        float mt = 1.0 - t;
-        float mt2 = mt * mt;
-        float mt3 = mt2 * mt;
-        const uint vIdx = h * (N*(M - 1)) + i*M + j;
-        outV[vIdx] = vec4(
-            mt3 *           ctrl[0] +
-            3.0 * mt2 * t * ctrl[1] +
-            3.0 * mt * t2 * ctrl[2] +
-            t3 *            ctrl[3], 1.0);
-        const uint eIdx = h * (2*(N*(M-1)-1)) + i*M*2 + j*2;
-        if (i + j > 0) {
-            indices[eIdx + 0] = vIdx - 1;
-            indices[eIdx + 1] = vIdx;
+        if (i == 0) {
+            // First invocation, add 2 control points at start
+            controlBuf[ctlIdx - 2] = vec4(p[0], 1.0);
+            controlBuf[ctlIdx - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
+        }
+        
+        // Add control points: one for each end of tangent, one for vertex
+        controlBuf[ctlIdx + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
+        controlBuf[ctlIdx + 1] = vec4(p[1], 1.0);
+        controlBuf[ctlIdx + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
+        
+        if (i == N-3) {
+            // Last invocation, add 2 control points at end
+            controlBuf[ctlIdx + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
+            controlBuf[ctlIdx + 4] = vec4(p[2], 1.0);
+        }
+
+        // --- 2. Sync threads, then interpolate between control points to get smooth hair
+        groupMemoryBarrier();
+        const uint ctrlReadOffset = h * (N*3 - 2) + i*3;
+        const vec3 ctrl[4] = {
+            controlBuf[ctrlReadOffset + 0].xyz,
+            controlBuf[ctrlReadOffset + 1].xyz,
+            controlBuf[ctrlReadOffset + 2].xyz,
+            controlBuf[ctrlReadOffset + 3].xyz
+        };
+        for (uint j = 0; j < M; j++) {
+            ///TODO: This can be optimized greatly by computing pows of t using int fractions j/(M-1)
+            const float t = float(j) / float(M);
+            float t2 = t * t;
+            float t3 = t2 * t;
+            float mt = 1.0 - t;
+            float mt2 = mt * mt;
+            float mt3 = mt2 * mt;
+            const uint vIdx = hairToOutVidx(h, i, j);
+            outV[vIdx] = vec4(
+                mt3 *           ctrl[0] +
+                3.0 * mt2 * t * ctrl[1] +
+                3.0 * mt * t2 * ctrl[2] +
+                t3 *            ctrl[3], 1.0);
+            const uint eIdx = hairToOutEidx(h, i, j);
+            if (i + j > 0) {
+                indices[eIdx + 0] = vIdx - 1;
+                indices[eIdx + 1] = vIdx;
+            } else {
+                indices[eIdx + 0] = vIdx;
+                indices[eIdx + 1] = vIdx;
+            }
         }
     }
 
     // --- 3. Sync, generate additional interpolated hairs
-    ///TODO
+    memoryBarrierBuffer();
+    for (uint j = 0; j < M; j++) {
+        const vec3 tri[3] = {
+            outV[hairToOutVidx(tris[h*3 + 0], i, j)].xyz,
+            outV[hairToOutVidx(tris[h*3 + 1], i, j)].xyz,
+            outV[hairToOutVidx(tris[h*3 + 2], i, j)].xyz
+        };
+        for (uint n = 0; n < D; n++) {
+            const uint vIdx = hairToOutVidx(H + h*D + n, i, j);
+            vec3 c = noise3(vIdx) * 0.5 + 1.0;
+            // vec3 c = vec3(1.0/3.0);
+            c = c / (c.x + c.y + c.z);
+            outV[vIdx] = vec4(c[0]*tri[0] + c[1]*tri[1] + c[2]*tri[2], 1.0);
+
+            const uint eIdx = hairToOutEidx(H + h*D + n, i, j);
+            if (i + j > 0) {
+                indices[eIdx + 0] = vIdx - 1;
+                indices[eIdx + 1] = vIdx;
+            } else {
+                indices[eIdx + 0] = vIdx;
+                indices[eIdx + 1] = vIdx;
+            }
+        }
+    }
+
 }

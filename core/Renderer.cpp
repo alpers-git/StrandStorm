@@ -55,7 +55,7 @@ void Renderer::Render()
     
     // Run hair generation compute shader
     csHair.bindBuffers();
-    csHair.run({scene->hairMesh.numHairs(), 1, 1});
+    csHair.run({std::max(scene->hairMesh.numControlHairs(), scene->hairMesh.numTris()), 1, 1});
 
     shadowProg.Clear();
     RenderFirstPass();

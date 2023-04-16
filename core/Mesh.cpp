@@ -17,6 +17,7 @@ void HairMesh::build(const OpenGLProgram &prog)
     glBindVertexArray(vao) $gl_chk;
     this->vboInterp = gl::buffer(GL_ARRAY_BUFFER, numInterpVertices() * sizeof(glm::vec4));
     this->eboInterp = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, numInterpElements() * sizeof(GLuint));
+    this->eboTris = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, tris);
     this->vboControl = gl::buffer(GL_ARRAY_BUFFER, this->controlVerts, GL_DYNAMIC_DRAW);
     
     prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
@@ -39,8 +40,15 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
         growControlHair(glm::make_vec3(mesh.V(i)), glm::normalize(glm::make_vec3(mesh.VN(i))));
     }
 
-    spdlog::debug("{}: {} control hairs, {} output vertices, {} output elems, {} bezier control points",
-        modelPath, numHairs(), numInterpVertices(), numInterpElements(), numControlPoints());
+    // Triangles
+    for (int i = 0; i < mesh.NF(); i++) {
+        for (int j = 0; j < 3; j++) {
+            this->tris.push_back(mesh.F(i).v[j]);
+        }
+    }
+
+    spdlog::debug("{}: {} control hairs, {} output vertices, {} output elems, {} output hairs, {} bezier control points, {} triangles",
+        modelPath, numControlHairs(), numInterpVertices(), numInterpElements(), numInterpHairs(), numControlPoints(), numTris());
 }
 
 void HairMesh::draw(const OpenGLProgram &prog)
@@ -51,7 +59,7 @@ void HairMesh::draw(const OpenGLProgram &prog)
         prog.SetUniform("hairColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), true);
         glBindBuffer(GL_ARRAY_BUFFER, this->vboControl) $gl_chk;
         glVertexAttribPointer(prog.AttribLocation("vPos"), 4, GL_FLOAT, GL_FALSE, 0, (void*)0) $gl_chk;
-        for (size_t i = 0; i < numHairs(); i++) {
+        for (size_t i = 0; i < numControlHairs(); i++) {
             glDrawArrays(GL_LINE_STRIP, i * controlHairLen, controlHairLen) $gl_chk;
         }
     }
@@ -70,8 +78,12 @@ void HairMesh::bindToComputeShader(ComputeShader &cs) const
     cs.createBuffer("ControlPoints", numControlPoints() * sizeof(glm::vec4));
     cs.assocBuffer("InterpPoints", this->vboInterp);
     cs.assocBuffer("InterpIndices", this->eboInterp);
+    cs.assocBuffer("TriIndices", this->eboTris);
     cs.setUniform("N", controlHairLen);
     cs.setUniform("M", subdivide);
+    cs.setUniform("T", numTris());
+    cs.setUniform("D", interpDensity);
+    cs.setUniform("H", numControlHairs());
 }
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
