@@ -12,15 +12,12 @@ void Renderer::Initialize()
     hairProg.CreatePipelineFromFiles(
         "shaders/hair.vert",
         "shaders/hair.frag");
-    hairProg.Use();
     hairProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
     surfaceProg.CreatePipelineFromFiles(
         "shaders/surface.vert",
         "shaders/surface.frag");
-    surfaceProg.Use();
     surfaceProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
-
 
     hairShadowProg.CreatePipelineFromFiles(
         "shaders/hair_shadow.vert",
@@ -29,27 +26,20 @@ void Renderer::Initialize()
 
     scene->init(*this);
 
-    const GLuint N = HairMesh::controlHairLen;
-    const GLuint M = HairMesh::subdivide;
-    const GLuint H = scene->hairMesh.numHairs();
+    // Initialize hair generation / interpolation compute shader
     csHair.compile("shaders/hair_gen.comp");
-    csHair.assocBuffer(0, scene->hairMesh.vbo); // InPos
-    csHair.createBuffer(1, (3*N - 2) * H * sizeof(glm::vec4)); // ControlPoints
-    csHair.createBuffer(2, (N-1) * M * H * sizeof(glm::vec4)); // OutPos
-    csHair.setUniform("N", N);
-    csHair.setUniform("M", M);
-    csHair.bindBuffers();
-    csHair.run({H, 1, 1});
+    scene->hairMesh.bindToComputeShader(csHair);
 }
 
 void Renderer::RenderFirstPass()
 {
+
     //render hair shadow map
     hairShadowProg.Use();
-    surfaceProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
+    hairShadowProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
     scene->light.hairShadowTexture->Render([&]() {
-            scene->hairMesh.draw(hairShadowProg);
-        });
+        scene->hairMesh.draw(hairShadowProg);
+    });
 } 
 
 void Renderer::RenderMainPass()
@@ -61,6 +51,10 @@ void Renderer::RenderMainPass()
 void Renderer::Render()
 {
     this->frameCount += 1;
+    
+    // Run hair generation compute shader
+    csHair.bindBuffers();
+    csHair.run({scene->hairMesh.numHairs(), 1, 1});
 
     hairShadowProg.Clear();
     RenderFirstPass();
@@ -105,15 +99,17 @@ void Renderer::OnMouseButton(int button, int action, int mods)
 
 void Renderer::RenderHairs()
 {
+
     hairProg.Use();
-    glEnable(GL_BLEND); $gl_chk
+    glEnable(GL_BLEND) $gl_chk;
 
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
 
-    scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
-    glDisable(GL_BLEND); $gl_chk
+    scene->hairMesh.draw(hairProg);
+
+    glDisable(GL_BLEND) $gl_chk;
 }
 
 

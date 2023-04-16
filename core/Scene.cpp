@@ -16,6 +16,8 @@ void Scene::init(const Renderer& r)
     surfaceMesh.build(r.surfaceProg);
 
     light.hairShadowTexture = std::make_shared<ShadowTexture>(glm::uvec2(1024, 1024));
+
+    cam.orient({0.0f, 0.0f});
 }
 
 glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const

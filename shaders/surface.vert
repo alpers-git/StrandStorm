@@ -2,7 +2,6 @@
 
 in vec3 vPos;
 in vec3 vNormal;
-in vec2 vTexCoord;
 
 
 out vec3 v_space_norm;

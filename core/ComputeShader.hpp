@@ -4,15 +4,15 @@
 
 struct BufferObject
 {
-    GLuint glID;
+    GLuint glID = GL_INVALID_INDEX;
     GLenum target;
 };
 
 class ComputeShader
 {
 private:
-    GLuint shaderID;
-    GLuint programID;
+    GLuint shaderID = GL_INVALID_INDEX;
+    GLuint programID = GL_INVALID_INDEX;
     // Maps binding indices to buffer IDs
     std::unordered_map<GLuint, BufferObject> bufBindIdxMap;
 public:
@@ -20,8 +20,14 @@ public:
     void compile(const std::string& path);
     // Creates a new buffer object and associates it with the given binding index
     GLuint createBuffer(GLuint bindingIdx, size_t bytes, GLenum target = GL_SHADER_STORAGE_BUFFER);
+    // Creates a new SSBO and associates it with the given named binding
+    GLuint createBuffer(const char* name, size_t bytes);
     // Associates an existing buffer object with the given binding index
     void assocBuffer(GLuint bindingIdx, GLuint bufferID, GLenum target = GL_SHADER_STORAGE_BUFFER);
+    // Associates an existing buffer object with given SSBO binding name
+    void assocBuffer(const char* name, GLuint bufferID);
+    // Binds the buffer associated with the given binding index to given target
+    void bindAs(GLuint bindingIdx, GLenum target);
     // Sets the data of the buffer associated with the given binding index
     void setBufferData(GLuint bindingIdx, const void* data, size_t offset, size_t bytes);
     // Sets all data of the buffer associated with the given binding index to zero

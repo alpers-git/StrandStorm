@@ -11,10 +11,9 @@ class Renderer
 {
 public:
     ComputeShader csHair;
-    OpenGLProgram hairProg;
-    OpenGLProgram surfaceProg;
-
-    OpenGLProgram hairShadowProg;
+    OpenGLProgram hairProg = {"hair"};
+    OpenGLProgram surfaceProg = {"surface"};
+    OpenGLProgram hairShadowProg = {"hair shadow"};
 
     long int frameCount = 0;
     glm::ivec2 windowSize;

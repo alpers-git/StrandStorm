@@ -6,55 +6,81 @@
 #include <unordered_map>
 #include <string>
 
+class ComputeShader;
+
 class Mesh
 {
 protected:
-    RNG rng = {0};
     bool vaoInitialized = false;
+    GLuint vao = GL_INVALID_INDEX;
 public:
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo;
-    std::vector<glm::vec3> vertices;
-    std::vector<GLuint> indices;
-
     Mesh() = default;
 
     virtual void loadFromFile(const std::string& modelPath, bool compNormals = true) = 0;
-    void build(const OpenGLProgram& prog);
+    virtual void build(const OpenGLProgram& prog) = 0;
     virtual void draw(const OpenGLProgram& prog) = 0;
 
-    //setters
-    inline void setVAO(GLuint vao) { this->vao = vao; vaoInitialized = true; }
-    //getters
-    inline bool isVAOInitialized() const { return vaoInitialized; }
-    inline GLuint getVAO() const { return vao; }
+    inline bool isVaoInitialized() const { return vaoInitialized; }
 };
 
 class HairMesh : public Mesh
 {
 private:
+    // Random number gen for making control hairs
+    RNG rng = {0};
+    // Vertices for control hairs
+    std::vector<glm::vec3> controlVerts;
+    // VBO for control hairs
+    GLuint vboControl = GL_INVALID_INDEX;
+    // VBO for interpolated hairs
+    GLuint vboInterp = GL_INVALID_INDEX;
+    // EBO for interpolated hairs
+    GLuint eboInterp = GL_INVALID_INDEX;
+
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
+    // Number of vertices in each control hair (N)
     static constexpr uint32_t controlHairLen = 21;
+    // Number of subdivisions between each control hair vertex (M)
+    //  Includes endpoints, so needs to be >=2
     static constexpr uint32_t subdivide = 7;
 
     HairMesh() = default;
 
-    // Loads mesh from file
-    void loadFromFile(const std::string& modelPath, bool compNormals = true);
-    // Draws the hair mesh
+    void build(const OpenGLProgram& prog) override;
+    void loadFromFile(const std::string& modelPath, bool compNormals = true) override;
     void draw(const OpenGLProgram& prog) override;
-    // Returns number of hairs
-    inline size_t numHairs() const { return vertices.size() / controlHairLen; }
+
+    void bindToComputeShader(ComputeShader& cs) const;
+
+    // Returns number of hairs (H)
+    inline size_t numHairs() const {
+        return controlVerts.size() / controlHairLen;
+    }
+    // Number of elements in the interpolated hair buffer
+    inline size_t numInterpElements() const {
+        return 2 * (controlHairLen * (subdivide - 1) - 1) * numHairs();
+    }
+    // Number of interpolated vertices (elements in vboInterp)
+    inline size_t numInterpVertices() const {
+        return (controlHairLen - 1) * subdivide * numHairs();
+    }
+    // Number of bezier control points
+    inline size_t numControlPoints() const {
+        return (3 * controlHairLen - 2) * numHairs();
+    }
 };
 
 class SurfaceMesh : public Mesh
 {
 private:
-    GLuint normalVbo;
-    GLuint textureVbo;
+    GLuint vboNormals = GL_INVALID_INDEX;
+    GLuint vboTexCoords = GL_INVALID_INDEX;
+    GLuint vboVertices = GL_INVALID_INDEX;
+    GLuint ebo = GL_INVALID_INDEX;
+    std::vector<glm::vec3> vertices;
+    std::vector<GLuint> indices;
 public:
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> textureCoords;
@@ -68,9 +94,9 @@ public:
     SurfaceMesh() = default;
 
     // Loads mesh from file
-    void loadFromFile(const std::string& modelPath, bool compNormals = true);
+    void loadFromFile(const std::string& modelPath, bool compNormals = true) override;
     // Builds the buffers
-    void build(const OpenGLProgram& prog);
+    void build(const OpenGLProgram& prog) override;
     // Draws the hair mesh
-    void draw(const OpenGLProgram& prog);
+    void draw(const OpenGLProgram& prog) override;
 };

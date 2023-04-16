@@ -1,5 +1,7 @@
 #include <Util.hpp>
 #include <Logging.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <OpenGLProgram.hpp>
 
 void _checkGLError(const char *file, int line)
 {
@@ -100,4 +102,38 @@ glm::vec3 RNG::rotation()
 bool RNG::test(float probability) {
     const std::uniform_real_distribution<float>::param_type params(0, 1);
     return this->rdist(gen, params) < probability;
+}
+
+namespace glm {
+    vec3 make_vec3(const cy::Vec3f &v)
+    {
+        return make_vec3((const float*)&v[0]);
+    }
+};
+
+// --- GL Helpers ------------------------------------------------------------
+
+GLuint gl::buffer(GLenum target, size_t bytes, const void *data, GLenum usage)
+{
+    GLuint bufferID = GL_INVALID_INDEX;
+    glCreateBuffers(1, &bufferID) $gl_chk;
+    glBindBuffer(target, bufferID) $gl_chk;
+    glBufferData(target, bytes, data, usage) $gl_chk;
+    glBindBuffer(target, GL_NONE) $gl_chk;
+    return bufferID;
+}
+
+GLuint gl::buffer(GLenum target, const std::vector<glm::vec3> &data, GLenum usage)
+{
+    return gl::buffer(target, (size_t)(data.size() * sizeof(glm::vec3)), (const void*)data.data(), usage);
+}
+
+GLuint gl::buffer(GLenum target, const std::vector<glm::vec2>& data, GLenum usage)
+{
+    return gl::buffer(target, (size_t)(data.size() * sizeof(glm::vec2)), (const void*)data.data(), usage);
+}
+
+GLuint gl::buffer(GLenum target, const std::vector<GLuint>& data, GLenum usage)
+{
+    return gl::buffer(target, (size_t)(data.size() * sizeof(GLuint)), (const void*)data.data(), usage);
 }

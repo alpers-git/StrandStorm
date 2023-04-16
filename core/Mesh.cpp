@@ -7,103 +7,80 @@ uint64_t cantor(uint32_t x, uint32_t y) {
     return ((x + y) * (x + y + 1u)) / 2u + y;
 }
 
-void Mesh::build(const OpenGLProgram &prog)
+// --- HairMesh --------------------------------------------------------------
+
+void HairMesh::build(const OpenGLProgram &prog)
 {
-    if (!isVAOInitialized())
-        throw std::runtime_error("VAO is not initalized. Did you forget to call build before initializing VAO?");
+    spdlog::assrt(!this->vaoInitialized, "HairMesh already built");
+    this->vaoInitialized = true;
+    glGenVertexArrays(1, &this->vao) $gl_chk;
     glBindVertexArray(vao) $gl_chk;
-    glBindBuffer(GL_ARRAY_BUFFER, this->vbo) $gl_chk;
-    glBufferData(GL_ARRAY_BUFFER,
-                 this->vertices.size() * sizeof(glm::vec3), this->vertices.data(), GL_STATIC_DRAW) $gl_chk;
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW) $gl_chk;
-    GLuint attrib_vPos = prog.AttribLocation("vPos");
-    glEnableVertexAttribArray(attrib_vPos) $gl_chk;
-    glVertexAttribPointer(attrib_vPos, 3, GL_FLOAT, GL_FALSE, 0, 0) $gl_chk;
+    this->vboInterp = gl::buffer(GL_ARRAY_BUFFER, numInterpVertices());
+    this->eboInterp = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, numInterpElements());
+    this->vboControl = gl::buffer(GL_ARRAY_BUFFER, this->controlVerts, GL_DYNAMIC_DRAW);
+    
+    prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
 }
 
 void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 {
-    if (modelPath.empty() || !fs::exists(modelPath))
-    {
-        spdlog::error("Model path is incorrect");
-        return;
-    }
+    spdlog::assrt(fs::exists(modelPath), "model '{}' not found", modelPath);
 
     // Load the mesh
     cyTriMesh mesh;
-    if (!mesh.LoadFromFileObj(modelPath.c_str()))
-    {
+    if (!mesh.LoadFromFileObj(modelPath.c_str())) {
         spdlog::error("Failed to load mesh from file: {}", modelPath);
-        return;
     }
-    if (compNormals || mesh.NVN() == 0)
-        mesh.ComputeNormals();
 
     // Grow the control hairs from the stored vertices
-    this->vertices.reserve(mesh.NV());
-    for (int i = 0; i < mesh.NF(); i++) {
-        std::array<glm::vec3, 3> v, n;
-        for (size_t j = 0; j < 3; j++) {
-            v[j] = glm::make_vec3(&mesh.V(mesh.F(i).v[j])[0]);
-            n[j] = glm::make_vec3(&mesh.VN(mesh.FN(i).v[j])[0]);
-        }
-        const auto vertices = tessTriangleGrid<9>(v);
-        const auto normals = tessTriangleGrid<9>(n);
-        for (size_t i = 0; i < vertices.size(); i++) {
-            growControlHair(vertices[i], normals[i]);
-        }
+    this->controlVerts.reserve(mesh.NV());
+    for (int i = 0; i < mesh.NV(); i++) {
+        growControlHair(glm::make_vec3(mesh.V(i)), glm::make_vec3(mesh.VN(i)));
     }
-
-    glGenVertexArrays(1, &this->vao);
-    $gl_chk;
-    this->vaoInitialized = true;
-    glGenBuffers(1, &this->vbo);
-    $gl_chk;
-
-    glGenBuffers(1, &this->ebo);
-    $gl_chk;
 }
 
 void HairMesh::draw(const OpenGLProgram &prog)
 {
     glBindVertexArray(this->vao) $gl_chk;
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
-    glDrawElements(GL_LINES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;
+    glBindBuffer(GL_ARRAY_BUFFER, this->vboInterp) $gl_chk;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboInterp) $gl_chk;
+    glDrawElements(GL_LINES, numInterpElements(), GL_UNSIGNED_INT, nullptr) $gl_chk;
+}
+
+void HairMesh::bindToComputeShader(ComputeShader &cs) const
+{
+    assert(this->vaoInitialized);
+    cs.assocBuffer(0u, this->vboControl);
+    cs.createBuffer(1u, (3 * controlHairLen - 2) * numHairs() * sizeof(glm::vec4));
+    cs.assocBuffer(2u, this->vboInterp);
+    cs.assocBuffer(3u, this->eboInterp);
+    cs.setUniform("N", controlHairLen);
+    cs.setUniform("M", subdivide);
 }
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
-        this->indices.push_back(this->vertices.size());
-        this->vertices.push_back(v);
-        this->indices.push_back(this->vertices.size());
-        v += dir * 0.01f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.01f;
+        this->controlVerts.push_back(v);
+        v += dir * 0.01f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.0025f;
     }
-    this->vertices.push_back(v);
 }
 
-//----------------------------------------------------------------------
+// --- SurfaceMesh -----------------------------------------------------------
 
 void SurfaceMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 {
-    if (modelPath.empty() || !fs::exists(modelPath))
-    {
-        spdlog::error("Model path is incorrect");
-        return;
-    }
+    spdlog::assrt(fs::exists(modelPath), "model '{}' not found", modelPath);
 
     // Load the mesh
     cyTriMesh mesh;
-    if (!mesh.LoadFromFileObj(modelPath.c_str()))
-    {
+    if (!mesh.LoadFromFileObj(modelPath.c_str())) {
         spdlog::error("Failed to load mesh from file: {}", modelPath);
-        return;
     }
-    if (compNormals || mesh.NVN() == 0)
+    if (compNormals || mesh.NVN() == 0) {
         mesh.ComputeNormals();
+    }
 
     // Mapping from vertex index to (normalIdx, texIdx)
     std::vector<std::tuple<int, int>> indices(mesh.NV(), {-1, -1});
@@ -150,35 +127,27 @@ void SurfaceMesh::loadFromFile(const std::string &modelPath, bool compNormals)
             this->indices[i*3 + j] = vertIdx;
         }
     }
-    // create a triangle mesh indexed into indices list
-    glGenVertexArrays(1, &this->vao) $gl_chk;
-    this->vaoInitialized = true;
-    glGenBuffers(1, &this->vbo) $gl_chk;
-    glGenBuffers(1, &this->normalVbo) $gl_chk;
-    glGenBuffers(1, &this->textureVbo) $gl_chk;
-    glGenBuffers(1, &this->ebo) $gl_chk;
 }
 
 void SurfaceMesh::build(const OpenGLProgram &prog)
 {
-    this->Mesh::build(prog);
-    glBindVertexArray(this->vao) $gl_chk;
-    // Bind normal buffer and set attribute pointer
-    glBindBuffer(GL_ARRAY_BUFFER, this->normalVbo) $gl_chk;
-    glBufferData(GL_ARRAY_BUFFER,
-                 this->normals.size() * sizeof(glm::vec3), this->normals.data(), GL_STATIC_DRAW) $gl_chk;
-    GLuint attrib_vNormal = prog.AttribLocation("vNormal");
-    glEnableVertexAttribArray(attrib_vNormal) $gl_chk;
-    glVertexAttribPointer(attrib_vNormal, 3, GL_FLOAT, GL_FALSE, 0u, (void *)0u) $gl_chk;
-
-    glBindBuffer(GL_ARRAY_BUFFER, GL_NONE) $gl_chk;
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE) $gl_chk;
+    spdlog::assrt(!this->vaoInitialized, "SurfaceMesh already built");
+    this->vaoInitialized = true;
+    glGenVertexArrays(1, &this->vao) $gl_chk;
+    glBindVertexArray(vao) $gl_chk;
+    this->vboVertices = gl::buffer(GL_ARRAY_BUFFER, this->vertices);
+    this->vboNormals = gl::buffer(GL_ARRAY_BUFFER, this->normals);
+    this->vboTexCoords = gl::buffer(GL_ARRAY_BUFFER, this->textureCoords);
+    this->ebo = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, this->indices);
+    
+    prog.SetAttribPointer(vboVertices, "vPos", 3, GL_FLOAT);
+    prog.SetAttribPointer(vboNormals, "vNormal", 3, GL_FLOAT);
 }
 
 void SurfaceMesh::draw(const OpenGLProgram &prog)
 {
     glBindVertexArray(this->vao) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
-
+    glBindBuffer(GL_ARRAY_BUFFER, this->vboVertices) $gl_chk;
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;
 }

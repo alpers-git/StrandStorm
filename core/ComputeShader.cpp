@@ -52,7 +52,7 @@ void ComputeShader::compile(const std::string &path) {
 
 GLuint ComputeShader::createBuffer(GLuint bindingIdx, size_t bytes, GLenum target) {
     glUseProgram(this->programID) $gl_chk;
-    GLuint bufferID;
+    GLuint bufferID = GL_INVALID_INDEX;
     glCreateBuffers(1, &bufferID) $gl_chk;
     glBindBuffer(target, bufferID) $gl_chk;
     glBufferData(target, bytes, nullptr, GL_DYNAMIC_DRAW) $gl_chk;
@@ -62,11 +62,32 @@ GLuint ComputeShader::createBuffer(GLuint bindingIdx, size_t bytes, GLenum targe
     return bufferID;
 }
 
+GLuint ComputeShader::createBuffer(const char *name, size_t bytes)
+{
+    glUseProgram(this->programID) $gl_chk;
+    GLuint bindingIdx = glGetProgramResourceIndex(this->programID, GL_SHADER_STORAGE_BLOCK, name) $gl_chk;
+    return this->createBuffer(bindingIdx, bytes);
+}
+
 void ComputeShader::assocBuffer(GLuint bindingIdx, GLuint bufferID, GLenum target)
 {
     glUseProgram(this->programID) $gl_chk;
     glBindBufferBase(target, bindingIdx, bufferID) $gl_chk;
     this->bufBindIdxMap[bindingIdx] = {.glID = bufferID, .target = target};
+}
+
+void ComputeShader::assocBuffer(const char *name, GLuint bufferID)
+{
+    glUseProgram(this->programID) $gl_chk;
+    GLuint bindingIdx = glGetProgramResourceIndex(this->programID, GL_SHADER_STORAGE_BLOCK, name) $gl_chk;
+    this->assocBuffer(bindingIdx, bufferID);
+}
+
+void ComputeShader::bindAs(GLuint bindingIdx, GLenum target)
+{
+    spdlog::assrt(this->bufBindIdxMap.count(bindingIdx),
+        "ComputeShader::setBufferData: bindingIdx not found");
+    glBindBuffer(target, this->bufBindIdxMap[bindingIdx].glID) $gl_chk;
 }
 
 void ComputeShader::setBufferData(GLuint bindingIdx, const void *data, size_t offset, size_t bytes)

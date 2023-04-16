@@ -15,7 +15,7 @@
 
 struct Shader
 {
-    GLuint glID;
+    GLuint glID = GL_INVALID_INDEX;
     std::string source;
     std::string label = "(unlabeled shader)";
     mutable bool compiled = false;
@@ -38,23 +38,24 @@ struct ShadowTexture
 
     void Render(std::function <void()> renderFunc);
 
-    GLuint frameBufferID;
-	//GLuint depthBufferID;
-	GLuint glID;
+    GLuint frameBufferID = GL_INVALID_INDEX;
+	//GLuint depthBufferID = GL_INVALID_INDEX;
+	GLuint glID = GL_INVALID_INDEX;
 	glm::uvec2 dims;
 
-	GLuint texUnit;
+	GLuint texUnit = GL_INVALID_INDEX;
 };
 
 
 class OpenGLProgram
 {
 public:
+    const std::string label;
     
-    OpenGLProgram();
+    OpenGLProgram(const std::string& label = "(unlabeled program)");
     ~OpenGLProgram();
 
-    void Use();
+    void Use() const;
 
     bool CreatePipelineFromFiles(
         const char* vertPath,
@@ -89,11 +90,14 @@ public:
     
     GLuint AttribLocation(const char* attributeName) const;
 
+    // Binds buffer and sets vertex attribute pointer
+    void SetAttribPointer(GLuint bufferID, const char* attrName, GLint size, GLenum type, size_t stride=0u, size_t offset=0u) const;
+
     void Clear();
     
     
 private:
-    GLuint programID;
+    GLuint programID = GL_INVALID_INDEX;
     std::unordered_map<GLenum, Shader> shaders;
     GLbitfield clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
     glm::vec4 clearColor = glm::vec4(0.02f, 0.02f, 0.02f, 1.f);

@@ -3,19 +3,19 @@
 
 Shader::~Shader()
 {
-    glDeleteShader(glID); $gl_chk
+    glDeleteShader(glID) $gl_chk;
 }
 
 bool Shader::Compile() const
 {
     const char* sourceCharArr = this->source.c_str();
-    glShaderSource(glID, 1, &sourceCharArr, NULL); $gl_chk
-    glCompileShader(glID); $gl_chk
+    glShaderSource(glID, 1, &sourceCharArr, NULL) $gl_chk;
+    glCompileShader(glID) $gl_chk;
     int success;
-    glGetShaderiv(glID, GL_COMPILE_STATUS, &success); $gl_chk
+    glGetShaderiv(glID, GL_COMPILE_STATUS, &success) $gl_chk;
     if (!success) {
         std::string log(2048, '\0');
-        glGetShaderInfoLog(glID, 2048, NULL, log.data()); $gl_chk
+        glGetShaderInfoLog(glID, 2048, NULL, log.data()) $gl_chk;
         spdlog::error("failed to compile {}:\n{}", label, log);
         return false;
     }
@@ -25,7 +25,7 @@ bool Shader::Compile() const
 
 bool Shader::Attach(GLuint programID) const
 {
-    glAttachShader(programID, glID); $gl_chk
+    glAttachShader(programID, glID) $gl_chk;
     return true;
 }
 
@@ -57,12 +57,12 @@ void Shader::SetSourceFromFile(const char* filePath, bool compile)
     SetSource(content, compile);
 }
 
-//--------------------------------------------------------------------------------
+// --- ShadowTexture ----------------------------------------------------------
 
 ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
     : dims(dims), texUnit(texUnit)
 {
-    glGenTextures(1, &glID); $gl_chk
+    glGenTextures(1, &glID) $gl_chk;
     glBindTexture(GL_TEXTURE_2D, glID) $gl_chk
 
     glTexImage2D(GL_TEXTURE_2D,
@@ -87,7 +87,7 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
     glGenFramebuffers(1, &frameBufferID) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
     // float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor); $gl_chk
+    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor) $gl_chk;
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, glID, 0) $gl_chk;
     glDrawBuffer(GL_NONE) $gl_chk;
     glReadBuffer(GL_NONE) $gl_chk; //? may need it later
@@ -129,23 +129,23 @@ void ShadowTexture::Render(std::function <void()> renderFunc)
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-//--------------------------------------------------------------------------------
+// --- OpenGLProgram ----------------------------------------------------------
 
-OpenGLProgram::OpenGLProgram()
+OpenGLProgram::OpenGLProgram(const std::string& label) : label(label)
 {
-    programID = glCreateProgram(); $gl_chk
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w); $gl_chk
+    programID = glCreateProgram() $gl_chk;
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w) $gl_chk;
 }
 
 OpenGLProgram::~OpenGLProgram()
 {
-    glDeleteProgram(programID); $gl_chk
+    glDeleteProgram(programID) $gl_chk;
     spdlog::debug("destroyed OpenGLProgram {}", programID);
 }
 
-void OpenGLProgram::Use()
+void OpenGLProgram::Use() const
 {
-    glUseProgram(programID); $gl_chk
+    glUseProgram(programID) $gl_chk;
 }
 
 bool OpenGLProgram::CreatePipelineFromFiles(
@@ -155,20 +155,20 @@ bool OpenGLProgram::CreatePipelineFromFiles(
     const char* tescPath,
     const char* tesePath)
 {
-    assert(vertPath && fs::exists(vertPath));
-    assert(fragPath && fs::exists(fragPath));
+    spdlog::assrt(vertPath && fs::exists(vertPath), "({}) {} does not exist", label, vertPath);
+    spdlog::assrt(fragPath && fs::exists(fragPath), "({}) {} does not exist", label, fragPath);
     SetShaderSource(GL_VERTEX_SHADER, fs::path(vertPath));
     SetShaderSource(GL_FRAGMENT_SHADER, fs::path(fragPath));
     if (geomPath) {
-        assert(fs::exists(geomPath));
+        spdlog::assrt(fs::exists(geomPath), "({}) {} does not exist", label, geomPath);
         SetShaderSource(GL_GEOMETRY_SHADER, fs::path(geomPath));
     }
     if (tescPath) {
-        assert(fs::exists(tescPath));
+        spdlog::assrt(fs::exists(tescPath), "({}) {} does not exist", label, tescPath);
         SetShaderSource(GL_TESS_CONTROL_SHADER, fs::path(tescPath));
     }
     if (tesePath) {
-        assert(fs::exists(tesePath));
+        spdlog::assrt(fs::exists(tesePath), "({}) {} does not exist", label, tesePath);
         SetShaderSource(GL_TESS_EVALUATION_SHADER, fs::path(tesePath));
     }
     
@@ -192,12 +192,12 @@ bool OpenGLProgram::AttachShader(GLenum type)
 
 bool OpenGLProgram::Link()
 {
-    glLinkProgram(programID); $gl_chk
+    glLinkProgram(programID) $gl_chk;
     int status;
-    glGetProgramiv(programID, GL_LINK_STATUS, &status); $gl_chk
+    glGetProgramiv(programID, GL_LINK_STATUS, &status) $gl_chk;
     if (!status) {
         std::string log(2048, '\0');
-        glGetProgramInfoLog(programID, log.max_size(), NULL, log.data()); $gl_chk
+        glGetProgramInfoLog(programID, log.max_size(), NULL, log.data()) $gl_chk;
         spdlog::error("program linking failed:\n{}", log);
         return false;
     }
@@ -217,7 +217,10 @@ void OpenGLProgram::SetShaderSource(GLenum type, const fs::path& path, bool comp
 bool OpenGLProgram::CompileShaders()
 {
     for (const auto& [type, shader] : shaders) {
-        if (!shader.source.empty() && !shader.Compile()) {
+        assert(!shader.source.empty());
+        
+        bool compiled = shader.Compile();
+        if (!compiled) {
             return false;
         }
     }
@@ -232,81 +235,81 @@ GLuint OpenGLProgram::GetID()
 void OpenGLProgram::SetUniform(const char *name, int value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniform1i(location, value); $gl_chk
+    glUniform1i(location, value) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char *name, float value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniform1f(location, value); $gl_chk
+    glUniform1f(location, value) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec2 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniform2f(location, value.x, value.y); $gl_chk
+    glUniform2f(location, value.x, value.y) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec3 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniform3f(location, value.x, value.y, value.z); $gl_chk
+    glUniform3f(location, value.x, value.y, value.z) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char *name, glm::vec4 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniform4f(location, value.x, value.y, value.z, value.w); $gl_chk
+    glUniform4f(location, value.x, value.y, value.z, value.w) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat2 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
+    glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat3 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
+    glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
 void OpenGLProgram::SetUniform(const char* name, glm::mat4 value) const
 {
     GLint location;
-    location = glGetUniformLocation(programID, name); $gl_chk
+    location = glGetUniformLocation(programID, name) $gl_chk;
     if (location == -1) {
         spdlog::error("uniform {} not found", name);
     }
-    glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
+    glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
 void OpenGLProgram::SetGLClearFlags(GLbitfield flags)
@@ -317,7 +320,7 @@ void OpenGLProgram::SetGLClearFlags(GLbitfield flags)
 void OpenGLProgram::SetClearColor(glm::vec4 color)
 {
     clearColor = color;
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w); $gl_chk
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w) $gl_chk;
 }
 
 glm::vec4 OpenGLProgram::GetClearColor()
@@ -327,14 +330,22 @@ glm::vec4 OpenGLProgram::GetClearColor()
 
 GLuint OpenGLProgram::AttribLocation(const char *attributeName) const
 {
-    GLint loc = glGetAttribLocation(this->programID, attributeName);
-    if (loc == -1) {
-        spdlog::error("OpenGLProgram::AttribLocation: Attribute {} not found", attributeName);
-    }
+    const GLint loc = glGetAttribLocation(this->programID, attributeName) $gl_chk;
+    spdlog::assrt(loc >= 0, "OpenGLProgram({}): attribute {} not found", label, attributeName);
     return (GLuint)loc;
+}
+
+void OpenGLProgram::SetAttribPointer(GLuint bufferID, const char *attrName, GLint size, GLenum type, size_t stride, size_t offset) const
+{
+    Use();
+    glBindBuffer(GL_ARRAY_BUFFER, bufferID) $gl_chk;
+    GLuint loc = AttribLocation(attrName);
+    glVertexAttribPointer(loc, size, type, GL_FALSE, stride, (void*)offset) $gl_chk;
+    glEnableVertexAttribArray(loc) $gl_chk;
+    glBindBuffer(GL_ARRAY_BUFFER, GL_NONE) $gl_chk;
 }
 
 void OpenGLProgram::Clear()
 {
-    glClear(clearFlags); $gl_chk
+    glClear(clearFlags) $gl_chk;
 }

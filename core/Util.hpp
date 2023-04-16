@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <glad/glad.h>
+#include <cyVector.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
@@ -78,3 +79,14 @@ std::array<glm::vec3, (N * (N + 1)) / 2> tessTriangleGrid(
     }
     return std::move(grid);
 }
+
+namespace glm {
+    glm::vec3 make_vec3(const cy::Vec3f& v);
+};
+
+namespace gl {
+    GLuint buffer(GLenum target, size_t bytes, const void* data = nullptr, GLenum usage = GL_STATIC_DRAW);
+    GLuint buffer(GLenum target, const std::vector<glm::vec3>& data, GLenum usage = GL_STATIC_DRAW);
+    GLuint buffer(GLenum target, const std::vector<glm::vec2>& data, GLenum usage = GL_STATIC_DRAW);
+    GLuint buffer(GLenum target, const std::vector<GLuint>& data, GLenum usage = GL_STATIC_DRAW);
+};
