@@ -2,6 +2,8 @@
 
 out vec4 fragColor;
 
+uniform vec4 hairColor;
+
 void main() {
-    fragColor = vec4(0.57, 0.48, 0.0, 1.0);
+    fragColor = hairColor;
 }

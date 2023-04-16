@@ -58,23 +58,22 @@ void main() {
         inV[vertOffset + 2].xyz
     };
     const vec3 tangent = normalize(p[2] - p[0]);
-    const float _debug = float(ctrlOffset);
 
     if (i == 0) {
         // First invocation, add 2 control points at start
-        controlBuf[ctrlOffset - 2] = vec4(p[0], _debug);
-        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, _debug);
+        controlBuf[ctrlOffset - 2] = vec4(p[0], 1.0);
+        controlBuf[ctrlOffset - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
     }
     
     // Add control points: one for each end of tangent, one for vertex
-    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, _debug);
-    controlBuf[ctrlOffset + 1] = vec4(p[1], _debug);
-    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, _debug);
+    controlBuf[ctrlOffset + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
+    controlBuf[ctrlOffset + 1] = vec4(p[1], 1.0);
+    controlBuf[ctrlOffset + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
     
     if (i == N-3) {
         // Last invocation, add 2 control points at end
-        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, _debug);
-        controlBuf[ctrlOffset + 4] = vec4(p[2], _debug);
+        controlBuf[ctrlOffset + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
+        controlBuf[ctrlOffset + 4] = vec4(p[2], 1.0);
     }
 
     // --- 2. Sync threads, then interpolate between control points to get smooth hair

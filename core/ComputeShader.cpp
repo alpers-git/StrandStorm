@@ -62,11 +62,10 @@ GLuint ComputeShader::createBuffer(GLuint bindingIdx, size_t bytes, GLenum targe
     return bufferID;
 }
 
-GLuint ComputeShader::createBuffer(const char *name, size_t bytes)
+GLuint ComputeShader::createBuffer(const char *name, size_t bytes, GLenum target)
 {
     glUseProgram(this->programID) $gl_chk;
-    GLuint bindingIdx = glGetProgramResourceIndex(this->programID, GL_SHADER_STORAGE_BLOCK, name) $gl_chk;
-    return this->createBuffer(bindingIdx, bytes);
+    return this->createBuffer(bufBindingIdx(name, target), bytes);
 }
 
 void ComputeShader::assocBuffer(GLuint bindingIdx, GLuint bufferID, GLenum target)
@@ -76,11 +75,10 @@ void ComputeShader::assocBuffer(GLuint bindingIdx, GLuint bufferID, GLenum targe
     this->bufBindIdxMap[bindingIdx] = {.glID = bufferID, .target = target};
 }
 
-void ComputeShader::assocBuffer(const char *name, GLuint bufferID)
+void ComputeShader::assocBuffer(const char *name, GLuint bufferID, GLenum target)
 {
     glUseProgram(this->programID) $gl_chk;
-    GLuint bindingIdx = glGetProgramResourceIndex(this->programID, GL_SHADER_STORAGE_BLOCK, name) $gl_chk;
-    this->assocBuffer(bindingIdx, bufferID);
+    this->assocBuffer(bufBindingIdx(name, target), bufferID);
 }
 
 void ComputeShader::bindAs(GLuint bindingIdx, GLenum target)
@@ -134,6 +132,33 @@ GLuint ComputeShader::bufId(GLuint bindingIdx)
         "ComputeShader::bufId: bindingIdx not found");
 
     return this->bufBindIdxMap[bindingIdx].glID;
+}
+
+GLuint ComputeShader::bufBindingIdx(const char *name, GLenum target)
+{
+    glUseProgram(this->programID) $gl_chk;
+    GLenum resourceTarget;
+    switch (target) {
+        default:
+            spdlog::error("ComputeShader::bufBindingIdx: invalid target");
+            return GL_INVALID_INDEX;
+        case GL_SHADER_STORAGE_BUFFER:
+            resourceTarget = GL_SHADER_STORAGE_BLOCK;
+            break;
+        case GL_UNIFORM_BUFFER:
+            resourceTarget = GL_UNIFORM_BLOCK;
+            break;
+    }
+    const GLuint resourceIdx = glGetProgramResourceIndex(this->programID, resourceTarget, name) $gl_chk;
+    spdlog::assrt(resourceIdx != GL_INVALID_INDEX,
+        "ComputeShader::bufBindingIdx: resource '{}' not found", name);
+    const GLenum prop = GL_BUFFER_BINDING;
+    GLsizei len = 1;
+    GLint bindingIdx;
+    glGetProgramResourceiv(
+        this->programID, GL_SHADER_STORAGE_BLOCK,
+        resourceIdx, 1, &prop, 1, &len, &bindingIdx) $gl_chk;
+    return bindingIdx;
 }
 
 void ComputeShader::setUniform(const char *name, GLuint value)

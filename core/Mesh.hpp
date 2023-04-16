@@ -41,10 +41,12 @@ private:
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 13;
+    static constexpr uint32_t controlHairLen = 5;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes endpoints, so needs to be >=2
     static constexpr uint32_t subdivide = 7;
+
+    bool drawControlHairs = false;
 
     HairMesh() = default;
 
