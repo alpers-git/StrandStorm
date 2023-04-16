@@ -28,22 +28,67 @@ struct Shader
     void SetSourceFromFile(const char* filePath, bool compile = false);
 };
 
-struct ShadowTexture
+struct TextureParams
 {
-    ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5);
+    TextureParams() {};
+    GLenum minFilter = GL_LINEAR;
+    GLenum magFilter = GL_LINEAR;
+    GLenum wrapS = GL_CLAMP_TO_EDGE;
+    GLenum wrapT = GL_CLAMP_TO_EDGE;
+    GLenum wrapR = GL_CLAMP_TO_EDGE;
+    GLenum internalFormat = GL_RGBA;
+    GLenum format = GL_RGBA;
+    GLenum type = GL_UNSIGNED_BYTE;
+};
+
+struct Texture
+{
+    //Texture(const char* path, GLenum texUnit = GL_TEXTURE0);
+    Texture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE0, TextureParams params = TextureParams());
+    ~Texture() {};
+
+    Texture(const Texture& other);
+    Texture& operator=(const Texture& other);
+
+    void Bind();
+    void Delete();
+
+    GLuint glID;
+    glm::uvec2 dims;
+
+    GLuint texUnit;
+};
+
+struct ShadowTexture : public Texture
+{
+    ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
     ~ShadowTexture() {};
+
+    ShadowTexture(const ShadowTexture& other);
+    ShadowTexture& operator=(const ShadowTexture& other);
+
+    void Delete();
+
+    void Render(std::function <void()> renderFunc);
+
+    GLuint frameBufferID;
+};
+
+struct RenderedTexture : public Texture
+{
+    RenderedTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE10, TextureParams params = TextureParams());
+    ~RenderedTexture() {};
+
+    RenderedTexture(const RenderedTexture& other);
+    RenderedTexture& operator=(const RenderedTexture& other);
 
     void Bind();
     void Delete();
 
     void Render(std::function <void()> renderFunc);
 
-    GLuint frameBufferID = GL_INVALID_INDEX;
-	//GLuint depthBufferID = GL_INVALID_INDEX;
-	GLuint glID = GL_INVALID_INDEX;
-	glm::uvec2 dims;
-
-	GLuint texUnit = GL_INVALID_INDEX;
+    GLuint frameBufferID;
+    GLuint depthBufferID;
 };
 
 

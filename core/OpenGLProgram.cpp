@@ -59,25 +59,55 @@ void Shader::SetSourceFromFile(const char* filePath, bool compile)
 
 // --- ShadowTexture ----------------------------------------------------------
 
-ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
+Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : dims(dims), texUnit(texUnit)
 {
-    glGenTextures(1, &glID) $gl_chk;
-    glBindTexture(GL_TEXTURE_2D, glID) $gl_chk
+    glGenTextures(1, &glID); $gl_chk
+    glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
 
-    glTexImage2D(GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT32,
-         dims.x, dims.y, 
-         0, GL_DEPTH_COMPONENT,
-          GL_FLOAT, NULL) $gl_chk;
+    glTexImage2D(GL_TEXTURE_2D, 0, 
+        params.internalFormat, 
+        dims.x, dims.y, 
+        0, params.format, 
+        params.type, NULL); $gl_chk
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER) $gl_chk;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, params.wrapS); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, params.wrapT); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, params.wrapR); $gl_chk//?
+}
+
+Texture::Texture(const Texture& other)
+    : glID(other.glID), dims(other.dims), texUnit(other.texUnit)
+{
+    //other.glID = 0;
+}
+
+Texture& Texture::operator=(const Texture& other)
+{
+    this->glID = other.glID;
+    this->dims = other.dims;
+    this->texUnit = other.texUnit;
+    return *this;
+}
+
+void Texture::Bind()
+{
+    glActiveTexture(texUnit); $gl_chk
+    glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
+}
+
+void Texture::Delete()
+{
+    glDeleteTextures(1, &glID); $gl_chk
+}
+
+ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+    : Texture(dims, texUnit, params)
+{
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) $gl_chk;
-    
 
     //save the renderer state
     GLint origFB;
@@ -86,27 +116,34 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit)
     //configure FB
     glGenFramebuffers(1, &frameBufferID) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
-    // float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor) $gl_chk;
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, glID, 0) $gl_chk;
     glDrawBuffer(GL_NONE) $gl_chk;
     glReadBuffer(GL_NONE) $gl_chk; //? may need it later
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-		//preserve render state
+    //preserve render state
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-void ShadowTexture::Bind()
+ShadowTexture::ShadowTexture(const ShadowTexture & other)
+    : Texture(other), frameBufferID(other.frameBufferID)
 {
-    glActiveTexture(texUnit) $gl_chk;
-    glBindTexture(GL_TEXTURE_2D, glID) $gl_chk;
 }
+
+ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
+{
+    this->glID = other.glID;
+    this->dims = other.dims;
+    this->texUnit = other.texUnit;
+    this->frameBufferID = other.frameBufferID;
+    return *this;
+}
+
 
 void ShadowTexture::Delete()
 {
-    glDeleteTextures(1, &glID) $gl_chk;
+    Texture::Delete();
     glDeleteFramebuffers(1, &frameBufferID) $gl_chk;
 }
 
@@ -121,6 +158,75 @@ void ShadowTexture::Render(std::function <void()> renderFunc)
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
     glViewport(0, 0, dims.x, dims.y) $gl_chk;
     glClear(GL_DEPTH_BUFFER_BIT) $gl_chk;
+    renderFunc();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
+
+    //restore render state
+    glViewport(origViewport[0], origViewport[1], origViewport[2], origViewport[3]) $gl_chk;
+    glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
+}
+
+// --- RenderedTexture ----------------------------------------------------------
+RenderedTexture::RenderedTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+    : Texture(dims, texUnit, params)
+{
+    //save the renderer state
+    GLint origFB;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFB) $gl_chk;
+
+    //configure FB
+    glGenFramebuffers(1, &frameBufferID) $gl_chk;
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, glID, 0) $gl_chk;
+    glDrawBuffer(GL_COLOR_ATTACHMENT0) $gl_chk;
+    glReadBuffer(GL_COLOR_ATTACHMENT0) $gl_chk;
+
+    //create depth buffer
+    glGenRenderbuffers(1, &depthBufferID) $gl_chk;
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBufferID) $gl_chk;
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dims.x, dims.y) $gl_chk;
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
+        GL_RENDERBUFFER, depthBufferID) $gl_chk;
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    //preserve render state
+    glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
+}
+
+RenderedTexture::RenderedTexture(const RenderedTexture & other)
+    : Texture(other), frameBufferID(other.frameBufferID), depthBufferID(other.depthBufferID)
+{
+}
+
+RenderedTexture& RenderedTexture::operator=(const RenderedTexture & other)
+{
+    this->glID = other.glID;
+    this->dims = other.dims;
+    this->texUnit = other.texUnit;
+    this->frameBufferID = other.frameBufferID;
+    this->depthBufferID = other.depthBufferID;
+    return *this;
+}
+
+void RenderedTexture::Delete()
+{
+    Texture::Delete();
+    glDeleteFramebuffers(1, &frameBufferID) $gl_chk;
+    glDeleteRenderbuffers(1, &depthBufferID) $gl_chk;
+}
+
+void RenderedTexture::Render(std::function <void()> renderFunc)
+{
+    //preserve render state
+    GLint origFB;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFB) $gl_chk;
+    GLint origViewport[4];
+    glGetIntegerv(GL_VIEWPORT, origViewport) $gl_chk;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
+    glViewport(0, 0, dims.x, dims.y) $gl_chk;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk;
     renderFunc();
     glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
 
