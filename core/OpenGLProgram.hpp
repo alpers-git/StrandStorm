@@ -47,6 +47,9 @@ struct Texture
     Texture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE0, TextureParams params = TextureParams());
     ~Texture() {};
 
+    Texture(const Texture& other);
+    Texture& operator=(const Texture& other);
+
     void Bind();
     void Delete();
 
@@ -61,12 +64,33 @@ struct ShadowTexture : public Texture
     ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
     ~ShadowTexture() {};
 
+    ShadowTexture(const ShadowTexture& other);
+    ShadowTexture& operator=(const ShadowTexture& other);
+
     void Delete();
 
     void Render(std::function <void()> renderFunc);
 
     GLuint frameBufferID;
 };
+
+struct RenderedTexture : public Texture
+{
+    RenderedTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE10, TextureParams params = TextureParams());
+    ~RenderedTexture() {};
+
+    RenderedTexture(const RenderedTexture& other);
+    RenderedTexture& operator=(const RenderedTexture& other);
+
+    void Bind();
+    void Delete();
+
+    void Render(std::function <void()> renderFunc);
+
+    GLuint frameBufferID;
+    GLuint depthBufferID;
+};
+
 
 class OpenGLProgram
 {
