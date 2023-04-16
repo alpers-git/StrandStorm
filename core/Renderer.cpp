@@ -22,10 +22,10 @@ void Renderer::Initialize()
     surfaceProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
 
-    hairShadowProg.CreatePipelineFromFiles(
-        "shaders/hair_shadow.vert",
-        "shaders/hair_shadow.frag");
-    hairShadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
+    shadowProg.CreatePipelineFromFiles(
+        "shaders/shadow.vert",
+        "shaders/shadow.frag");
+    shadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
 
     scene->init(*this);
 
@@ -45,10 +45,11 @@ void Renderer::Initialize()
 void Renderer::RenderFirstPass()
 {
     //render hair shadow map
-    hairShadowProg.Use();
+    shadowProg.Use();
     surfaceProg.SetUniform("to_screen_space", scene->light.CalculateLightSpaceMatrix());// mvp
     scene->light.hairShadowTexture->Render([&]() {
-            scene->hairMesh.draw(hairShadowProg);
+            scene->surfaceMesh.draw(shadowProg);
+            scene->hairMesh.draw(shadowProg);
         });
 } 
 
@@ -62,7 +63,7 @@ void Renderer::Render()
 {
     this->frameCount += 1;
 
-    hairShadowProg.Clear();
+    shadowProg.Clear();
     RenderFirstPass();
     hairProg.Clear();
     RenderMainPass();
@@ -133,7 +134,7 @@ void Renderer::RenderSurfaces()
 						0.5, 0.0, 0.0, 0.0,
 						0.0, 0.5, 0.0, 0.0,
 						0.0, 0.0, 0.5, 0.0,
-						0.5, 0.5, 0.49999, 1.0
+						0.5, 0.5, 0.498, 1.0
 					) * scene->light.CalculateLightSpaceMatrix();
 
     surfaceProg.SetUniform("to_light_view_space", shadowMatrix);

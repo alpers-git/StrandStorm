@@ -14,7 +14,7 @@ public:
     OpenGLProgram hairProg;
     OpenGLProgram surfaceProg;
 
-    OpenGLProgram hairShadowProg;
+    OpenGLProgram shadowProg;
 
     long int frameCount = 0;
     glm::ivec2 windowSize;
