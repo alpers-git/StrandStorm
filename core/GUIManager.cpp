@@ -98,7 +98,7 @@ void GUIManager::Draw()
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
     // Actual GUI code goes here
-    //DrawHairMeshControls();
+    DrawHairMeshControls();
     DrawSurfaceMeshControls();
     DrawLightControls();
 
@@ -113,11 +113,13 @@ void GUIManager::DrawHairMeshControls()
 {
    if(ImGui::CollapsingHeader("Hair Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
    {
-        ImGui::Checkbox("Show Hair Mesh", nullptr);
-        ImGui::SameLine();
-        ImGui::Checkbox("Show Control Hairs", nullptr);
-        ImGui::InputInt("Guide hair count", nullptr);
-        ImGui::InputFloat("Guide hair length", nullptr);
+        ImGui::Checkbox("Show", &scene->hairMesh.show);
+        ImGui::SeparatorText("Hair Mesh Material");
+        ImGui::ColorEdit4("Color", &scene->hairMesh.color[0]);
+        // ImGui::SameLine();
+        // ImGui::Checkbox("Show Control Hairs", nullptr);
+        // ImGui::InputInt("Guide hair count", nullptr);
+        // ImGui::InputFloat("Guide hair length", nullptr);
    }
 }
 
@@ -147,6 +149,21 @@ void GUIManager::DrawLightControls()
         ImGui::ColorEdit3("Color", &scene->light.color[0]);
         ImGui::PopItemWidth();
         ImGui::DragFloat3("Position", &scene->light.dir[0]);
+        if(ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::DragFloat("dk", &scene->light.opacityShadowMaps.dk, 0.01f, 0.0001f, 5.0f);
+            auto width = ImGui::GetContentRegionAvail().x;
+            //Show the shadow maps
+            ImGui::BeginGroup();
+            ImGui::Text("Depth Map");
+            ImGui::Image((void*)(intptr_t)&scene->light.opacityShadowMaps.depthTex, ImVec2(width/2, width/2));
+            ImGui::EndGroup();
+            ImGui::SameLine();
+            ImGui::BeginGroup();
+            ImGui::Text("Opacity Map");
+            ImGui::Image((void*)(intptr_t)&scene->light.opacityShadowMaps.opacitiesTex, ImVec2(width/2, width/2));
+            ImGui::EndGroup();
+        }
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
         // ImGui::InputFloat3("Position", &scene->light2.position[0]);

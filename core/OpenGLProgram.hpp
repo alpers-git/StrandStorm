@@ -39,6 +39,7 @@ struct TextureParams
     GLenum internalFormat = GL_RGBA;
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
+    GLuint mipMapLevel = 0;
 };
 
 struct Texture
@@ -82,7 +83,6 @@ struct RenderedTexture : public Texture
     RenderedTexture(const RenderedTexture& other);
     RenderedTexture& operator=(const RenderedTexture& other);
 
-    void Bind();
     void Delete();
 
     void Render(std::function <void()> renderFunc);

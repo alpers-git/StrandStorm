@@ -135,7 +135,23 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
+     const glm::mat4 shadowMatrix = glm::mat4(
+						0.5, 0.0, 0.0, 0.0,
+						0.0, 0.5, 0.0, 0.0,
+						0.0, 0.0, 0.5, 0.0,
+						0.5, 0.5, 0.498, 1.0)
+                        * scene->light.CalculateLightSpaceMatrix();
+    hairProg.SetUniform("toLightClipSpace", shadowMatrix);
+    hairProg.SetUniform("hair_color", scene->hairMesh.color);
 
+    auto& depthTex =  scene->light.opacityShadowMaps.depthTex;
+    depthTex->Bind();
+    hairProg.SetUniform("depthMap", (int)depthTex->texUnit - GL_TEXTURE0);
+
+    auto& opacitiesTex =  scene->light.opacityShadowMaps.opacitiesTex;
+    opacitiesTex->Bind();
+    hairProg.SetUniform("opacityMaps", (int)opacitiesTex->texUnit - GL_TEXTURE0);
+    hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
     glDisable(GL_BLEND); $gl_chk
 }

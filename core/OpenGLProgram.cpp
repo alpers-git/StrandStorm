@@ -65,7 +65,7 @@ Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     glGenTextures(1, &glID); $gl_chk
     glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
 
-    glTexImage2D(GL_TEXTURE_2D, 0, 
+    glTexImage2D(GL_TEXTURE_2D, params.mipMapLevel, 
         params.internalFormat, 
         dims.x, dims.y, 
         0, params.format, 
@@ -76,6 +76,9 @@ Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, params.wrapS); $gl_chk
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, params.wrapT); $gl_chk
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, params.wrapR); $gl_chk//?
+
+    //create mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
 }
 
 Texture::Texture(const Texture& other)
@@ -228,6 +231,8 @@ void RenderedTexture::Render(std::function <void()> renderFunc)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk;
     renderFunc();
     glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
+    Bind();
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
 
     //restore render state
     glViewport(origViewport[0], origViewport[1], origViewport[2], origViewport[3]) $gl_chk;

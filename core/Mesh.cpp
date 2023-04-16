@@ -68,6 +68,8 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
 void HairMesh::draw(const OpenGLProgram &prog)
 {
+    if(!show)
+        return;
     glBindVertexArray(this->vao) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo) $gl_chk;
     glDrawElements(GL_LINES, this->indices.size(), GL_UNSIGNED_INT, nullptr) $gl_chk;

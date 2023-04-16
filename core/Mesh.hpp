@@ -48,6 +48,9 @@ public:
     void draw(const OpenGLProgram& prog) override;
     // Returns number of hairs
     inline size_t numHairs() const { return vertices.size() / controlHairLen; }
+
+    glm::vec4 color = glm::vec4(0.57f, 0.48f, 0.0f, 1.0f);
+    bool show = true;
 };
 
 class SurfaceMesh : public Mesh
