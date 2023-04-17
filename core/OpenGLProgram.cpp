@@ -163,7 +163,9 @@ void ShadowTexture::Render(std::function <void()> renderFunc)
     glClear(GL_DEPTH_BUFFER_BIT) $gl_chk;
     renderFunc();
     glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
-
+    Bind();
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
+    
     //restore render state
     glViewport(origViewport[0], origViewport[1], origViewport[2], origViewport[3]) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
