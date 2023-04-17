@@ -191,7 +191,7 @@ RenderedTexture::RenderedTexture(glm::uvec2 dims, GLenum texUnit, TextureParams 
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dims.x, dims.y) $gl_chk;
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
         GL_RENDERBUFFER, depthBufferID) $gl_chk;
-
+    
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     //preserve render state

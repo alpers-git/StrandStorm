@@ -150,12 +150,16 @@ void GUIManager::DrawLightControls()
         ImGui::PushItemWidth(width * 0.55f);
         ImGui::ColorEdit3("Color##1", &scene->light.color[0]);
         ImGui::PopItemWidth();
-        ImGui::DragFloat3("Direction", &scene->light.dir[0], 0.01f);
+        if(ImGui::DragFloat3("Direction", &scene->light.dir[0], 0.01f))
+            scene->light.opacityShadowMaps.dirty = true;
         if(ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
         {
             static float dk = scene->light.opacityShadowMaps.dk;
             if (ImGui::DragFloat("dk", &dk, 0.001f, 0.0001f, 5.0f))
+            {
                 scene->light.opacityShadowMaps.dk = std::max(dk, 0.0001f);
+                scene->light.opacityShadowMaps.dirty = true;
+            }
             
             auto width = ImGui::GetContentRegionAvail().x;
             //Show the shadow maps

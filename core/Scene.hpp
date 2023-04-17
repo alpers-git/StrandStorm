@@ -21,6 +21,7 @@ public:
             std::shared_ptr<ShadowTexture> depthTex;
             std::shared_ptr<RenderedTexture> opacitiesTex;
             float dk = 0.015f; //distance between layers
+            bool dirty = true;
         } opacityShadowMaps;
         glm::mat4 CalculateLightSpaceMatrix() const;
     } light;

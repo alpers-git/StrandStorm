@@ -65,15 +65,19 @@ void Renderer::RenderFirstPass()
             scene->hairMesh.draw(shadowProg);
         });
     //render opacitymaps for opacity shadowmap
-    opacityShadowProg.Use();
-    opacityShadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// we dont have to set mvp again
-    opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0);
-    opacityShadowProg.SetUniform("screen_res", depthTex->dims);
-    opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
-    scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
-            depthTex->Bind();
-            scene->hairMesh.draw(opacityShadowProg);
-        });
+    if(scene->light.opacityShadowMaps.dirty)
+    {
+        scene->light.opacityShadowMaps.dirty = false;
+        opacityShadowProg.Use();
+        opacityShadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// we dont have to set mvp again
+        opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0);
+        opacityShadowProg.SetUniform("screen_res", depthTex->dims);
+        opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
+        scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
+                depthTex->Bind();
+                scene->hairMesh.draw(opacityShadowProg);
+            });
+    }
 } 
 
 void Renderer::RenderMainPass()
