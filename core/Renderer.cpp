@@ -3,7 +3,7 @@
 
 void Renderer::Initialize()
 {
-    glLineWidth(5.0f); $gl_chk
+    glLineWidth(2.0f); $gl_chk
     glEnable(GL_DEPTH_TEST); $gl_chk
     
     // enable alpha blending
@@ -135,12 +135,12 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
-     const glm::mat4 shadowMatrix = glm::mat4(
-						0.5, 0.0, 0.0, 0.0,
-						0.0, 0.5, 0.0, 0.0,
-						0.0, 0.0, 0.5, 0.0,
-						0.5, 0.5, 0.498, 1.0)
-                        * scene->light.CalculateLightSpaceMatrix();
+    const glm::mat4 shadowMatrix = glm::mat4(
+                    0.5, 0.0, 0.0, 0.0,
+                    0.0, 0.5, 0.0, 0.0,
+                    0.0, 0.0, 0.5, 0.0,
+                    0.5, 0.5, 0.498, 1.0)
+                    * scene->light.CalculateLightSpaceMatrix();
     hairProg.SetUniform("toLightClipSpace", shadowMatrix);
     hairProg.SetUniform("hair_color", scene->hairMesh.color);
 
@@ -152,6 +152,7 @@ void Renderer::RenderHairs()
     opacitiesTex->Bind();
     hairProg.SetUniform("opacityMaps", (int)opacitiesTex->texUnit - GL_TEXTURE0);
     hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
+    hairProg.SetUniform("shadows_enabled", scene->hairMesh.shadowsEnable);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
     glDisable(GL_BLEND); $gl_chk
 }
