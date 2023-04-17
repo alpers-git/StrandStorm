@@ -24,8 +24,9 @@ public:
             bool dirty = true;
         } opacityShadowMaps;
         glm::mat4 CalculateLightSpaceMatrix() const;
+        glm::mat4 CalculateLightTexSpaceMatrix() const;
     } light;
-    
+
     Scene();
 
     // Called by Renderer::Initialize()

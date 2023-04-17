@@ -46,3 +46,13 @@ glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const
                                             glm::vec3(0.0f, 0.0f, 1.0f));
     return lightProjection * lightView;
 }
+
+glm::mat4 Scene::Light::CalculateLightTexSpaceMatrix() const
+{
+    const glm::mat4 shadowMatrix = glm::mat4(
+        0.5, 0.0, 0.0,   0.0,
+        0.0, 0.5, 0.0,   0.0,
+        0.0, 0.0, 0.5,   0.0,
+        0.5, 0.5, 0.498, 1.0);
+    return shadowMatrix * this->CalculateLightSpaceMatrix();
+}

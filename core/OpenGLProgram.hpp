@@ -51,7 +51,7 @@ struct Texture
     Texture(const Texture& other);
     Texture& operator=(const Texture& other);
 
-    virtual void Bind();
+    void Bind();
     virtual void Delete();
 
     GLuint glID;
@@ -125,16 +125,16 @@ public:
     
     GLuint GetID();
 
-    void SetUniform(const char* name, int value) const;
-    void SetUniform(const char* name, float value) const;
+    void SetUniform(const char* name, int value, bool required = true) const;
+    void SetUniform(const char* name, float value, bool required = true) const;
 
-    void SetUniform(const char* name, glm::vec2 value) const;
-    void SetUniform(const char* name, glm::vec3 value) const;
-    void SetUniform(const char* name, glm::vec4 value) const;
+    void SetUniform(const char* name, glm::vec2 value, bool required = true) const;
+    void SetUniform(const char* name, glm::vec3 value, bool required = true) const;
+    void SetUniform(const char* name, glm::vec4 value, bool required = true) const;
 
-    void SetUniform(const char* name, glm::mat2 value) const;
-    void SetUniform(const char* name, glm::mat3 value) const;
-    void SetUniform(const char* name, glm::mat4 value) const;
+    void SetUniform(const char* name, glm::mat2 value, bool required = true) const;
+    void SetUniform(const char* name, glm::mat3 value, bool required = true) const;
+    void SetUniform(const char* name, glm::mat4 value, bool required = true) const;
 
     void SetGLClearFlags(GLbitfield flags);
     void SetClearColor(glm::vec4 color);

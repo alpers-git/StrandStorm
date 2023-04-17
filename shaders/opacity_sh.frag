@@ -1,19 +1,23 @@
 #version 450
 precision highp float;
 
-in vec3 c_space_pos;
+in vec3 light_sp_pos;
 
 uniform float dk;
 uniform sampler2D depth_map;
-uniform vec2 screen_res;
 
 out vec4 opacities;
 
 void main()
 {
-    float depth_val = texture(depth_map, gl_FragCoord.xy / screen_res).r;
-    int layer = min(3, int(floor((depth_val - c_space_pos.z) / dk)));
+    float surfDepth = texture(depth_map, light_sp_pos.xy).r;
+    float relDepth = light_sp_pos.z - surfDepth;
+    int layer = min(3, int(floor(relDepth / dk)));
     if (layer >= 0) {
-        opacities[layer] = depth_val - c_space_pos.z + float(layer) * dk;
+        vec4 c = vec4(1.0);
+        c[layer] = relDepth;
+        opacities = c;
+    } else {
+        discard;
     }
 }

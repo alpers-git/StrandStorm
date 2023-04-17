@@ -360,81 +360,81 @@ GLuint OpenGLProgram::GetID()
     return programID;
 }
 
-void OpenGLProgram::SetUniform(const char *name, int value) const
+void OpenGLProgram::SetUniform(const char *name, int value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniform1i(location, value); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char *name, float value) const
+void OpenGLProgram::SetUniform(const char *name, float value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniform1f(location, value); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec2 value) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec2 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniform2f(location, value.x, value.y); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec3 value) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec3 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniform3f(location, value.x, value.y, value.z); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec4 value) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec4 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniform4f(location, value.x, value.y, value.z, value.w); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat2 value) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat2 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat3 value) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat3 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat4 value) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat4 value, bool required) const
 {
     GLint location;
     location = glGetUniformLocation(programID, name); $gl_chk
-    if (location == -1) {
+    if (location == -1 && required) {
         spdlog::error("uniform {} not found", name);
     }
     glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]); $gl_chk
@@ -467,6 +467,7 @@ GLuint OpenGLProgram::AttribLocation(const char *attributeName) const
 
 void OpenGLProgram::Clear()
 {
-    glClear(clearFlags); $gl_chk
+    SetClearColor(clearColor) $gl_chk;
+    glClear(clearFlags) $gl_chk;
 }
 

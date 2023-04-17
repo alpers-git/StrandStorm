@@ -30,7 +30,7 @@ void Renderer::Initialize()
     opacityShadowProg.CreatePipelineFromFiles(
         "shaders/opacity_sh.vert",
         "shaders/opacity_sh.frag");
-    opacityShadowProg.SetClearColor({0.8f, 0.8f, 0.8f, 0.0f});
+    opacityShadowProg.SetClearColor({1.0f, 1.0f, 1.0f, 1.0f});
 
     scene->init(*this);
 
@@ -60,22 +60,29 @@ void Renderer::RenderFirstPass()
     //render depthTexture for opacity shadowmap
     auto& depthTex =  scene->light.opacityShadowMaps.depthTex;
     shadowProg.Use();
-    shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// we dont have to set mvp again
+    shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());
     depthTex->Render([&]() {
             scene->hairMesh.draw(shadowProg);
         });
     //render opacitymaps for opacity shadowmap
+    scene->light.opacityShadowMaps.dirty = true;
     if(scene->light.opacityShadowMaps.dirty)
     {
         scene->light.opacityShadowMaps.dirty = false;
         opacityShadowProg.Use();
-        opacityShadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// we dont have to set mvp again
-        opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0);
-        opacityShadowProg.SetUniform("screen_res", depthTex->dims);
-        opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
+        opacityShadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());
+        opacityShadowProg.SetUniform("to_tex_space", scene->light.CalculateLightTexSpaceMatrix());
+        opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0, false);
+        opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk, false);
         scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
+                glDisable(GL_DEPTH_TEST) $gl_chk;
+                glEnable(GL_BLEND) $gl_chk;
+                glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR) $gl_chk;
+                glBlendEquation(GL_MIN) $gl_chk;
                 depthTex->Bind();
                 scene->hairMesh.draw(opacityShadowProg);
+                glDisable(GL_BLEND) $gl_chk;
+                glEnable(GL_DEPTH_TEST) $gl_chk;
             });
     }
 } 
@@ -134,19 +141,13 @@ void Renderer::OnMouseButton(int button, int action, int mods)
 void Renderer::RenderHairs()
 {
     hairProg.Use();
-    glEnable(GL_BLEND); $gl_chk
+    // glEnable(GL_BLEND); $gl_chk
 
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
-    const glm::mat4 shadowMatrix = glm::mat4(
-                    0.5, 0.0, 0.0, 0.0,
-                    0.0, 0.5, 0.0, 0.0,
-                    0.0, 0.0, 0.5, 0.0,
-                    0.5, 0.5, 0.498, 1.0)
-                    * scene->light.CalculateLightSpaceMatrix();
-    hairProg.SetUniform("toLightClipSpace", shadowMatrix);
-    hairProg.SetUniform("hair_color", scene->hairMesh.color);
+    hairProg.SetUniform("toLightClipSpace", scene->light.CalculateLightTexSpaceMatrix());
+    hairProg.SetUniform("hair_color", scene->hairMesh.color, false);
 
     auto& depthTex =  scene->light.opacityShadowMaps.depthTex;
     depthTex->Bind();
@@ -154,11 +155,11 @@ void Renderer::RenderHairs()
 
     auto& opacitiesTex =  scene->light.opacityShadowMaps.opacitiesTex;
     opacitiesTex->Bind();
-    hairProg.SetUniform("opacityMaps", (int)opacitiesTex->texUnit - GL_TEXTURE0);
+    hairProg.SetUniform("opacityMaps", (int)opacitiesTex->texUnit - GL_TEXTURE0, false);
     hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
     hairProg.SetUniform("shadows_enabled", scene->hairMesh.shadowsEnable);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
-    glDisable(GL_BLEND); $gl_chk
+    // glDisable(GL_BLEND); $gl_chk
 }
 
 
@@ -173,15 +174,7 @@ void Renderer::RenderSurfaces()
     surfaceProg.SetUniform("to_view_space", to_view_space);//mv
     surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
     surfaceProg.SetUniform("to_world_space", glm::mat4(1.0f));//m For future use
-
-    const glm::mat4 shadowMatrix = glm::mat4(
-						0.5, 0.0, 0.0, 0.0,
-						0.0, 0.5, 0.0, 0.0,
-						0.0, 0.0, 0.5, 0.0,
-						0.5, 0.5, 0.498, 1.0
-					) * scene->light.CalculateLightSpaceMatrix();
-
-    surfaceProg.SetUniform("to_light_view_space", shadowMatrix);
+    surfaceProg.SetUniform("to_light_view_space", scene->light.CalculateLightTexSpaceMatrix());
 
     surfaceProg.SetUniform("shadow_map", (int)scene->light.shadowTexture->texUnit - GL_TEXTURE0);
     scene->light.shadowTexture->Bind();

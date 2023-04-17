@@ -4,14 +4,15 @@ in vec3 vPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 
+// Model-view-projection into clip space
+uniform mat4 to_clip_space;
+// Model-view-projection into tex space
+uniform mat4 to_tex_space;
 
-
-layout(location = 0) uniform mat4 to_clip_space; // mvp
-//layout(location = 1) uniform mat4 to_view_space; //mv
-
-out vec3 c_space_pos;
+// Fragment in texture space
+out vec3 light_sp_pos;
 
 void main() {
     gl_Position = to_clip_space * vec4(vPos, 1.0);
-    c_space_pos = (to_clip_space * vec4(vPos, 1.0)).xyz;
+    light_sp_pos = (to_tex_space * vec4(vPos, 1.0)).xyz;
 }
