@@ -36,8 +36,20 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     mesh.ComputeNormals();
 
     // Grow the control hairs from the stored vertices
-    for (int i = 0; i < mesh.NV(); i++) {
-        growControlHair(glm::make_vec3(mesh.V(i)), glm::normalize(glm::make_vec3(mesh.VN(i))));
+    // for (int i = 0; i < mesh.NV(); i++) {
+    //     growControlHair(glm::make_vec3(mesh.V(i)), glm::normalize(glm::make_vec3(mesh.VN(i))));
+    // }
+    for (int i = 0; i < mesh.NF(); i++) {
+        std::array<glm::vec3, 3> v, n;
+        for (size_t j = 0; j < 3; j++) {
+            v[j] = glm::make_vec3(&mesh.V(mesh.F(i).v[j])[0]);
+            n[j] = glm::make_vec3(&mesh.VN(mesh.FN(i).v[j])[0]);
+        }
+        const auto vertices = tessTriangleGrid<8>(v);
+        const auto normals = tessTriangleGrid<8>(n);
+        for (size_t i = 0; i < vertices.size(); i++) {
+            growControlHair(vertices[i], normals[i]);
+        }
     }
 
     // Triangles
@@ -93,7 +105,7 @@ void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
         this->controlVerts.push_back({v, 1.0f});
-        v += dir * 0.25f + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.1f;
+        v += dir * hairGrowth + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.1f;
     }
 }
 
