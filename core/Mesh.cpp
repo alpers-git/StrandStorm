@@ -53,10 +53,12 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
 void HairMesh::draw(const OpenGLProgram &prog)
 {
+    if(!show)
+        return;
     glBindVertexArray(this->vao) $gl_chk;
 
     if (drawControlHairs) {
-        prog.SetUniform("hairColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), true);
+        prog.SetUniform("hairColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), false);
         glBindBuffer(GL_ARRAY_BUFFER, this->vboControl) $gl_chk;
         glVertexAttribPointer(prog.AttribLocation("vPos"), 4, GL_FLOAT, GL_FALSE, 0, (void*)0) $gl_chk;
         for (size_t i = 0; i < numControlHairs(); i++) {
@@ -64,7 +66,7 @@ void HairMesh::draw(const OpenGLProgram &prog)
         }
     }
 
-    prog.SetUniform("hairColor", glm::vec4(0.57f, 0.48f, 0.0f, 0.7f), true);
+    prog.SetUniform("hairColor", glm::vec4(0.57f, 0.48f, 0.0f, 0.7f), false);
     glBindBuffer(GL_ARRAY_BUFFER, this->vboInterp) $gl_chk;
     glVertexAttribPointer(prog.AttribLocation("vPos"), 4, GL_FLOAT, GL_FALSE, 0, (void*)0) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboInterp) $gl_chk;

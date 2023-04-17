@@ -58,7 +58,7 @@ GLuint ComputeShader::createBuffer(GLuint bindingIdx, size_t bytes, GLenum targe
     glBufferData(target, bytes, nullptr, GL_DYNAMIC_DRAW) $gl_chk;
     glBindBufferBase(target, bindingIdx, bufferID) $gl_chk;
     glBindBuffer(target, 0) $gl_chk;
-    this->bufBindIdxMap[bindingIdx] = {.glID = bufferID, .target = target};
+    this->bufBindIdxMap[bindingIdx] = {bufferID, target};
     return bufferID;
 }
 
@@ -72,7 +72,7 @@ void ComputeShader::assocBuffer(GLuint bindingIdx, GLuint bufferID, GLenum targe
 {
     glUseProgram(this->programID) $gl_chk;
     glBindBufferBase(target, bindingIdx, bufferID) $gl_chk;
-    this->bufBindIdxMap[bindingIdx] = {.glID = bufferID, .target = target};
+    this->bufBindIdxMap[bindingIdx] = {bufferID, target};
 }
 
 void ComputeShader::assocBuffer(const char *name, GLuint bufferID, GLenum target)

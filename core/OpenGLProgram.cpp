@@ -65,7 +65,7 @@ Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     glGenTextures(1, &glID); $gl_chk
     glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
 
-    glTexImage2D(GL_TEXTURE_2D, 0, 
+    glTexImage2D(GL_TEXTURE_2D, params.mipMapLevel, 
         params.internalFormat, 
         dims.x, dims.y, 
         0, params.format, 
@@ -76,6 +76,9 @@ Texture::Texture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, params.wrapS); $gl_chk
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, params.wrapT); $gl_chk
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, params.wrapR); $gl_chk//?
+
+    //create mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
 }
 
 Texture::Texture(const Texture& other)
@@ -103,12 +106,11 @@ void Texture::Delete()
     glDeleteTextures(1, &glID); $gl_chk
 }
 
-ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+// --- DepthTexture -----------------------------------------------------------
+
+DepthTexture::DepthTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : Texture(dims, texUnit, params)
 {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
-
     //save the renderer state
     GLint origFB;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFB) $gl_chk;
@@ -126,12 +128,10 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams para
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-ShadowTexture::ShadowTexture(const ShadowTexture & other)
-    : Texture(other), frameBufferID(other.frameBufferID)
-{
-}
+DepthTexture::DepthTexture(const DepthTexture & other)
+    : Texture(other), frameBufferID(other.frameBufferID) {}
 
-ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
+DepthTexture& DepthTexture::operator=(const DepthTexture & other)
 {
     this->glID = other.glID;
     this->dims = other.dims;
@@ -140,14 +140,13 @@ ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
     return *this;
 }
 
-
-void ShadowTexture::Delete()
+void DepthTexture::Delete()
 {
     Texture::Delete();
     glDeleteFramebuffers(1, &frameBufferID) $gl_chk;
 }
 
-void ShadowTexture::Render(std::function <void()> renderFunc)
+void DepthTexture::Render(std::function <void()> renderFunc)
 {
     //preserve render state
     GLint origFB;
@@ -160,13 +159,37 @@ void ShadowTexture::Render(std::function <void()> renderFunc)
     glClear(GL_DEPTH_BUFFER_BIT) $gl_chk;
     renderFunc();
     glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
-
+    Bind();
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
+    
     //restore render state
     glViewport(origViewport[0], origViewport[1], origViewport[2], origViewport[3]) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-// --- RenderedTexture ----------------------------------------------------------
+// --- ShadowTexture ----------------------------------------------------------
+
+ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+    : DepthTexture(dims, texUnit, params)
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
+}
+
+ShadowTexture::ShadowTexture(const ShadowTexture & other)
+    : DepthTexture(other) {}
+
+ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
+{
+    this->glID = other.glID;
+    this->dims = other.dims;
+    this->texUnit = other.texUnit;
+    this->frameBufferID = other.frameBufferID;
+    return *this;
+}
+
+// --- RenderedTexture --------------------------------------------------------
+
 RenderedTexture::RenderedTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : Texture(dims, texUnit, params)
 {
@@ -187,7 +210,7 @@ RenderedTexture::RenderedTexture(glm::uvec2 dims, GLenum texUnit, TextureParams 
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dims.x, dims.y) $gl_chk;
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
         GL_RENDERBUFFER, depthBufferID) $gl_chk;
-
+    
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     //preserve render state
@@ -226,8 +249,10 @@ void RenderedTexture::Render(std::function <void()> renderFunc)
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
     glViewport(0, 0, dims.x, dims.y) $gl_chk;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk; // Causes flickering but why??
     renderFunc();
+    Bind();
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
     glBindFramebuffer(GL_FRAMEBUFFER, 0) $gl_chk;
 
     //restore render state
@@ -338,59 +363,59 @@ GLuint OpenGLProgram::GetID()
     return programID;
 }
 
-void OpenGLProgram::SetUniform(const char *name, int value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char *name, int value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniform1i(location, value) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char *name, float value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char *name, float value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniform1f(location, value) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec2 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec2 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniform2f(location, value.x, value.y) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec3 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec3 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniform3f(location, value.x, value.y, value.z) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char *name, glm::vec4 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char *name, glm::vec4 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniform4f(location, value.x, value.y, value.z, value.w) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat2 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat2 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniformMatrix2fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat3 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat3 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniformMatrix3fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
-void OpenGLProgram::SetUniform(const char* name, glm::mat4 value, bool allowFail) const
+void OpenGLProgram::SetUniform(const char* name, glm::mat4 value, bool required) const
 {
     const GLint location = glGetUniformLocation(programID, name) $gl_chk;
-    spdlog::assrt(location != -1 || allowFail, "OpenGLProgram({}): uniform '{}' not found", label, name);
+    spdlog::assrt(location != -1 || !required, "OpenGLProgram({}): uniform '{}' not found", label, name);
     glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]) $gl_chk;
 }
 
@@ -429,5 +454,6 @@ void OpenGLProgram::SetAttribPointer(GLuint bufferID, const char *attrName, GLin
 
 void OpenGLProgram::Clear()
 {
+    SetClearColor(clearColor) $gl_chk;
     glClear(clearFlags) $gl_chk;
 }

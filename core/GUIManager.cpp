@@ -98,7 +98,7 @@ void GUIManager::Draw()
     ImGui::Begin(windowName.c_str(), 0, windowFlags);
 
     // Actual GUI code goes here
-    //DrawHairMeshControls();
+    DrawHairMeshControls();
     DrawSurfaceMeshControls();
     DrawLightControls();
 
@@ -113,11 +113,15 @@ void GUIManager::DrawHairMeshControls()
 {
    if(ImGui::CollapsingHeader("Hair Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
    {
-        ImGui::Checkbox("Show Hair Mesh", nullptr);
+        ImGui::Checkbox("Show", &scene->hairMesh.show);
         ImGui::SameLine();
-        ImGui::Checkbox("Show Control Hairs", nullptr);
-        ImGui::InputInt("Guide hair count", nullptr);
-        ImGui::InputFloat("Guide hair length", nullptr);
+        ImGui::Checkbox("Shadows", &scene->hairMesh.shadowsEnable);
+        ImGui::SeparatorText("Hair Mesh Material");
+        ImGui::ColorEdit4("Color##0", &scene->hairMesh.color[0]);
+        // ImGui::SameLine();
+        // ImGui::Checkbox("Show Control Hairs", nullptr);
+        // ImGui::InputInt("Guide hair count", nullptr);
+        // ImGui::InputFloat("Guide hair length", nullptr);
    }
 }
 
@@ -144,9 +148,33 @@ void GUIManager::DrawLightControls()
         ImGui::PopItemWidth();
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.55f);
-        ImGui::ColorEdit3("Color", &scene->light.color[0]);
+        ImGui::ColorEdit3("Color##1", &scene->light.color[0]);
         ImGui::PopItemWidth();
-        ImGui::DragFloat3("Position", &scene->light.dir[0]);
+        if(ImGui::DragFloat3("Direction", &scene->light.dir[0], 0.01f))
+            scene->light.opacityShadowMaps.dirty = true;
+        if(ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            static float dk = scene->light.opacityShadowMaps.dk;
+            if (ImGui::DragFloat("dk", &dk, 0.001f, 0.0001f, 5.0f))
+            {
+                scene->light.opacityShadowMaps.dk = std::max(dk, 0.0001f);
+                scene->light.opacityShadowMaps.dirty = true;
+            }
+            
+            auto width = ImGui::GetContentRegionAvail().x;
+            //Show the shadow maps
+            ImGui::BeginGroup();
+            ImGui::Text("Depth Map");
+            ImGui::Image((void*)scene->light.opacityShadowMaps.depthTex->glID, 
+                ImVec2(width/2, width/2));
+            ImGui::EndGroup();
+            ImGui::SameLine();
+            ImGui::BeginGroup();
+            ImGui::Text("Opacity Map");
+            ImGui::Image((void*)scene->light.opacityShadowMaps.opacitiesTex->glID, 
+                ImVec2(width/2, width/2));
+            ImGui::EndGroup();
+        }
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
         // ImGui::InputFloat3("Position", &scene->light2.position[0]);

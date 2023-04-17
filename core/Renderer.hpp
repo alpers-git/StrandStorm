@@ -14,6 +14,7 @@ public:
     OpenGLProgram hairProg = {"hair"};
     OpenGLProgram surfaceProg = {"surface"};
     OpenGLProgram shadowProg = {"shadow"};
+    OpenGLProgram opacityShadowProg = {"opacity shadow"};
 
     long int frameCount = 0;
     glm::ivec2 windowSize;

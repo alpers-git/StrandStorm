@@ -39,6 +39,7 @@ struct TextureParams
     GLenum internalFormat = GL_RGBA;
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
+    GLuint mipMapLevel = 0;
 };
 
 struct Texture
@@ -51,7 +52,7 @@ struct Texture
     Texture& operator=(const Texture& other);
 
     void Bind();
-    void Delete();
+    virtual void Delete();
 
     GLuint glID;
     glm::uvec2 dims;
@@ -59,19 +60,27 @@ struct Texture
     GLuint texUnit;
 };
 
-struct ShadowTexture : public Texture
+struct DepthTexture : public Texture
+{
+    DepthTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
+    ~DepthTexture() {};
+
+    DepthTexture(const DepthTexture& other);
+    DepthTexture& operator=(const DepthTexture& other);
+
+    void Delete() override;
+    void Render(std::function <void()> renderFunc);
+
+    GLuint frameBufferID;
+};
+
+struct ShadowTexture : public DepthTexture
 {
     ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
     ~ShadowTexture() {};
 
     ShadowTexture(const ShadowTexture& other);
     ShadowTexture& operator=(const ShadowTexture& other);
-
-    void Delete();
-
-    void Render(std::function <void()> renderFunc);
-
-    GLuint frameBufferID;
 };
 
 struct RenderedTexture : public Texture
@@ -82,7 +91,6 @@ struct RenderedTexture : public Texture
     RenderedTexture(const RenderedTexture& other);
     RenderedTexture& operator=(const RenderedTexture& other);
 
-    void Bind();
     void Delete();
 
     void Render(std::function <void()> renderFunc);
@@ -118,16 +126,16 @@ public:
     
     GLuint GetID();
 
-    void SetUniform(const char* name, int value, bool allowFail = false) const;
-    void SetUniform(const char* name, float value, bool allowFail = false) const;
+    void SetUniform(const char* name, int value, bool required = true) const;
+    void SetUniform(const char* name, float value, bool required = true) const;
 
-    void SetUniform(const char* name, glm::vec2 value, bool allowFail = false) const;
-    void SetUniform(const char* name, glm::vec3 value, bool allowFail = false) const;
-    void SetUniform(const char* name, glm::vec4 value, bool allowFail = false) const;
+    void SetUniform(const char* name, glm::vec2 value, bool required = true) const;
+    void SetUniform(const char* name, glm::vec3 value, bool required = true) const;
+    void SetUniform(const char* name, glm::vec4 value, bool required = true) const;
 
-    void SetUniform(const char* name, glm::mat2 value, bool allowFail = false) const;
-    void SetUniform(const char* name, glm::mat3 value, bool allowFail = false) const;
-    void SetUniform(const char* name, glm::mat4 value, bool allowFail = false) const;
+    void SetUniform(const char* name, glm::mat2 value, bool required = true) const;
+    void SetUniform(const char* name, glm::mat3 value, bool required = true) const;
+    void SetUniform(const char* name, glm::mat4 value, bool required = true) const;
 
     void SetGLClearFlags(GLbitfield flags);
     void SetClearColor(glm::vec4 color);
