@@ -106,12 +106,11 @@ void Texture::Delete()
     glDeleteTextures(1, &glID); $gl_chk
 }
 
-ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+// --- DepthTexture -----------------------------------------------------------
+
+DepthTexture::DepthTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : Texture(dims, texUnit, params)
 {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
-
     //save the renderer state
     GLint origFB;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFB) $gl_chk;
@@ -129,12 +128,10 @@ ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams para
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
 
-ShadowTexture::ShadowTexture(const ShadowTexture & other)
-    : Texture(other), frameBufferID(other.frameBufferID)
-{
-}
+DepthTexture::DepthTexture(const DepthTexture & other)
+    : Texture(other), frameBufferID(other.frameBufferID) {}
 
-ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
+DepthTexture& DepthTexture::operator=(const DepthTexture & other)
 {
     this->glID = other.glID;
     this->dims = other.dims;
@@ -143,14 +140,13 @@ ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
     return *this;
 }
 
-
-void ShadowTexture::Delete()
+void DepthTexture::Delete()
 {
     Texture::Delete();
     glDeleteFramebuffers(1, &frameBufferID) $gl_chk;
 }
 
-void ShadowTexture::Render(std::function <void()> renderFunc)
+void DepthTexture::Render(std::function <void()> renderFunc)
 {
     //preserve render state
     GLint origFB;
@@ -170,6 +166,29 @@ void ShadowTexture::Render(std::function <void()> renderFunc)
     glViewport(origViewport[0], origViewport[1], origViewport[2], origViewport[3]) $gl_chk;
     glBindFramebuffer(GL_FRAMEBUFFER, origFB) $gl_chk;
 }
+
+// --- ShadowTexture ----------------------------------------------------------
+
+ShadowTexture::ShadowTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
+    : DepthTexture(dims, texUnit, params)
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE) $gl_chk;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL) $gl_chk;
+}
+
+ShadowTexture::ShadowTexture(const ShadowTexture & other)
+    : DepthTexture(other) {}
+
+ShadowTexture& ShadowTexture::operator=(const ShadowTexture & other)
+{
+    this->glID = other.glID;
+    this->dims = other.dims;
+    this->texUnit = other.texUnit;
+    this->frameBufferID = other.frameBufferID;
+    return *this;
+}
+
+// --- RenderedTexture --------------------------------------------------------
 
 RenderedTexture::RenderedTexture(glm::uvec2 dims, GLenum texUnit, TextureParams params)
     : Texture(dims, texUnit, params)

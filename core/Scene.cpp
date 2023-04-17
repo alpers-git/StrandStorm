@@ -27,7 +27,7 @@ void Scene::init(const Renderer& r)
         params);
     
     //set light's opacity shadow maps
-    light.opacityShadowMaps.depthTex = std::make_shared<ShadowTexture>(
+    light.opacityShadowMaps.depthTex = std::make_shared<DepthTexture>(
         glm::uvec2(1024, 1024), GL_TEXTURE6, 
         params);
     

@@ -51,8 +51,8 @@ struct Texture
     Texture(const Texture& other);
     Texture& operator=(const Texture& other);
 
-    void Bind();
-    void Delete();
+    virtual void Bind();
+    virtual void Delete();
 
     GLuint glID;
     glm::uvec2 dims;
@@ -60,19 +60,27 @@ struct Texture
     GLuint texUnit;
 };
 
-struct ShadowTexture : public Texture
+struct DepthTexture : public Texture
+{
+    DepthTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
+    ~DepthTexture() {};
+
+    DepthTexture(const DepthTexture& other);
+    DepthTexture& operator=(const DepthTexture& other);
+
+    void Delete() override;
+    void Render(std::function <void()> renderFunc);
+
+    GLuint frameBufferID;
+};
+
+struct ShadowTexture : public DepthTexture
 {
     ShadowTexture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE5, TextureParams params = TextureParams());
     ~ShadowTexture() {};
 
     ShadowTexture(const ShadowTexture& other);
     ShadowTexture& operator=(const ShadowTexture& other);
-
-    void Delete();
-
-    void Render(std::function <void()> renderFunc);
-
-    GLuint frameBufferID;
 };
 
 struct RenderedTexture : public Texture
