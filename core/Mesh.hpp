@@ -47,12 +47,14 @@ public:
     // Number of vertices in each control hair (N)
     static constexpr uint32_t controlHairLen = 5;
     // Number of subdivisions between each control hair vertex (M)
-    //  Includes endpoints, so needs to be >=2
+    //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
     static constexpr uint32_t interpDensity = 6;
     // Hair growth amount per control vert
-    static constexpr float hairGrowth = 0.1f;
+    static constexpr float hairGrowth = 0.05f;
+    // Debug control hair duplication
+    static constexpr uint32_t controlHairDensity = 0;
 
     bool drawControlHairs = false;
 
@@ -78,11 +80,11 @@ public:
     }
     // Number of elements in the interpolated hair buffer
     inline size_t numInterpElements() const {
-        return 2 * (controlHairLen * (subdivide - 1) - 1) * numInterpHairs();
+        return 2 * subdivide * (controlHairLen - 1) * numInterpHairs();
     }
     // Number of interpolated vertices (elements in vboInterp)
     inline size_t numInterpVertices() const {
-        return (controlHairLen - 1) * subdivide * numInterpHairs();
+        return (subdivide * (controlHairLen - 1) + 1) * numInterpHairs();
     }
     // Number of bezier control points
     inline size_t numControlPoints() const {

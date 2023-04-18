@@ -63,6 +63,7 @@ void Renderer::RenderFirstPass()
         opacityShadowProg.SetUniform("to_tex_space", scene->light.CalculateLightTexSpaceMatrix());
         opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0, false);
         opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk, false);
+        opacityShadowProg.Clear();
         scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
                 glDisable(GL_DEPTH_TEST) $gl_chk;
                 glEnable(GL_BLEND) $gl_chk;

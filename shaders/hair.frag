@@ -26,7 +26,7 @@ float getOpacity() {
         // Opacity values
         vec4 op = texture(opacityMaps, light_clip_pos.xy  + vec2(poissonDisk[disk]/700));
         float O[5] = {0.0, op.r, op.g, op.b, op.a};
-        for (int i = 1; i <= 4; i++)
+        for (int i = 1; i < 5; i++)
             O[i] += O[i - 1];
         float t = clamp(relDepth - floor(relDepth), 0.0, 1.0);
          // Opacity map layer
