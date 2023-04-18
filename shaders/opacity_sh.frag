@@ -13,11 +13,12 @@ void main()
     float surfDepth = texture(depth_map, light_sp_pos.xy).r;
     float relDepth = light_sp_pos.z - surfDepth;
     int layer = min(3, int(floor(relDepth / dk)));
-    if (layer >= 0) {
+    if (layer > 0) {
         vec4 c = vec4(1.0);
-        c[layer] = relDepth;
+        c[layer] = relDepth - (layer * dk);
         opacities = c;
-    } else {
+    } 
+    else {
         discard;
     }
 }
