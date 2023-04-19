@@ -37,6 +37,14 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     }
     mesh.ComputeNormals();
 
+    // normalize the mesh to fit in a 5x5x5 cube
+    mesh.ComputeBoundingBox();
+    const auto scale =  5.0f / (mesh.GetBoundMax() - mesh.GetBoundMin()).Length();
+    //go over the vertices and scale them
+    for (int i = 0; i < mesh.NV(); i++) {
+        mesh.V(i) *= scale;
+    }
+
     // Grow the control hairs from the stored vertices
     if (controlHairDensity == 0) {
         for (int i = 0; i < mesh.NV(); i++) {
@@ -126,6 +134,14 @@ void SurfaceMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     }
     if (compNormals || mesh.NVN() == 0) {
         mesh.ComputeNormals();
+    }
+
+    // normalize the mesh to fit in a 5x5x5 cube
+    mesh.ComputeBoundingBox();
+    const auto scale =  5.0f / (mesh.GetBoundMax() - mesh.GetBoundMin()).Length();
+    //go over the vertices and scale them
+    for (int i = 0; i < mesh.NV(); i++) {
+        mesh.V(i) *= scale;
     }
 
     // Mapping from vertex index to (normalIdx, texIdx)
