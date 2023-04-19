@@ -1,4 +1,5 @@
 #include <App.hpp>
+#include <future>
 
 App::App(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ App::App(int argc, char *argv[])
 void App::Run(EventHandler &eventHandler)
 {
     while (eventHandler.IsRunning()) {
-        physicsIntegrator->Integrate();
+        std::async(std::launch::async, [&] { physicsIntegrator->Integrate(); }); // Run the physics integrator in a separate thread
         eventHandler.SwapBuffers();
         eventHandler.DispatchEvents(renderer);
         renderer.Render();

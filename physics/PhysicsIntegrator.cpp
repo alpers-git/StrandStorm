@@ -14,5 +14,6 @@ void PhysicsIntegrator::Integrate()
 
 void PhysicsIntegrator::TakeStep(float dt)
 {
-
+    //Integrate the physics here
+    printf("Integrating physics with dt = %f numSteps = %d dt*numSteps = %f\r", dt, numSteps, dt*numSteps);
 }

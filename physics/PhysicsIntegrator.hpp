@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <Scene.hpp>
+#include <Logging.hpp>
 
 class PhysicsIntegrator
 {
