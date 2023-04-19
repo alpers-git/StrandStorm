@@ -14,9 +14,7 @@ void main()
     float relDepth = light_sp_pos.z - surfDepth;
     int layer = min(3, int(floor(relDepth / dk)));
     if (layer >= 0) {
-        vec4 c = vec4(1.0);
-        c[layer] = relDepth - (layer * dk);
-        opacities = c;
+        opacities[layer] = 0.1;
     } 
     else {
         discard;
