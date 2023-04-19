@@ -23,7 +23,7 @@ void HairMesh::build(const OpenGLProgram &prog)
     
     prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
     prog.SetAttribPointer(vboControl, "vPos", 4, GL_FLOAT);
-    prog.SetAttribPointer(vboTangents, "vTangent", 4, GL_FLOAT);
+    //prog.SetAttribPointer(vboTangents, "vTangent", 4, GL_FLOAT);
 }
 
 void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)

@@ -136,7 +136,6 @@ void Renderer::RenderHairs()
 {
 
     hairProg.Use();
-    // glEnable(GL_BLEND); $gl_chk
 
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
@@ -154,7 +153,6 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
     hairProg.SetUniform("shadows_enabled", scene->hairMesh.shadowsEnable);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
-    // glDisable(GL_BLEND); $gl_chk
 }
 
 
