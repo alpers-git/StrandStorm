@@ -93,14 +93,27 @@ void GUIManager::Initialize()
 void GUIManager::Draw()
 {
     //place the window in the top left corner
-    ImGui::SetWindowPos(windowName.c_str(), ImVec2(10, 10), ImGuiCond_Once);
+    //printf("window size: %f, %f\n", windowSize.x, windowSize.y);
     NewFrame();
-    ImGui::Begin(windowName.c_str(), 0, windowFlags);
+    auto windowSize = ImGui::GetContentRegionAvail();
 
-    // Actual GUI code goes here
+    ImGui::SetWindowPos("Renderer Controls", ImVec2(windowSize.x/50, windowSize.y/50), ImGuiCond_Once);
+    ImGui::SetWindowSize("Renderer Controls", ImVec2(0.9 * windowSize.x,  1.25f * windowSize.y), ImGuiCond_Once);
+    ImGui::SetWindowPos("Physics Controls", ImVec2(windowSize.x/50, windowSize.y/10 + 1.25f * windowSize.y), ImGuiCond_Once);
+    ImGui::SetWindowSize("Physics Controls", ImVec2(0.9 * windowSize.x, 0.50f * windowSize.y), ImGuiCond_Once);
+
+    ImGui::Begin("Renderer Controls", 0, windowFlags);
+
     DrawHairMeshControls();
     DrawSurfaceMeshControls();
     DrawLightControls();
+
+    ImGui::End();
+    //-------------------------------------------------------------------
+    //place the window in the top right corner
+    ImGui::Begin("Physics Controls", 0, windowFlags);
+
+    DrawSimulationControls();
 
     ImGui::End();
     ImGui::Render();
@@ -178,6 +191,19 @@ void GUIManager::DrawLightControls()
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
         // ImGui::InputFloat3("Position", &scene->light2.position[0]);
+    }
+}
+
+void GUIManager::DrawSimulationControls()
+{
+    if(ImGui::CollapsingHeader("Simulation Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        float dt =  physicsIntegrator->getDt();
+        if(ImGui::DragFloat("dt", &dt, 0.001f, 0.0f, 1.0f)) 
+            physicsIntegrator->setDt(dt);
+        int numSteps = physicsIntegrator->getNumSteps();
+        if(ImGui::InputInt("numSteps", &numSteps , 1, 1, ImGuiInputTextFlags_EnterReturnsTrue)) 
+            physicsIntegrator->setNumSteps(numSteps);
     }
 }
 

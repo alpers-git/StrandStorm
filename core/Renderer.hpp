@@ -37,7 +37,7 @@ public:
     void OnMouseMove(double x, double y);
     void OnMouseButton(int button, int action, int mods);
 
-    private:
+private:
     void RenderHairs();
     void RenderSurfaces();
 

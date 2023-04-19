@@ -9,10 +9,10 @@ Scene::Scene()
 
 void Scene::init(const Renderer& r)
 {
-    hairMesh.loadFromFile("resources/suzanne.obj");
+    hairMesh.loadFromFile("resources/sphere.obj");
     hairMesh.build(r.hairProg);
 
-    surfaceMesh.loadFromFile("resources/suzanne.obj");
+    surfaceMesh.loadFromFile("resources/sphere.obj");
     surfaceMesh.build(r.surfaceProg);
 
     //set light's shadow texture

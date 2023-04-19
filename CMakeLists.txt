@@ -62,10 +62,12 @@ include_directories(
     submodules/eigen
     submodules/spdlog
     core
-#    physics
+    physics
 )
 #========== Targets Configurations ===========#
-file(GLOB_RECURSE SOURCES core/*.cpp)
+file(GLOB_RECURSE CORE_SOURCES core/*.cpp)
+file(GLOB_RECURSE PHYSICS_SOURCES physics/*.cpp)
+set(SOURCES ${CORE_SOURCES} ${PHYSICS_SOURCES})
 add_executable(strandStorm ${SOURCES})
     
 # Set executable dependency libraries
