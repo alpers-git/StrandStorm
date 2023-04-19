@@ -2,6 +2,7 @@
 
 in vec3 vPos;
 in vec3 vNormal;
+in vec3 vTangent;
 in vec2 vTexCoord;
 
 // Model-view-projection into clip space

@@ -1,6 +1,7 @@
 #version 460
 
 in vec3 light_clip_pos;
+in vec3 fTangent;
 
 uniform sampler2D depthMap;
 uniform sampler2D opacityMaps;

@@ -19,9 +19,11 @@ void HairMesh::build(const OpenGLProgram &prog)
     this->eboInterp = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, numInterpElements() * sizeof(GLuint));
     this->eboTris = gl::buffer(GL_ELEMENT_ARRAY_BUFFER, tris);
     this->vboControl = gl::buffer(GL_ARRAY_BUFFER, this->controlVerts, GL_DYNAMIC_DRAW);
+    this->vboTangents = gl::buffer(GL_ARRAY_BUFFER, numInterpVertices() * sizeof(glm::vec4));
     
     prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
     prog.SetAttribPointer(vboControl, "vPos", 4, GL_FLOAT);
+    prog.SetAttribPointer(vboTangents, "vTangent", 4, GL_FLOAT);
 }
 
 void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)

@@ -141,7 +141,7 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("uTModel", glm::mat4(1.0f));
     hairProg.SetUniform("uTView", scene->cam.view());
     hairProg.SetUniform("uTProj", scene->cam.proj({windowSize}));
-    hairProg.SetUniform("toLightClipSpace", scene->light.CalculateLightTexSpaceMatrix());
+    hairProg.SetUniform("uTLight", scene->light.CalculateLightTexSpaceMatrix());
     hairProg.SetUniform("hair_color", scene->hairMesh.color, false);
 
     auto& depthTex =  scene->light.opacityShadowMaps.depthTex;

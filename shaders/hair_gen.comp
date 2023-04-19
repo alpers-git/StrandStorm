@@ -154,6 +154,12 @@ void main() {
                     3.0 * mt2 * t * ctrl[1] +
                     3.0 * mt * t2 * ctrl[2] +
                     t3 *            ctrl[3], 1.0);
+
+                // Tangent is derivative of bezier curve
+                outTangents[vIdx] = normalize(vec4(
+                    3.0 * mt2 * (ctrl[1] - ctrl[0]) +
+                    6.0 * mt * t * (ctrl[2] - ctrl[1]) +
+                    3.0 * t2 * (ctrl[3] - ctrl[2]), 0.0));
                 
                 const uint eIdx = getOutElemIdx(h, i, j);
                 indices[eIdx + 0] = vIdx;
@@ -176,6 +182,11 @@ void main() {
             outV[getOutVertIdx(tris[h*3 + 1], i, j)].xyz,
             outV[getOutVertIdx(tris[h*3 + 2], i, j)].xyz
         };
+        const vec3 triTan[3] = {
+            outTangents[getOutVertIdx(tris[h*3 + 0], i, j)].xyz,
+            outTangents[getOutVertIdx(tris[h*3 + 1], i, j)].xyz,
+            outTangents[getOutVertIdx(tris[h*3 + 2], i, j)].xyz
+        };
         for (uint n = 0; n < D; n++) {
             // Random barycentric coordinates
             float u = rand((h*D + n)*2 + 0);
@@ -186,6 +197,7 @@ void main() {
 
             const uint vIdx = getOutVertIdx(H + h*D + n, i, j);
             outV[vIdx] = vec4(u*tri[0] + v*tri[1] + w*tri[2], 1.0);
+            outTangents[vIdx] = normalize(vec4(u*triTan[0] + v*triTan[1] + w*triTan[2], 0.0));
 
             if (i < N-1) {
                 const uint eIdx = getOutElemIdx(H + h*D + n, i, j);
