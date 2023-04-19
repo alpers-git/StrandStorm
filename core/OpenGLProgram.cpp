@@ -249,7 +249,7 @@ void RenderedTexture::Render(std::function <void()> renderFunc)
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID) $gl_chk;
     glViewport(0, 0, dims.x, dims.y) $gl_chk;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk; // Causes flickering but why??
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) $gl_chk; // Causes flickering but why??
     renderFunc();
     Bind();
     glGenerateMipmap(GL_TEXTURE_2D); $gl_chk

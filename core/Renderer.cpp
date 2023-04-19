@@ -7,7 +7,7 @@ void Renderer::Initialize()
     glEnable(GL_DEPTH_TEST); $gl_chk
     
     // enable alpha blending
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); $gl_chk
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); $gl_chk
 
     hairProg.CreatePipelineFromFiles(
         "shaders/hair.vert",
@@ -27,7 +27,7 @@ void Renderer::Initialize()
     opacityShadowProg.CreatePipelineFromFiles(
         "shaders/opacity_sh.vert",
         "shaders/opacity_sh.frag");
-    opacityShadowProg.SetClearColor({1.0f, 1.0f, 1.0f, 1.0f});
+    opacityShadowProg.SetClearColor({0.0f, 0.0f, 0.0f, 0.0f});
 
     scene->init(*this);
 
@@ -63,12 +63,12 @@ void Renderer::RenderFirstPass()
         opacityShadowProg.SetUniform("to_tex_space", scene->light.CalculateLightTexSpaceMatrix());
         opacityShadowProg.SetUniform("depth_map", (int)depthTex->texUnit - GL_TEXTURE0, false);
         opacityShadowProg.SetUniform("dk", scene->light.opacityShadowMaps.dk, false);
-        opacityShadowProg.Clear();
         scene->light.opacityShadowMaps.opacitiesTex->Render([&]() {
+                opacityShadowProg.Clear();
                 glDisable(GL_DEPTH_TEST) $gl_chk;
                 glEnable(GL_BLEND) $gl_chk;
-                glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR) $gl_chk;
-                glBlendEquation(GL_MIN) $gl_chk;
+                glBlendFunc(GL_ONE, GL_ONE) $gl_chk;
+                glBlendEquation(GL_FUNC_ADD) $gl_chk;
                 depthTex->Bind();
                 scene->hairMesh.draw(opacityShadowProg);
                 glDisable(GL_BLEND) $gl_chk;

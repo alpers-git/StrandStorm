@@ -155,7 +155,7 @@ void GUIManager::DrawLightControls()
         if(ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
         {
             static float dk = scene->light.opacityShadowMaps.dk;
-            if (ImGui::DragFloat("dk", &dk, 0.001f, 0.0001f, 0.2f))
+            if (ImGui::DragFloat("dk", &dk, 0.001f, 0.0001f, 1.0f))
             {
                 scene->light.opacityShadowMaps.dk = std::max(dk, 0.0001f);
                 scene->light.opacityShadowMaps.dirty = true;
