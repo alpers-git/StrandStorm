@@ -7,21 +7,21 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 layout(std430, binding = 0) readonly buffer ControlHairs {
     vec4 inV[];
 };
-// Bezier control points buffer
-layout(std430, binding = 1) coherent buffer ControlPoints {
-    vec4 controlBuf[];
-};
 // Smooth hairs output buffer - will contain control points during execution
-layout(std430, binding = 2) coherent buffer InterpPoints {
+layout(std430, binding = 1) coherent buffer InterpPoints {
     vec4 outV[];
 };
 // Hair index buffer (EBO)
-layout(std430, binding = 3) writeonly buffer InterpIndices {
+layout(std430, binding = 2) writeonly buffer InterpIndices {
     uint indices[];
 };
 // Triangle elements
-layout(std430, binding = 4) readonly buffer TriIndices {
+layout(std430, binding = 3) readonly buffer TriIndices {
     uint tris[];
+};
+// Interpolated hair tangents
+layout(std430, binding = 4) coherent buffer Tangents {
+    vec4 outTangents[];
 };
 
 // Number of control hairs
@@ -99,50 +99,44 @@ void main() {
 
     if (h < H) {
 
-        // Offset into control points buffer
-        uint ctlIdx = getCtrlPntIdx(h, i);
         // Offset into input vertices buffer
         uint vertOffset = h * N + i;
 
-        // --- 1. Compute control points for this hair segment
-        //        Each invocation gens 3 control points, except for first and last which gen 5
-        const vec3 p[3] = {
+        const vec3 p[4] = {
+            inV[vertOffset - 1].xyz,
             inV[vertOffset + 0].xyz,
             inV[vertOffset + 1].xyz,
             inV[vertOffset + 2].xyz
         };
-        const vec3 tangent = normalize(p[2] - p[0]);
 
-        // Add control points for segments until last two vertices
-        ///TODO: No reason to store control points
-        if (i <= N-3) {
-            if (i == 0) {
-                // First invocation, add 2 control points at start
-                controlBuf[ctlIdx - 2] = vec4(p[0], 1.0);
-                controlBuf[ctlIdx - 1] = vec4(p[0] + (p[1] - p[0]) * 0.1, 1.0);
-            }
-            
-            // Add control points: one for each end of tangent, one for vertex
-            controlBuf[ctlIdx + 0] = vec4(p[1] - tangent * length(p[1] - p[0]) * 0.5, 1.0);
-            controlBuf[ctlIdx + 1] = vec4(p[1], 1.0);
-            controlBuf[ctlIdx + 2] = vec4(p[1] + tangent * length(p[2] - p[1]) * 0.5, 1.0);
-            
-            if (i == N-3) {
-                // Last invocation, add 2 control points at end
-                controlBuf[ctlIdx + 3] = vec4(p[2] - (p[2] - p[1]) * 0.1, 1.0);
-                controlBuf[ctlIdx + 4] = vec4(p[2], 1.0);
-            }
+        // Compute two tangents between which we create control points
+        vec3 tangents[2];
+        if (i == 0) {
+            // First segment, first tangent is just vector from p[1] to p[2]
+            tangents[0] = normalize(p[2] - p[1]);
+            tangents[1] = normalize(p[3] - p[1]);
+        } else if (i == N-2) {
+            // Last segment, last tangent is just vector from p[1] to p[2]
+            tangents[0] = normalize(p[2] - p[0]);
+            tangents[1] = normalize(p[2] - p[1]);
+        } else if (i == N-1) {
+            // Final vertex
+            tangents[0] = normalize(p[1] - p[0]);
+        } else {
+            // Middle segment
+            tangents[0] = normalize(p[2] - p[0]);
+            tangents[1] = normalize(p[3] - p[1]);
         }
 
-        // --- 2. Sync threads, then interpolate between control points to get smooth hair
-        groupMemoryBarrier();
-        const uint ctrlReadOffset = h * (N*3 - 2) + i*3;
-        const vec3 ctrl[4] = {
-            controlBuf[ctrlReadOffset + 0].xyz,
-            controlBuf[ctrlReadOffset + 1].xyz,
-            controlBuf[ctrlReadOffset + 2].xyz,
-            controlBuf[ctrlReadOffset + 3].xyz
+        // Bezier control points
+        vec3 ctrl[4] = {
+            p[1],
+            p[1] + tangents[0] * length(p[2] - p[1]) * 0.5,
+            p[2] - tangents[1] * length(p[2] - p[1]) * 0.5,
+            p[2]
         };
+
+        // Interpolate along bezier curve defined by 4 control points
         if (i <= N-2) {
             // Place M vertices along bezier curve
             for (uint j = 0; j < M; j++) {

@@ -91,8 +91,8 @@ void HairMesh::bindToComputeShader(ComputeShader &cs) const
 {
     assert(this->vaoInitialized);
     cs.assocBuffer("ControlHairs", this->vboControl);
-    cs.createBuffer("ControlPoints", numControlPoints() * sizeof(glm::vec4));
     cs.assocBuffer("InterpPoints", this->vboInterp);
+    cs.assocBuffer("Tangents", this->vboTangents);
     cs.assocBuffer("InterpIndices", this->eboInterp);
     cs.assocBuffer("TriIndices", this->eboTris);
     cs.setUniform("N", controlHairLen);

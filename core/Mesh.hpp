@@ -36,6 +36,8 @@ private:
     GLuint vboControl = GL_INVALID_INDEX;
     // VBO for interpolated hairs
     GLuint vboInterp = GL_INVALID_INDEX;
+    // VBO for interpolated hair tangents
+    GLuint vboTangents = GL_INVALID_INDEX;
     // EBO for interpolated hairs
     GLuint eboInterp = GL_INVALID_INDEX;
     // EBO for triangles
