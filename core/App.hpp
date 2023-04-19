@@ -3,6 +3,7 @@
 #include <Renderer.hpp>
 #include <GUIManager.hpp>
 #include <EventHandler.hpp>
+#include <PhysicsIntegrator.hpp>
 
 class App
 {
@@ -14,5 +15,6 @@ public:
 private:
     Renderer renderer;
     GUIManager gui;
+    std::shared_ptr<PhysicsIntegrator> physicsIntegrator;
     std::shared_ptr<Scene> scene;
 };

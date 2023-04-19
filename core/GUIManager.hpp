@@ -9,6 +9,7 @@
 #include <backends/imgui_impl_opengl3.h>
 
 #include <Scene.hpp>
+#include <PhysicsIntegrator.hpp>
 
 class GUIManager
 {
@@ -30,13 +31,16 @@ public:
     void Terminate();
 
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove;
-    std::string windowName = "GUI";
+    //std::string windowName = "GUI";
 
     std::shared_ptr<Scene> scene;   
+    std::shared_ptr<PhysicsIntegrator> physicsIntegrator;
 private:
     void NewFrame();
     //Other ui components draw functions here
     void DrawHairMeshControls();
     void DrawSurfaceMeshControls();
     void DrawLightControls();
+
+    void DrawSimulationControls();
 };
