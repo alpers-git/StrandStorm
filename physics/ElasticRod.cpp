@@ -72,7 +72,7 @@ Matrix3f ElasticRod::kappaBGrad(size_t i, size_t j)
     }
     else if (j == i)
     {
-        return ((2.0f * skew(edge(i)) + kb * edge(i).transpose()) +
+        return -((2.0f * skew(edge(i)) + kb * edge(i).transpose()) +
                 (2.0f * skew(edge(i - 1)) - kb * edge(i - 1).transpose())) /
                denom;
     }
