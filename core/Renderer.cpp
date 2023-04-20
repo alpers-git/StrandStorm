@@ -152,6 +152,11 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("opacityMaps", (int)opacitiesTex->texUnit - GL_TEXTURE0, false);
     hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
     hairProg.SetUniform("shadows_enabled", scene->hairMesh.shadowsEnable);
+    
+    glm::mat4 to_view_space = scene->cam.view();
+    hairProg.SetUniform("to_view_space", to_view_space);
+    hairProg.SetUniform("light_dir", scene->light.dir);
+    hairProg.SetUniform("shininess", 100.0f,true);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
 }
 
