@@ -156,7 +156,9 @@ void Renderer::RenderHairs()
     glm::mat4 to_view_space = scene->cam.view();
     hairProg.SetUniform("to_view_space", to_view_space);
     hairProg.SetUniform("light_dir", scene->light.dir);
-    hairProg.SetUniform("shininess", 100.0f,true);
+    hairProg.SetUniform("shininess", scene->hairMesh.shininess,true);
+    hairProg.SetUniform("specular", scene->hairMesh.specular);
+    hairProg.SetUniform("ambient", scene->hairMesh.ambient);
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
 }
 

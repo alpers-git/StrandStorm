@@ -94,6 +94,10 @@ public:
     }
 
     glm::vec4 color = glm::vec4(0.57f, 0.48f, 0.0f, 1.0f);
+    glm::vec3 ambient = glm::vec3(0.1f);
+    glm::vec3 specular = glm::vec3(0.50f);
+    float shininess = 32.0f;
+
     bool show = true;
     bool shadowsEnable = true;
 };

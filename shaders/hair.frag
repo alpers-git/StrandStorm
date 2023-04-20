@@ -7,12 +7,15 @@ in vec3 viewDir;
 uniform sampler2D depthMap;
 uniform sampler2D opacityMaps;
 uniform float dk;
-uniform vec4 hair_color;
-uniform mat4 to_view_space;
 uniform bool shadows_enabled;
-uniform vec3 light_dir;
-uniform float shininess;
 
+uniform mat4 to_view_space;
+uniform vec3 light_dir;
+uniform vec3 ambient;
+
+uniform vec4 hair_color;
+uniform vec3 specular;
+uniform float shininess;
 
 
 
@@ -39,22 +42,23 @@ float getOpacity() {
         float t = clamp(relDepth - floor(relDepth), 0.0, 1.0);
          // Opacity map layer
         int curLayers[2] = {int(floor(relDepth)), int(ceil(relDepth))};
-        absorption += mix(O[curLayers[0]], O[curLayers[1]], t);
+        absorption += clamp(mix(O[curLayers[0]], O[curLayers[1]], t), 0.0, 1.0);
     }
     return 1.0 - (absorption / 4.0);
 }
 
-void CalculateKajiyaKay(out vec3 diffuse, out vec3 specular)
+void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
 {
     vec3 viewSpaceLightDir = normalize((to_view_space*vec4(light_dir, 0.0)).xyz);
     vec3 viewSpaceTangent = normalize(fTangent);
     float cosL = dot(viewSpaceTangent, viewSpaceLightDir);
     float sinL = clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
-    diffuse = hair_color.rgb * sinL;
+    shadedColor = hair_color.rgb * sinL;
     vec3 viewDirNorm = normalize(viewDir);
     float cosV = dot(viewSpaceTangent, viewDirNorm);
     float sinV = clamp(sqrt(1.0 - cosV * cosV), 0.0, 1.0);
-    specular = vec3(pow(max(clamp(cosL,0,1)*clamp(cosV,0,1) + sinL*sinV,0),shininess));
+    shadedColor += specular * vec3(pow(max(clamp(cosL,0,1)*clamp(cosV,0,1) + sinL*sinV,0),shininess));
+    shadedColor = shadedColor * shadowFraction + hair_color.rgb * sinL * ambient;
 }
 
 out vec4 fragColor;
@@ -62,8 +66,8 @@ out vec4 fragColor;
 void main() {
     // Compute opacity value and blend
     float shadowFraction = shadows_enabled ? getOpacity() : 1.0;
-    vec3 diffuse,specular;
-    CalculateKajiyaKay(diffuse, specular);
-    fragColor = vec4((diffuse+specular) * shadowFraction, hair_color.a) + vec4(0.01, 0.01, 0.01, 0.0);
+    vec3 shadedColor;
+    CalculateKajiyaKay(shadedColor,shadowFraction);    
+    fragColor = vec4(shadedColor, hair_color.a);
 
 }

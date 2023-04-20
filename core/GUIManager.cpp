@@ -131,6 +131,9 @@ void GUIManager::DrawHairMeshControls()
         ImGui::Checkbox("Shadows", &scene->hairMesh.shadowsEnable);
         ImGui::SeparatorText("Hair Mesh Material");
         ImGui::ColorEdit4("Color##0", &scene->hairMesh.color[0]);
+        ImGui::ColorEdit4("Ambient##0", &scene->hairMesh.ambient[0]);
+        ImGui::ColorEdit4("Specular##0", &scene->hairMesh.specular[0]);
+        ImGui::InputFloat("Shininess##0", &scene->hairMesh.shininess);
         // ImGui::SameLine();
         // ImGui::Checkbox("Show Control Hairs", nullptr);
         // ImGui::InputInt("Guide hair count", nullptr);
