@@ -7,6 +7,7 @@
 #include <string>
 
 class ComputeShader;
+class ElasticRod;
 
 class Mesh
 {
@@ -47,7 +48,7 @@ public:
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 5;
+    static constexpr uint32_t controlHairLen = 12;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
@@ -63,8 +64,10 @@ public:
     HairMesh() = default;
 
     void build(const OpenGLProgram& prog) override;
-    void loadFromFile(const std::string& modelPath, bool compNormals = true) override;
+    void updateBuffer();
+    void loadFromFile(const std::string &modelPath, bool compNormals = true) override;
     void draw(const OpenGLProgram& prog) override;
+    void updateFrom(const ElasticRod& rod, size_t idx);
 
     void bindToComputeShader(ComputeShader& cs) const;
 

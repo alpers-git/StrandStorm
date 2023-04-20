@@ -8,9 +8,6 @@ using namespace Eigen;
 class ElasticRod
 {
 private:
-    std::vector<Vector3f> xRest;
-    std::vector<Vector3f> x;
-    std::vector<Vector3f> v;
 
     // Curvature
     float kappa(size_t i);
@@ -29,6 +26,9 @@ private:
     // Force acting on vertex i
     Vector3f force(size_t i);
 public:
+    std::vector<Vector3f> xRest;
+    std::vector<Vector3f> x;
+    std::vector<Vector3f> v;
 
     // Bending modulus
     float alpha = 0.1f;

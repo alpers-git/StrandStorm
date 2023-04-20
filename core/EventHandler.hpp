@@ -17,6 +17,7 @@ struct Event
         MouseMove,
         MouseScroll,
         Drop,
+        PhysicsSync,
         // GeometryChange,
         // TextureChange
     };

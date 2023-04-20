@@ -22,7 +22,7 @@ public:
 
 private:
     void TakeStep(float dt);
-    float dt = 0.2f;
+    float dt = 0.002f;
     int numSteps = 5;
 };
 

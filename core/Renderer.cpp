@@ -189,3 +189,8 @@ void Renderer::RenderSurfaces()
 
     scene->surfaceMesh.draw(surfaceProg); //todo index this into an array and loop over it
 }
+
+void Renderer::PostPhysicsSync()
+{
+    scene->hairMesh.updateBuffer();
+}

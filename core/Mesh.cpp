@@ -1,5 +1,6 @@
 #include <Mesh.hpp>
 #include <Logging.hpp>
+#include <ElasticRod.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
@@ -24,6 +25,13 @@ void HairMesh::build(const OpenGLProgram &prog)
     prog.SetAttribPointer(vboInterp, "vPos", 4, GL_FLOAT);
     prog.SetAttribPointer(vboControl, "vPos", 4, GL_FLOAT);
     prog.SetAttribPointer(vboTangents, "vTangent", 4, GL_FLOAT);
+}
+
+void HairMesh::updateBuffer()
+{
+    glBindVertexArray(vao) $gl_chk;
+    glBindBuffer(GL_ARRAY_BUFFER, vboControl) $gl_chk;
+    glBufferSubData(GL_ARRAY_BUFFER, 0, controlVerts.size() * sizeof(glm::vec4), controlVerts.data()) $gl_chk;
 }
 
 void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
@@ -95,6 +103,15 @@ void HairMesh::draw(const OpenGLProgram &prog)
     glVertexAttribPointer(prog.AttribLocation("vPos"), 4, GL_FLOAT, GL_FALSE, 0, (void*)0) $gl_chk;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboInterp) $gl_chk;
     glDrawElements(GL_LINES, numInterpElements(), GL_UNSIGNED_INT, nullptr) $gl_chk;
+}
+
+void HairMesh::updateFrom(const ElasticRod& rod, size_t idx)
+{
+    for (size_t i = 0; i < controlHairLen; i++)
+    {
+        Eigen::Vector3f x = rod.x[i];
+        controlVerts[controlHairLen * idx + i] = glm::vec4(x[0], x[1], x[2], 1.0f);
+    }
 }
 
 void HairMesh::bindToComputeShader(ComputeShader &cs) const
