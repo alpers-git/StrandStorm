@@ -134,7 +134,7 @@ void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
         this->controlVerts.push_back({v, 1.0f});
-        v += dir * hairGrowth + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.1f;
+        v += dir * hairGrowth + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * controlHairRandomize;
     }
 }
 

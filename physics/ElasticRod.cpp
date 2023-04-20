@@ -93,7 +93,7 @@ Vector3f ElasticRod::force(size_t i)
         // Only bending force, we need twisting from psi
         f += (-(2.0f * alpha) / initEdgeLen(j)) * kappaBGrad(i, j).transpose() * kappaB(j);
     }
-    return f;
+    return f + Vector3f(0.0f, -0.8f, 0.0f);
 }
 
 void ElasticRod::init(const std::vector<glm::vec3> &verts)

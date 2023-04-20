@@ -58,6 +58,7 @@ public:
     static constexpr float hairGrowth = 0.05f;
     // Debug control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
+    static constexpr float controlHairRandomize = 0.0f;
 
     bool drawControlHairs = false;
 
