@@ -52,7 +52,7 @@ public:
     //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
-    static constexpr uint32_t interpDensity = 128;
+    static constexpr uint32_t interpDensity = 40;
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Debug control hair duplication
