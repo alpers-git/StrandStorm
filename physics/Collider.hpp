@@ -32,7 +32,8 @@ class SphereCollider : public Collider
 public:
     SphereCollider(glm::vec3 center, float radius);
 
-    bool isCollidingWith(Collider& other) override;
+    bool IsCollidingWith(Collider& other, CollisionInfo& collision) override;
+    float GetBoundaryAt(glm::vec3 pos) override;
 
     float radius;
 };
@@ -42,7 +43,8 @@ class BoxCollider : public Collider
 public:
     BoxCollider(glm::vec3 center, glm::vec3 size);
 
-    bool isCollidingWith(Collider& other) override;
+    bool IsCollidingWith(Collider& other, CollisionInfo& collision) override;
+    float GetBoundaryAt(glm::vec3 pos) override;
 
     glm::vec3 size;
 };

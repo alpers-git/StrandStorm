@@ -31,7 +31,7 @@ float BoxCollider::GetBoundaryAt(glm::vec3 pos) {
     glm::vec3 halfSize = size / 2.0f;   // calculate half of the box size in each dimension
 
     // calculate the distances to the boundary planes in each dimension
-    float d = halfSize / std::abs(direction);
+    glm::vec3 d = halfSize / glm::abs(direction);
 
     //project glm::compMin(d) onto the direction vector
     float distance = glm::dot(direction, glm::normalize(d));

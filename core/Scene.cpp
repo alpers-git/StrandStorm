@@ -12,6 +12,15 @@ void Scene::init(const Renderer& r)
     hairMesh.loadFromFile("resources/sphere.obj");
     hairMesh.build(r.hairProg);
 
+    for (size_t i = 0; i < hairMesh.numControlHairs(); i++) {
+        ElasticRod& rod = rods.emplace_back();
+        std::vector<glm::vec3> ctrlHair;
+        for (size_t j = i * HairMesh::controlHairLen; j < (i+1) * HairMesh::controlHairLen; j++) {
+            ctrlHair.push_back(hairMesh.controlVerts[j]);
+        }
+        rod.init(ctrlHair);
+    }
+
     surfaceMesh.loadFromFile("resources/sphere.obj");
     surfaceMesh.build(r.surfaceProg);
 

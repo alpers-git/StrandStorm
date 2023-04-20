@@ -104,6 +104,14 @@ bool RNG::test(float probability) {
     return this->rdist(gen, params) < probability;
 }
 
+Eigen::Matrix3f skew(const Eigen::Vector3f& v) {
+    Eigen::Matrix3f m; m <<
+        0.0f, -v.z(), v.y(),
+        v.z(), 0.0f, -v.x(),
+        -v.y(), v.x(), 0.0f;
+    return m;
+}
+
 namespace glm {
     vec3 make_vec3(const cy::Vec3f &v)
     {

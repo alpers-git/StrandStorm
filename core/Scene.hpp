@@ -2,6 +2,7 @@
 
 #include <Mesh.hpp>
 #include <Camera.hpp>
+#include <ElasticRod.hpp>
 
 class Renderer;
 
@@ -10,6 +11,7 @@ class Scene
 public:
     HairMesh hairMesh;
     SurfaceMesh surfaceMesh;
+    std::vector<ElasticRod> rods;
     Camera cam;
     struct Light {
         glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.1f);

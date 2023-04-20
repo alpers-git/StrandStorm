@@ -2,6 +2,7 @@
 #include <memory>
 #include <Scene.hpp>
 #include <Logging.hpp>
+#include <ElasticRod.hpp>
 
 class PhysicsIntegrator
 {

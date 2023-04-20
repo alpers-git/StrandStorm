@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <glad/glad.h>
 #include <cyVector.h>
+#include <Eigen/Dense>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
@@ -17,9 +18,12 @@ void APIENTRY GLDebugMessageCallback(
     GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const GLchar *msg, const void *data);
 
+
 constexpr float tau = 6.283185307179586f;
 constexpr float tau2 = 3.141592653589793f;
 constexpr float tau4 = 1.5707963267948966f;
+constexpr float pi = tau2;
+constexpr float pi2 = tau4;
 
 inline glm::vec3 spherePoint(float phi, float theta) {
     return {
@@ -92,3 +96,5 @@ namespace gl {
         return gl::buffer(target, (size_t)(data.size() * sizeof(T)), (const void*)data.data(), usage);
     }
 };
+
+Eigen::Matrix3f skew(const Eigen::Vector3f &v);

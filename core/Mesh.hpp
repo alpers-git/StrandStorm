@@ -28,8 +28,6 @@ class HairMesh : public Mesh
 private:
     // Random number gen for making control hairs
     RNG rng = {0};
-    // Vertices for control hairs
-    std::vector<glm::vec4> controlVerts;
     // Triangles for interpolating hairs
     std::vector<GLuint> tris;
     // VBO for control hairs
@@ -46,6 +44,8 @@ private:
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
+    // Vertices for control hairs
+    std::vector<glm::vec4> controlVerts;
     // Number of vertices in each control hair (N)
     static constexpr uint32_t controlHairLen = 5;
     // Number of subdivisions between each control hair vertex (M)
