@@ -33,6 +33,15 @@ add_subdirectory(submodules/glfw)
 set_property(TARGET glfw PROPERTY FOLDER "submodules/GLFW3" )
 #----------------------------------------------#
 
+#--------------------lodepng------------------#
+# Set where the lodepng files are stored
+set(LODEPNG_PATH  submodules/lodepng)
+
+# Compile as static library 
+file(GLOB LODEPNG_SOURCES ${LODEPNG_PATH}/*.cpp)
+add_library("lodepng" STATIC ${LODEPNG_PATH}/lodepng.cpp
+                              ${LODEPNG_PATH}/lodepng.h)
+
 #--------------------ImGui---------------------#
 # Set where the ImGui files are stored
 set(IMGUI_PATH  submodules/imgui)
@@ -67,7 +76,8 @@ include_directories(
 #========== Targets Configurations ===========#
 file(GLOB_RECURSE CORE_SOURCES core/*.cpp)
 file(GLOB_RECURSE PHYSICS_SOURCES physics/*.cpp)
-set(SOURCES ${CORE_SOURCES} ${PHYSICS_SOURCES})
+set(SOURCES ${CORE_SOURCES} ${PHYSICS_SOURCES}
+)
 add_executable(strandStorm ${SOURCES})
     
 # Set executable dependency libraries
@@ -80,4 +90,5 @@ target_link_libraries(strandStorm
     PRIVATE EnTT::EnTT
     PRIVATE spdlog
     PUBLIC ImGui
+    PUBLIC lodepng
 )
