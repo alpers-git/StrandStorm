@@ -88,6 +88,12 @@ void GUIManager::Initialize()
     StyleColorsAlteredDracula();
     ImGui_ImplGlfw_InitForOpenGL(EventHandler::GetInstance().GetWindowPointer(), true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
+    int dpiScale = 2;
+    float monScaleX, monScaleY;
+    glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), &monScaleX, &monScaleY);
+    dpiScale = std::max((int)monScaleX, (int)monScaleY);
+    this->SetScaling(dpiScale);
 }
 
 void GUIManager::Draw()
@@ -240,6 +246,19 @@ void GUIManager::Terminate()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void GUIManager::SetScaling(int scalingFactor)
+{
+
+    ImGui::GetStyle().ScaleAllSizes((float)scalingFactor);
+    ImGui::GetIO().FontGlobalScale = (float)scalingFactor;
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 2;
+    fontConfig.OversampleV = 2;
+    fontConfig.SizePixels = 16.0f * scalingFactor;
+    this->font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+        "resources/fonts/RobotoMono-Medium.ttf", 16.0f, &fontConfig);
 }
 
 void GUIManager::NewFrame()
