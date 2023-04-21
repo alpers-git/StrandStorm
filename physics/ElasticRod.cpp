@@ -121,7 +121,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
 
 void ElasticRod::integrateFwEuler(float dt)
 {
-    for (size_t i = 1; i < x.size() - 2; i++)
+    for (size_t i = 2; i < x.size() - 2; i++)
     {
         v[i] += (force(i) + gravity
                 - drag * v[i].squaredNorm() * v[i]) * dt;
