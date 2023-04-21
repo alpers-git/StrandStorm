@@ -228,7 +228,7 @@ void GUIManager::DrawRodParameters()
         auto width = ImGui::GetContentRegionAvail().x;
         ImGui::PushItemWidth(width * 0.45f);
         static float drag = 0.05f;
-        if(ImGui::DragFloat("drag", &drag, 0.0001f, 0.0f, 1.0f, "%.4f"))
+        if(ImGui::DragFloat("drag", &drag, 0.0001f, 0.0f, 1000.0f, "%.4f"))
             scene->setDrag(drag);
         ImGui::PopItemWidth();
     }
