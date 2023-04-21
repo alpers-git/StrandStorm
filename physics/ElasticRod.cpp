@@ -25,7 +25,7 @@ float ElasticRod::bendingEnergy()
 
 float ElasticRod::initEdgeLen(size_t i)
 {
-    assert(i > 0);
+    assert(i >= 0);
     i = std::min(i, xRest.size() - 2);
     return (xRest[i + 1] - xRest[i]).norm();
 }
@@ -69,14 +69,14 @@ Matrix3f ElasticRod::kappaBGrad(size_t i, size_t j)
 Vector3f ElasticRod::edge(size_t i)
 {
     // If x_i is last vertex, return e_x-1
-    assert(i > 0);
+    assert(i >= 0);
     i = std::min(i, x.size() - 2);
     return x[i + 1] - x[i];
 }
 
 Vector3f ElasticRod::initEdge(size_t i)
 {
-    assert(i > 0);
+    assert(i >= 0);
     i = std::min(i, xRest.size() - 2);
     return xRest[i + 1] - xRest[i];
 }
