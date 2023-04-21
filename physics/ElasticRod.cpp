@@ -111,7 +111,7 @@ void ElasticRod::integrateFwEuler(float dt)
     for (size_t i = 1; i < x.size(); i++)
     {
         v[i] += (force(i) + gravity) * dt;
-        v[i] *= 1.0f - drag;
+        v[i] -= 0.5f *drag * v[i].squaredNorm() * v[i] * dt;
         x[i] += v[i] * dt;
     }
     this->enforceConstraints(dt);
