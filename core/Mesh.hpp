@@ -98,6 +98,8 @@ public:
     glm::vec3 specular = glm::vec3(0.50f);
     float shininess = 32.0f;
 
+    std::shared_ptr<Texture> lut0,lut1,lut2;
+
     bool show = true;
     bool shadowsEnable = true;
 };

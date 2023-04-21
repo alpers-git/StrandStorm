@@ -15,6 +15,20 @@ void Scene::init(const Renderer& r)
     surfaceMesh.loadFromFile("resources/sphere.obj");
     surfaceMesh.build(r.surfaceProg);
 
+    //set Marschner luts
+    TextureParams lutParams;
+    lutParams.wrapS = GL_CLAMP_TO_BORDER;
+    lutParams.wrapT = GL_CLAMP_TO_BORDER;
+    lutParams.internalFormat = GL_RGBA8;
+    lutParams.format = GL_RGBA;
+    lutParams.type = GL_FLOAT;
+    hairMesh.lut0 = std::make_shared<Texture>("resources/Textures/lut0.png", GL_TEXTURE0, lutParams);
+    hairMesh.lut1 = std::make_shared<Texture>("resources/Textures/lut1.png", GL_TEXTURE1, lutParams);
+    lutParams.internalFormat = GL_RGB8;
+    lutParams.format = GL_RGB;
+    hairMesh.lut2 = std::make_shared<Texture>("resources/Textures/lut2.png", GL_TEXTURE2, lutParams);
+
+
     //set light's shadow texture
     TextureParams params;
     params.wrapS = GL_CLAMP_TO_BORDER;
