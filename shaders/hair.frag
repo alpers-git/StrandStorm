@@ -17,7 +17,7 @@ uniform vec4 hair_color;
 uniform vec3 specular;
 uniform float shininess;
 
-
+uniform sampler2D lut0,lut1;
 
 const vec2 poissonDisk[4] = vec2[](
   vec2( -0.94201624, -0.39906216 ),
@@ -61,13 +61,15 @@ void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
     shadedColor = shadedColor * shadowFraction + hair_color.rgb * sinL * ambient;
 }
 
+
+
 out vec4 fragColor;
 
-void main() {
+void main() 
+{
     // Compute opacity value and blend
     float shadowFraction = shadows_enabled ? getOpacity() : 1.0;
     vec3 shadedColor;
-    CalculateKajiyaKay(shadedColor,shadowFraction);    
+    CalculateKajiyaKay(shadedColor,shadowFraction);
     fragColor = vec4(shadedColor, hair_color.a);
-
 }

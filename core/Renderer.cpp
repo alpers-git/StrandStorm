@@ -159,6 +159,14 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("shininess", scene->hairMesh.shininess,true);
     hairProg.SetUniform("specular", scene->hairMesh.specular);
     hairProg.SetUniform("ambient", scene->hairMesh.ambient);
+
+    scene->hairMesh.lut0->Bind();
+    hairProg.SetUniform("lut0", (int)scene->hairMesh.lut0->texUnit - GL_TEXTURE0, false);
+    scene->hairMesh.lut1->Bind();
+    hairProg.SetUniform("lut1", (int)scene->hairMesh.lut1->texUnit - GL_TEXTURE0, false);
+
+    hairProg.SetUniform("resolution", glm::vec2(windowSize), false);
+
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
 }
 
