@@ -23,6 +23,8 @@ private:
     Matrix3f kappaBGrad(size_t i, size_t j);
     // Edge vector (i+1) - i
     Vector3f edge(size_t i);
+    // Initial edge vector (i+1) - i
+    Vector3f initEdge(size_t i);
     // Force acting on vertex i
     Vector3f force(size_t i);
 public:
@@ -30,7 +32,10 @@ public:
     std::vector<Vector3f> x;
     std::vector<Vector3f> v;
     Vector3f gravity;
-    float drag;
+    // [0,1] Simple velocity reduction factor
+    float drag = 0.1f;
+    // [0,1] Interpolation factor for enforcing inextensability constraint
+    float inextensability = 0.1f;
 
     // Bending modulus
     float alpha = 0.1f;
@@ -39,5 +44,6 @@ public:
 
     void init(const std::vector<glm::vec3>& verts);
     void integrateFwEuler(float dt);
+    void enforceConstraints(float dt);
     void updateVerts(std::vector<glm::vec4>& verts);
 };
