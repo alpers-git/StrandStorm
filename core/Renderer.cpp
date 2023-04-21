@@ -153,8 +153,8 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("dk", scene->light.opacityShadowMaps.dk);
     hairProg.SetUniform("shadows_enabled", scene->hairMesh.shadowsEnable);
     
-    glm::mat4 to_view_space = scene->cam.view();
-    hairProg.SetUniform("to_view_space", to_view_space);
+    glm::mat4 viewInverse = glm::inverse(scene->cam.view());
+    hairProg.SetUniform("viewInverse", viewInverse);
     hairProg.SetUniform("light_dir", scene->light.dir);
     hairProg.SetUniform("shininess", scene->hairMesh.shininess,true);
     hairProg.SetUniform("specular", scene->hairMesh.specular);

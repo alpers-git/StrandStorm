@@ -9,7 +9,7 @@ uniform sampler2D opacityMaps;
 uniform float dk;
 uniform bool shadows_enabled;
 
-uniform mat4 to_view_space;
+uniform mat4 uTView;
 uniform vec3 light_dir;
 uniform vec3 ambient;
 
@@ -49,7 +49,7 @@ float getOpacity() {
 
 void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
 {
-    vec3 viewSpaceLightDir = normalize((to_view_space*vec4(light_dir, 0.0)).xyz);
+    vec3 viewSpaceLightDir = normalize((uTView*vec4(light_dir, 0.0)).xyz);
     vec3 viewSpaceTangent = normalize(fTangent);
     float cosL = dot(viewSpaceTangent, viewSpaceLightDir);
     float sinL = clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
