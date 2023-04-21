@@ -134,6 +134,22 @@ void GUIManager::DrawHairMeshControls()
         ImGui::ColorEdit4("Ambient##0", &scene->hairMesh.ambient[0]);
         ImGui::ColorEdit4("Specular##0", &scene->hairMesh.specular[0]);
         ImGui::InputFloat("Shininess##0", &scene->hairMesh.shininess);
+
+        // ImGui::SeparatorText("LUT images");
+
+        // auto width = ImGui::GetContentRegionAvail().x;
+        // ImGui::BeginGroup();
+        // ImGui::Text("LUT0");
+        // ImGui::Image((void*)scene->hairMesh.lut0->glID, 
+        //     ImVec2(width/2, width/2));
+        // ImGui::EndGroup();
+        // ImGui::SameLine();
+        // ImGui::BeginGroup();
+        // ImGui::Text("LUT1");
+        // ImGui::Image((void*)scene->hairMesh.lut1->glID, 
+        //     ImVec2(width/2, width/2));
+        // ImGui::EndGroup();
+
         // ImGui::SameLine();
         // ImGui::Checkbox("Show Control Hairs", nullptr);
         // ImGui::InputInt("Guide hair count", nullptr);
@@ -189,7 +205,8 @@ void GUIManager::DrawLightControls()
             ImGui::Text("Opacity Map");
             ImGui::Image((void*)scene->light.opacityShadowMaps.opacitiesTex->glID, 
                 ImVec2(width/2, width/2));
-            ImGui::EndGroup();
+            ImGui::EndGroup();            
+            
         }
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
