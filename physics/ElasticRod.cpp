@@ -121,12 +121,13 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
 
 void ElasticRod::integrateFwEuler(float dt)
 {
-    for (size_t i = 1; i < x.size(); i++)
+    for (size_t i = 1; i < x.size()-1; i++)
     {
         v[i] += (force(i) + gravity
                 - drag * v[i].squaredNorm() * v[i]) * dt;
         x[i] += v[i] * dt;
     }
+    x[x.size()-1] += v[x.size()-2]*dt;
 }
 
 void ElasticRod::updateVerts(std::vector<glm::vec4> &verts)
