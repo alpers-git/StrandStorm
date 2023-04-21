@@ -33,6 +33,8 @@ public:
 
     // Called by Renderer::Initialize()
     void init(const Renderer& r);
+    void setGravity(const Eigen::Vector3f& gravity);
+    void setDrag(const float drag);
 private:
     /* data */
 };

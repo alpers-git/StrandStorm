@@ -29,6 +29,8 @@ public:
     std::vector<Vector3f> xRest;
     std::vector<Vector3f> x;
     std::vector<Vector3f> v;
+    Vector3f gravity;
+    float drag;
 
     // Bending modulus
     float alpha = 0.1f;

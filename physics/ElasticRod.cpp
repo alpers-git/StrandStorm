@@ -93,7 +93,7 @@ Vector3f ElasticRod::force(size_t i)
         // Only bending force, we need twisting from psi
         f += (-(2.0f * alpha) / initEdgeLen(j)) * kappaBGrad(i, j).transpose() * kappaB(j);
     }
-    return f + Vector3f(0.0f, -0.8f, 0.0f);
+    return f;
 }
 
 void ElasticRod::init(const std::vector<glm::vec3> &verts)
@@ -113,7 +113,8 @@ void ElasticRod::integrateFwEuler(float dt)
 {
     for (size_t i = 2; i < x.size() - 2; i++)
     {
-        v[i] += (force(i)) * dt;
+        v[i] += (force(i) + gravity
+                - drag * v[i].squaredNorm() * v[i]) * dt;
         x[i] += v[i] * dt;
     }
 }

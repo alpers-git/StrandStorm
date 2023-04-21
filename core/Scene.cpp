@@ -67,3 +67,15 @@ glm::mat4 Scene::Light::CalculateLightTexSpaceMatrix() const
         0.5, 0.5, 0.498, 1.0);
     return shadowMatrix * this->CalculateLightSpaceMatrix();
 }
+
+void Scene::setGravity(const Eigen::Vector3f& gravity) 
+{
+    for (auto& rod : rods)
+        rod.gravity = gravity;
+}
+
+void Scene::setDrag(const float drag)
+{
+    for (auto& rod : rods)
+        rod.drag = drag;
+}

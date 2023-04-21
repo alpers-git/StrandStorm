@@ -114,6 +114,7 @@ void GUIManager::Draw()
     ImGui::Begin("Physics Controls", 0, windowFlags);
 
     DrawSimulationControls();
+    DrawRodParameters();
 
     ImGui::End();
     ImGui::Render();
@@ -207,6 +208,23 @@ void GUIManager::DrawSimulationControls()
         int numSteps = physicsIntegrator->getNumSteps();
         if(ImGui::InputInt("numSteps", &numSteps , 1, 1, ImGuiInputTextFlags_EnterReturnsTrue)) 
             physicsIntegrator->setNumSteps(numSteps);
+    }
+}
+
+void GUIManager::DrawRodParameters()
+{
+    if(ImGui::CollapsingHeader("Elactic Rods", 0))
+    {
+        static Eigen::Vector3f gravity(0.0f, 0.0f, 0.0f);
+        if(ImGui::DragFloat3("gravity", &gravity[0], 0.001f, -10.0f, 10.0f))
+            scene->setGravity(gravity);
+
+        auto width = ImGui::GetContentRegionAvail().x;
+        ImGui::PushItemWidth(width * 0.45f);
+        static float drag = 0.0f;
+        if(ImGui::DragFloat("drag", &drag, 0.0001f, 0.0f, 100.0f, "%.4f"));
+            scene->setDrag(drag);
+        ImGui::PopItemWidth();
     }
 }
 

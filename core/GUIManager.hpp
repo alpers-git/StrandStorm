@@ -43,4 +43,5 @@ private:
     void DrawLightControls();
 
     void DrawSimulationControls();
+    void DrawRodParameters();
 };
