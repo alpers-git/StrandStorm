@@ -30,12 +30,16 @@ public:
     */
     void Terminate();
 
+    void SetScaling(int scalingFactor);
+
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove;
     //std::string windowName = "GUI";
 
     std::shared_ptr<Scene> scene;   
     std::shared_ptr<PhysicsIntegrator> physicsIntegrator;
 private:
+    ImFont* font = nullptr;
+
     void NewFrame();
     //Other ui components draw functions here
     void DrawHairMeshControls();
