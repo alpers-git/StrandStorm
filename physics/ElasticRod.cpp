@@ -2,7 +2,7 @@
 
 float ElasticRod::kappa(size_t i)
 {
-    assert(i < x.size() - 1 && i > 0);
+    assert(/*i < x.size() - 1 &&*/ i > 0);
     Vector3f e1 = edge(i);
     Vector3f e0 = edge(i - 1);
     float phi = pi - std::acos(e0.dot(e1) / (e0.norm() * e1.norm()));
@@ -11,10 +11,11 @@ float ElasticRod::kappa(size_t i)
 
 Vector3f ElasticRod::kappaB(size_t i)
 {
-    assert(i < x.size() - 1 && i > 0);
+    assert(/*i < x.size() - 1 &&*/ i > 0);
     Vector3f eCurr = edge(i);
     Vector3f ePrev = edge(i - 1);
-    Vector3f eRestCurr = xRest[i + 1] - xRest[i];
+    Vector3f eRestCurr = (i < (x.size() - 1)) ? 
+        xRest[i + 1] - xRest[i] : Vector3f().setZero();
     Vector3f eRestPrev = xRest[i] - xRest[i - 1];
 
     return (2.0f * ePrev.cross(eCurr)) /
@@ -33,13 +34,16 @@ float ElasticRod::bendingEnergy()
 
 float ElasticRod::initEdgeLen(size_t i)
 {
-    assert(i < xRest.size() - 1);
-    return (xRest[i + 1] - xRest[i]).norm();
+    //assert(i < xRest.size() - 1);
+    if(i < xRest.size() - 1)
+        return (xRest[i + 1] - xRest[i]).norm();
+    else
+        return 0.0f;
 }
 
 Vector3f ElasticRod::psiGrad(size_t i, size_t j)
 {
-    assert(j >= i - 1 && j <= i + 1);
+    assert(j >= i - 1 /*&& j <= i + 1*/);
     Vector3f kb = kappaB(i);
     if (j == i - 1)
     {
@@ -57,9 +61,10 @@ Vector3f ElasticRod::psiGrad(size_t i, size_t j)
 
 Matrix3f ElasticRod::kappaBGrad(size_t i, size_t j)
 {
-    assert(j >= i - 1 && j <= i + 1);
+    assert(j >= i - 1 /*&& j <= i + */);
     Vector3f kb = kappaB(i);
-    Vector3f eRestCurr = xRest[i + 1] - xRest[i];
+    Vector3f eRestCurr = (i < (x.size() - 1)) ? 
+        xRest[i + 1] - xRest[i] : Vector3f().setZero();
     Vector3f eRestPrev = xRest[i] - xRest[i - 1];
     float denom = eRestPrev.norm() * eRestCurr.norm() + edge(i - 1).dot(edge(i));
     if (j == i - 1)
@@ -80,16 +85,21 @@ Matrix3f ElasticRod::kappaBGrad(size_t i, size_t j)
 
 Vector3f ElasticRod::edge(size_t i)
 {
-    assert(i < x.size() - 1);
-    return x[i + 1] - x[i];
+    //assert(i < x.size() - 1);
+    if(i < xRest.size() - 1)
+        return x[i + 1] - x[i];
+    else
+        return Vector3f().setZero();
 }
 
 Vector3f ElasticRod::force(size_t i)
 {
-    assert(i >= 1 && i < x.size() - 1);
+    assert(i >= 1 /*&& i < x.size() - 1*/);
     Vector3f f = Vector3f::Zero();
     for (int j = i - 1; j <= i + 1; j++)
     {
+        if (j < 0 || j >= x.size())
+            continue;
         // Only bending force, we need twisting from psi
         f += (-(2.0f * alpha) / initEdgeLen(j)) * kappaBGrad(i, j).transpose() * kappaB(j);
     }
@@ -111,7 +121,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
 
 void ElasticRod::integrateFwEuler(float dt)
 {
-    for (size_t i = 2; i < x.size() - 2; i++)
+    for (size_t i = 1; i < x.size() - 2; i++)
     {
         v[i] += (force(i) + gravity
                 - drag * v[i].squaredNorm() * v[i]) * dt;
