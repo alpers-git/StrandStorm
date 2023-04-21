@@ -135,20 +135,28 @@ void GUIManager::DrawHairMeshControls()
         ImGui::ColorEdit4("Specular##0", &scene->hairMesh.specular[0]);
         ImGui::InputFloat("Shininess##0", &scene->hairMesh.shininess);
 
-        // ImGui::SeparatorText("LUT images");
+        ImGui::SeparatorText("Marshner Parameters");
+        ImGui::DragFloat("diffuseFalloff",&scene->hairMesh.diffuseFalloff, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("diffuseAzimuthFalloff",&scene->hairMesh.diffuseAzimuthFalloff, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("scaleDiffuse",&scene->hairMesh.scaleDiffuse, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("scaleR",&scene->hairMesh.scaleR, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("scaleTT",&scene->hairMesh.scaleTT, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("scaleTRT",&scene->hairMesh.scaleTRT, 0.01f, 0.0f, 5.0f);
 
-        // auto width = ImGui::GetContentRegionAvail().x;
-        // ImGui::BeginGroup();
-        // ImGui::Text("LUT0");
-        // ImGui::Image((void*)scene->hairMesh.lut0->glID, 
-        //     ImVec2(width/2, width/2));
-        // ImGui::EndGroup();
-        // ImGui::SameLine();
-        // ImGui::BeginGroup();
-        // ImGui::Text("LUT1");
-        // ImGui::Image((void*)scene->hairMesh.lut1->glID, 
-        //     ImVec2(width/2, width/2));
-        // ImGui::EndGroup();
+        ImGui::SeparatorText("LUT images");
+
+        auto width = ImGui::GetContentRegionAvail().x;
+        ImGui::BeginGroup();
+        ImGui::Text("LUT0");
+        ImGui::Image((void*)scene->hairMesh.lut0->glID, 
+            ImVec2(width/2, width/2));
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        ImGui::Text("LUT1");
+        ImGui::Image((void*)scene->hairMesh.lut1->glID, 
+            ImVec2(width/2, width/2));
+        ImGui::EndGroup();
 
         // ImGui::SameLine();
         // ImGui::Checkbox("Show Control Hairs", nullptr);

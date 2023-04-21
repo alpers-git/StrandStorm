@@ -156,16 +156,23 @@ void Renderer::RenderHairs()
     glm::mat4 viewInverse = glm::inverse(scene->cam.view());
     hairProg.SetUniform("viewInverse", viewInverse);
     hairProg.SetUniform("light_dir", scene->light.dir);
-    hairProg.SetUniform("shininess", scene->hairMesh.shininess,true);
-    hairProg.SetUniform("specular", scene->hairMesh.specular);
-    hairProg.SetUniform("ambient", scene->hairMesh.ambient);
+    hairProg.SetUniform("shininess", scene->hairMesh.shininess,false);
+    hairProg.SetUniform("specular", scene->hairMesh.specular,false);
+    hairProg.SetUniform("ambient", scene->hairMesh.ambient,false);
 
     scene->hairMesh.lut0->Bind();
     hairProg.SetUniform("lut0", (int)scene->hairMesh.lut0->texUnit - GL_TEXTURE0, false);
     scene->hairMesh.lut1->Bind();
     hairProg.SetUniform("lut1", (int)scene->hairMesh.lut1->texUnit - GL_TEXTURE0, false);
 
-    hairProg.SetUniform("resolution", glm::vec2(windowSize), false);
+    hairProg.SetUniform("diffuseFalloff",scene->hairMesh.diffuseFalloff,false);
+    hairProg.SetUniform("diffuseAzimuthFalloff",scene->hairMesh.diffuseAzimuthFalloff,false);
+    hairProg.SetUniform("scaleDiffuse",scene->hairMesh.scaleDiffuse,false);
+    hairProg.SetUniform("scaleR",scene->hairMesh.scaleR,false);
+    hairProg.SetUniform("scaleTT",scene->hairMesh.scaleTT,false);
+    hairProg.SetUniform("scaleTRT",scene->hairMesh.scaleTRT,false);
+
+    hairProg.SetUniform("resolution", windowSize, false);
 
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
 }

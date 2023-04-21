@@ -19,6 +19,19 @@ uniform float shininess;
 
 uniform sampler2D lut0,lut1;
 
+
+uniform float diffuseFalloff;
+uniform float diffuseAzimuthFalloff;
+
+uniform float scaleDiffuse; //Strength of the 'fake' diffuse shading
+uniform float scaleR;
+uniform float scaleTT;
+uniform float scaleTRT;
+
+uniform vec2 resolution;
+
+in float sinThetaI,sinThetaR,cosPhiD,cosThetaI,cosHalfPhi;
+
 const vec2 poissonDisk[4] = vec2[](
   vec2( -0.94201624, -0.39906216 ),
   vec2( 0.94558609, -0.76890725 ),
@@ -61,7 +74,19 @@ void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
     shadedColor = shadedColor * shadowFraction + hair_color.rgb * sinL * ambient;
 }
 
-
+void CalculateMarschner(out vec3 shadedColor,float shadowFraction)
+{
+    vec2 uv0 = vec2( sinThetaI * 0.5 + 0.5, 1.0 - ( sinThetaR * 0.5 + 0.5 ));\
+    vec4 scales = vec4( 30.0, 30.0, 30.0, 1.0 );
+	vec4 comps1 = texture( lut0, uv0 ) * scales;
+    vec2 uv1 = vec2( cosPhiD * 0.5 + 0.5, 1.0 - comps1.a);
+    vec4 comps2 = texture(lut1, uv1);
+    vec3 marschner = vec3( comps1.x * comps2.a * scaleR ) + ( comps1.y * comps2.xyz * scaleTT ) + (comps1.z * comps2.xyz * scaleTRT);
+	vec3 diffuse = hair_color.rgb * mix( 1.0, cosThetaI, diffuseFalloff ) * mix( 1.0, cosHalfPhi, diffuseAzimuthFalloff ) * scaleDiffuse; 
+    shadedColor = diffuse*hair_color.rgb + marschner * specular;
+    shadedColor = shadedColor * shadowFraction + diffuse*hair_color.rgb * ambient;  
+    
+}
 
 out vec4 fragColor;
 
@@ -70,6 +95,9 @@ void main()
     // Compute opacity value and blend
     float shadowFraction = shadows_enabled ? getOpacity() : 1.0;
     vec3 shadedColor;
-    CalculateKajiyaKay(shadedColor,shadowFraction);
+  
+    // CalculateKajiyaKay(shadedColor,shadowFraction);
+    CalculateMarschner(shadedColor,shadowFraction);
+    
     fragColor = vec4(shadedColor, hair_color.a);
 }

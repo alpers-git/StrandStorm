@@ -13,7 +13,7 @@ uniform vec3 light_dir;
 out vec3 light_clip_pos;
 out vec3 fTangent;
 out vec3 viewDir;
-out float sinThetaI,sinThetaR,cosPhiD,cosThethaI,cosHalfPhi;
+out float sinThetaI,sinThetaR,cosPhiD,cosThetaI,cosHalfPhi;
 
 void main()
 {
@@ -33,8 +33,8 @@ void main()
     vec3 lightDirPerp = lightDirTangentSpace - sinThetaI * fTangent;
     vec3 viewDirPerp = viewDirTangetSpace - sinThetaR * fTangent;
 
-    cosPhiD = dot(lightDirPerp, viewDirPerp)/sqrt(dot(lightDirPerp, lightDirPerp) * dot(viewDirPerp, viewDirPerp));
+    cosPhiD = dot(lightDirPerp, viewDirPerp)*pow(dot(lightDirPerp, lightDirPerp) * dot(viewDirPerp, viewDirPerp),-0.5);
 
-    cosThethaI = 1 - sinThetaI * sinThetaI;
+    cosThetaI = 1 - sinThetaI * sinThetaI;
     cosHalfPhi = cos(acos(cosPhiD) / 2.0);
 }
