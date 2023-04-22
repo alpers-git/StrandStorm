@@ -31,19 +31,19 @@ public:
     std::vector<Vector3f> xRest;
     std::vector<Vector3f> x;
     std::vector<Vector3f> v;
-    Vector3f gravity;
-    // [0,1] Simple velocity reduction factor
-    float drag = 0.1f;
-    // [0,1] Interpolation factor for enforcing inextensability constraint
-    float inextensability = 0.1f;
 
-    // Bending modulus
-    float alpha = 0.1f;
-    // Something
-    float beta = 0.1f;
+    // Gravity force added to each free vertex
+    static Vector3f gravity;
+    // [0,1] Simple velocity reduction factor
+    static float drag;
+    // [0,1] Interpolation factor for enforcing inextensibility constraint
+    static float inextensibility;
+    // Bending modulus (resistance to bending)
+    static float alpha;
 
     void init(const std::vector<glm::vec3>& verts);
     void integrateFwEuler(float dt);
     void enforceConstraints(float dt);
-    void updateVerts(std::vector<glm::vec4>& verts);
+    // Reset simulation to rest state
+    void reset();
 };

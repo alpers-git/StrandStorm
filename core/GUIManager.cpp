@@ -99,14 +99,17 @@ void GUIManager::Initialize()
 void GUIManager::Draw()
 {
     //place the window in the top left corner
-    //printf("window size: %f, %f\n", windowSize.x, windowSize.y);
     NewFrame();
-    auto windowSize = ImGui::GetContentRegionAvail();
+    glm::vec2 win = glm::make_vec2(ImGui::GetContentRegionAvail()) * (float)this->scalingFactor;
 
-    ImGui::SetWindowPos("Renderer Controls", ImVec2(windowSize.x/50, windowSize.y/50), ImGuiCond_Once);
-    ImGui::SetWindowSize("Renderer Controls", ImVec2(0.9 * windowSize.x,  1.25f * windowSize.y), ImGuiCond_Once);
-    ImGui::SetWindowPos("Physics Controls", ImVec2(windowSize.x/50, windowSize.y/10 + 1.25f * windowSize.y), ImGuiCond_Once);
-    ImGui::SetWindowSize("Physics Controls", ImVec2(0.9 * windowSize.x, 0.50f * windowSize.y), ImGuiCond_Once);
+    ImGui::SetWindowPos("Renderer Controls", 
+        make_ImVec2(win / 50.0f), ImGuiCond_Once);
+    ImGui::SetWindowSize("Renderer Controls", 
+        make_ImVec2(win * glm::vec2(0.9f, 1.25f)), ImGuiCond_Once);
+    ImGui::SetWindowPos("Physics Controls", 
+        ImVec2(win.x/50.0f, win.y/10.0f + 1.25f * win.y), ImGuiCond_Once);
+    ImGui::SetWindowSize("Physics Controls", 
+        ImVec2(0.9f * win.x, 0.50f * win.y), ImGuiCond_Once);
 
     ImGui::Begin("Renderer Controls", 0, windowFlags);
 
@@ -209,7 +212,7 @@ void GUIManager::DrawSimulationControls()
     if(ImGui::CollapsingHeader("Simulation Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
         float dt =  physicsIntegrator->getDt();
-        if(ImGui::DragFloat("dt", &dt, 0.001f, 0.0f, 1.0f)) 
+        if(ImGui::DragFloat("dt", &dt, 0.001f, 0.0f, 0.1f)) 
             physicsIntegrator->setDt(dt);
         int numSteps = physicsIntegrator->getNumSteps();
         if(ImGui::InputInt("numSteps", &numSteps , 1, 1, ImGuiInputTextFlags_EnterReturnsTrue)) 
@@ -219,18 +222,24 @@ void GUIManager::DrawSimulationControls()
 
 void GUIManager::DrawRodParameters()
 {
-    if(ImGui::CollapsingHeader("Elactic Rods", 0))
+    if(ImGui::CollapsingHeader("Elactic Rods", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        static Eigen::Vector3f gravity(0.0f, 0.0f, 0.0f);
-        if(ImGui::DragFloat3("gravity", &gravity[0], 0.001f, -10.0f, 10.0f))
-            scene->setGravity(gravity);
-
         auto width = ImGui::GetContentRegionAvail().x;
         ImGui::PushItemWidth(width * 0.45f);
-        static float drag = 0.05f;
-        if(ImGui::DragFloat("drag", &drag, 0.0001f, 0.0f, 1000.0f, "%.4f"))
-            scene->setDrag(drag);
+
+        ImGui::DragFloat3("gravity",
+            &ElasticRod::gravity[0], 0.001f, -1.0f, 1.0f);
+        ImGui::DragFloat("drag",
+            &ElasticRod::drag, 0.0001f, 0.0f, 1.0f, "%.4f");
+        ImGui::DragFloat("inextensibility",
+            &ElasticRod::inextensibility, 0.0001f, 0.0f, 1.0f, "%.4f");
+        ImGui::DragFloat("bending modulus",
+            &ElasticRod::alpha, 0.0001f, 0.0f, 1.0f, "%.4f");
         ImGui::PopItemWidth();
+
+        if (ImGui::Button("reset")) {
+            scene->reset();
+        }
     }
 }
 
@@ -252,6 +261,7 @@ void GUIManager::SetScaling(int scalingFactor)
     fontConfig.SizePixels = 16.0f * scalingFactor;
     this->font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
         "resources/fonts/RobotoMono-Medium.ttf", 16.0f, &fontConfig);
+    this->scalingFactor = scalingFactor;
 }
 
 void GUIManager::NewFrame()
@@ -259,4 +269,6 @@ void GUIManager::NewFrame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ImGui::PushFont(this->font);
 }

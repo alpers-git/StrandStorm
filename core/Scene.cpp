@@ -49,6 +49,14 @@ void Scene::init(const Renderer& r)
     cam.orient({0.0f, 0.0f});
 }
 
+
+void Scene::reset()
+{
+    for (ElasticRod& rod : rods) {
+        rod.reset();
+    }
+}
+
 glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const
 {
     const glm::mat4 lightProjection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 0.01f, 10.f);
@@ -66,16 +74,4 @@ glm::mat4 Scene::Light::CalculateLightTexSpaceMatrix() const
         0.0, 0.0, 0.5,   0.0,
         0.5, 0.5, 0.498, 1.0);
     return shadowMatrix * this->CalculateLightSpaceMatrix();
-}
-
-void Scene::setGravity(const Eigen::Vector3f& gravity) 
-{
-    for (auto& rod : rods)
-        rod.gravity = gravity;
-}
-
-void Scene::setDrag(const float drag)
-{
-    for (auto& rod : rods)
-        rod.drag = drag;
 }
