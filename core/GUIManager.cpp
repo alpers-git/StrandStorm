@@ -246,9 +246,9 @@ void GUIManager::DrawRodParameters()
         ImGui::PushItemWidth(width * 0.45f);
 
         ImGui::DragFloat3("gravity",
-            &ElasticRod::gravity[0], 0.001f, -1.0f, 1.0f);
+            &ElasticRod::gravity[0], 0.001f, -50.0f, 50.0f);
         ImGui::DragFloat("drag",
-            &ElasticRod::drag, 0.0001f, 0.0f, 1.0f, "%.4f");
+            &ElasticRod::drag, 0.0001f, 0.0f, 400.0f, "%.4f");
         ImGui::DragFloat("inextensibility",
             &ElasticRod::inextensibility, 0.0001f, 0.0f, 1.0f, "%.4f");
         ImGui::DragFloat("bending modulus",
