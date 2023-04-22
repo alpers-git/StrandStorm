@@ -56,8 +56,8 @@ public:
 
     void init(const std::vector<glm::vec3>& verts);
     void integrateFwEuler(float dt);
-    void handleCollisions(const std::vector<SceneObject>& colliders);
-    void enforceConstraints(float dt,const std::vector<SceneObject>& colliders);
+    void handleCollisions(const std::vector<std::shared_ptr<SceneObject>>& colliders);
+    void enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders);
     // Reset simulation to rest state
     void reset();
 };

@@ -21,16 +21,18 @@ void Scene::init(const Renderer& r)
         rod.init(ctrlHair);
     }
 
-    surface.mesh.loadFromFile("resources/sphere.obj");
-    surface.mesh.build(r.surfaceProg);
-    surface.collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 1.0f);
+    surface = std::make_shared<SceneObject>();
+    surface->mesh.loadFromFile("resources/sphere.obj");
+    surface->mesh.build(r.surfaceProg);
+    surface->collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 1.0f);
     sceneObjects.push_back(surface);
 
-    dummy.mesh.loadFromFile("resources/sphere.obj");
-    dummy.mesh.build(r.surfaceProg);
-    dummy.position = {0.0f, 2.0f, 0.0f};
-    dummy.scale /= 2.0f;
-    dummy.collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 0.05f);
+    dummy = std::make_shared<SceneObject>();
+    dummy->mesh.loadFromFile("resources/sphere.obj");
+    dummy->mesh.build(r.surfaceProg);
+    dummy->position = {0.0f, 2.0f, 0.0f};
+    dummy->scale /= 2.0f;
+    dummy->collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 0.5f);
     sceneObjects.push_back(dummy);
 
     //set light's shadow texture
@@ -83,4 +85,18 @@ glm::mat4 Scene::Light::CalculateLightTexSpaceMatrix() const
         0.0, 0.0, 0.5,   0.0,
         0.5, 0.5, 0.498, 1.0);
     return shadowMatrix * this->CalculateLightSpaceMatrix();
+}
+
+void SceneObject::setTransform(const glm::vec3 &pos, const glm::vec3 &rot, const glm::vec3 &scale)
+{
+    this->position = pos;
+    this->rotation = rot;
+    this->scale = scale;
+    this->collider->center = Eigen::Vector3f(&pos[0]);
+}
+
+void SceneObject::setTransform()
+{
+    this->collider->center = Eigen::Vector3f(&position[0]);
+    ///TODO: set rotation and scale
 }

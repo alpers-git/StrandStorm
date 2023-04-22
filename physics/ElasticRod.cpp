@@ -132,25 +132,24 @@ void ElasticRod::integrateFwEuler(float dt)
     }
 }
 
-void ElasticRod::handleCollisions(const std::vector<SceneObject>& colliders)
+void ElasticRod::handleCollisions(const std::vector<std::shared_ptr<SceneObject>>& colliders)
 {
     SphereCollider vertCollider(Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f);
     CollisionInfo collisionInfo;
     for (size_t i = 1; i < x.size(); i++) 
     {   
-        for (size_t j = 0; j < colliders.size(); j++)
+        for (const std::shared_ptr<SceneObject>& c : colliders)
         {
-            colliders[j].collider->center = Eigen::make_vector3f(colliders[j].position);
-            Eigen::Vector3f colliderCenter = colliders[j].collider->center;
             vertCollider.center = xUnconstrained[i];
-            Eigen::Vector3f fromCollider = xUnconstrained[i] - colliderCenter;
-            if(colliders[j].collider->IsCollidingWith(vertCollider, collisionInfo))     
-                xUnconstrained[i] = colliderCenter - 1.01 * collisionInfo.normal * colliders[j].collider->GetBoundaryAt(xUnconstrained[i]);
+            ///NOTE: Is this supposed to be used?
+            Eigen::Vector3f fromCollider = xUnconstrained[i] - c->collider->center;
+            if(c->collider->IsCollidingWith(vertCollider, collisionInfo))     
+                xUnconstrained[i] = c->collider->center - 1.01 * collisionInfo.normal * c->collider->GetBoundaryAt(xUnconstrained[i]);
         }      
     }
 }
 
-void ElasticRod::enforceConstraints(float dt,const std::vector<SceneObject>& colliders)
+void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders)
 {
     handleCollisions(colliders);
 
@@ -163,8 +162,8 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<SceneObject>& col
         correctionVecs[i] = correctedX - xUnconstrained[i];
         // xUnconstrained[i] = correctedX;
     }
-    for (size_t i = 1; i < x.size(); i++)
-        v[i] -= (i+1)==x.size() ? Eigen::Vector3f(0,0,0) : -inextensibility * correctionVecs[i+1]/ dt;
+    for (size_t i = 1; i < x.size()-1; i++)
+        v[i] -= -inextensibility * correctionVecs[i+1]/dt;
 }
 
 void ElasticRod::reset()

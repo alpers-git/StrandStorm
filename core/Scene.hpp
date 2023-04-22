@@ -16,14 +16,19 @@ struct SceneObject
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
+
+    // Sets position, rotation and scale from given arguments
+    void setTransform(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scale);
+    // Updates position, rotation and scale from stored variables
+    void setTransform();
 };
 
 class Scene
 {
 public:
     HairMesh hairMesh;
-    SceneObject surface, dummy;
-    std::vector<SceneObject> sceneObjects;
+    std::shared_ptr<SceneObject> surface, dummy;
+    std::vector<std::shared_ptr<SceneObject>> sceneObjects;
     std::vector<ElasticRod> rods;
     Camera cam;
     struct Light {
