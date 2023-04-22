@@ -160,10 +160,27 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
         v[i] = (correctedX - x[i]) / dt;
         x[i] = correctedX;
         correctionVecs[i] = correctedX - xUnconstrained[i];
-        // xUnconstrained[i] = correctedX;
+        // xUnconstrained[i] = correctedX; // Does this make sense?
     }
     for (size_t i = 1; i < x.size()-1; i++)
         v[i] -= -inextensibility * correctionVecs[i+1]/dt;
+}
+
+void ElasticRod::getVertsFromVoxelGrid(Eigen::Vector3f samplingPoint, float extentSize, float voxelSize)
+{
+    // Use side length of cube that contains the voxel grid to determine the origin
+    Eigen::Vector3f origin = {-extentSize*0.5f, -extentSize*0.5f, -extentSize*0.5f};
+    // Get indices of voxel containing sampling point
+    Eigen::Vector3f indices =Eigen::Vector3f(((samplingPoint-origin)/voxelSize).array().floor());
+    Eigen::Vector3f boundMin = origin + indices * voxelSize;
+    int counter = 0;
+    for(size_t i=0;i<=1;i++)
+        for(size_t j=0;j<=1;j++)
+            for(size_t k=0;k<=1;k++)
+            {
+                Eigen::Vector3f corner = boundMin + Eigen::Vector3f(i,j,k) * voxelSize;
+                std::cerr<<"Corner "<<" "<<counter++<<": "<<corner[0]<<" "<<corner[1]<<" "<<corner[2]<<std::endl;
+            }
 }
 
 void ElasticRod::reset()

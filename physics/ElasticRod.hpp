@@ -58,6 +58,7 @@ public:
     void integrateFwEuler(float dt);
     void handleCollisions(const std::vector<std::shared_ptr<SceneObject>>& colliders);
     void enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders);
+    void getVertsFromVoxelGrid(Eigen::Vector3f samplingPoint, float gridSize, float voxelSize);
     // Reset simulation to rest state
     void reset();
 };
