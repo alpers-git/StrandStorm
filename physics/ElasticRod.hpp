@@ -2,6 +2,7 @@
 
 #include <Util.hpp>
 #include <Eigen/Dense>
+#include <Scene.hpp>
 
 using namespace Eigen;
 
@@ -41,6 +42,8 @@ public:
     // particle velocities
     std::vector<Vector3f> v;
     
+    // Scene reference for collider access
+    std::shared_ptr<Scene> scene;
 
     // Gravity force added to each free vertex
     static Vector3f gravity;
@@ -52,6 +55,7 @@ public:
     static float alpha;
 
     void init(const std::vector<glm::vec3>& verts);
+    void setScene(std::shared_ptr<Scene> scene);
     void integrateFwEuler(float dt);
     void enforceConstraints(float dt);
     // Reset simulation to rest state

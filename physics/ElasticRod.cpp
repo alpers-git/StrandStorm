@@ -2,7 +2,7 @@
 
 // Elastic rod sim constants
 float ElasticRod::drag = 75.0f;
-float ElasticRod::inextensibility = 0.8f;
+float ElasticRod::inextensibility = 0.1f;
 float ElasticRod::alpha = 0.1f;
 Vector3f ElasticRod::gravity = {0.0f, -9.8f, 0.0f};
 
@@ -119,6 +119,11 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
     }
 }
 
+void ElasticRod::setScene(std::shared_ptr<Scene> scene)
+{
+    this->scene = scene;
+}
+
 void ElasticRod::integrateFwEuler(float dt)
 {
     Eigen::Vector3f vUnconstrained = Vector3f::Zero();
@@ -135,12 +140,24 @@ void ElasticRod::integrateFwEuler(float dt)
 void ElasticRod::enforceConstraints(float dt)
 {
     for (size_t i = 1; i < x.size(); i++) 
-    {
+    {   
+        Eigen::Vector3f colliderCenter = Eigen::Vector3f(scene->dummy.mesh.position.x,
+                                                                scene->dummy.mesh.position.y,
+                                                                scene->dummy.mesh.position.z);
+        colliderCenter = Eigen::Vector3f(0,0,0);
+        
+        Eigen::Vector3f fromCollider = xUnconstrained[i] - colliderCenter;
+        float dist = fromCollider.norm();
+        float radius = 1.0f;
+        if(dist<radius)        
+            xUnconstrained[i] = colliderCenter + fromCollider.normalized()*radius*1.01;
+
         Eigen::Vector3f correctedX = xUnconstrained[i] - xUnconstrained[i-1];
         correctedX = xUnconstrained[i-1] + correctedX.normalized() * initEdgeLen(i-1); 
         v[i] = (correctedX - x[i]) / dt;
-        x[i] = correctedX; 
+        x[i] = correctedX;
         correctionVecs[i] = correctedX - xUnconstrained[i];
+        // xUnconstrained[i] = correctedX;
     }
     for (size_t i = 1; i < x.size(); i++)
         v[i] -= (i+1)==x.size() ? Eigen::Vector3f(0,0,0) : -inextensibility * correctionVecs[i+1]/ dt;
