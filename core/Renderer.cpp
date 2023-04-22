@@ -165,30 +165,41 @@ void Renderer::RenderHairs()
 
 void Renderer::RenderSurfaces()
 {
-    surfaceProg.Use();
+    RenderSurface(scene->surfaceMesh, surfaceProg);
+    RenderSurface(scene->colliderMesh, surfaceProg);
+}
+
+void Renderer::RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog)
+{
+    prog.Use();
     glm::mat4 IDENTITY_MAT4  = glm::mat4(1.0f);
-    glm::mat4 to_clip_space = glm::translate(IDENTITY_MAT4, scene->surfaceMesh.position) * glm::eulerAngleZYX(glm::radians(scene->surfaceMesh.rotation.z), glm::radians(scene->surfaceMesh.rotation.y), glm::radians(scene->surfaceMesh.rotation.x)) * glm::scale(IDENTITY_MAT4, scene->surfaceMesh.scale);
-    to_clip_space = scene->cam.proj({windowSize}) * scene->cam.view() * to_clip_space;
-    glm::mat4 to_view_space = scene->cam.view();
+    glm::mat4 model_transform = glm::translate(IDENTITY_MAT4, mesh.position) 
+                            * glm::eulerAngleZYX(glm::radians(mesh.rotation.z), 
+                                                glm::radians(mesh.rotation.y), 
+                                                glm::radians(mesh.rotation.x)) 
+                            * glm::scale(IDENTITY_MAT4, mesh.scale);
+
+    glm::mat4 to_view_space = scene->cam.view() * model_transform;
+    glm::mat4 to_clip_space = scene->cam.proj({windowSize}) * to_view_space;
     glm::mat3 normals_to_view_space = glm::mat3(glm::transpose(glm::inverse(to_view_space)));
-    surfaceProg.SetUniform("to_clip_space", to_clip_space);// mvp
-    surfaceProg.SetUniform("to_view_space", to_view_space);//mv
-    surfaceProg.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
-    surfaceProg.SetUniform("to_world_space", glm::mat4(1.0f));//m For future use
-    surfaceProg.SetUniform("to_light_view_space", scene->light.CalculateLightTexSpaceMatrix());
+    prog.SetUniform("to_clip_space", to_clip_space);// mvp
+    prog.SetUniform("to_view_space", to_view_space);//mv
+    prog.SetUniform("normals_to_view_space", normals_to_view_space);//mv for normals
+    prog.SetUniform("to_world_space",model_transform);//m For future use
+    prog.SetUniform("to_light_view_space", scene->light.CalculateLightTexSpaceMatrix());
 
     surfaceProg.SetUniform("shadow_map", (int)scene->light.shadowTexture->texUnit - GL_TEXTURE0);
     scene->light.shadowTexture->Bind();
 
-    surfaceProg.SetUniform("light_dir", scene->light.dir);
-    surfaceProg.SetUniform("light_color", scene->light.color);
-    surfaceProg.SetUniform("light_intensity", scene->light.intensity);
-    surfaceProg.SetUniform("ambient", scene->surfaceMesh.material.ambient);
-    surfaceProg.SetUniform("diffuse", scene->surfaceMesh.material.diffuse);
-    surfaceProg.SetUniform("specular", scene->surfaceMesh.material.specular);
-    surfaceProg.SetUniform("shininess", scene->surfaceMesh.material.shininess);
+    prog.SetUniform("light_dir", scene->light.dir);
+    prog.SetUniform("light_color", scene->light.color);
+    prog.SetUniform("light_intensity", scene->light.intensity);
+    prog.SetUniform("ambient", mesh.material.ambient);
+    prog.SetUniform("diffuse", mesh.material.diffuse);
+    prog.SetUniform("specular", mesh.material.specular);
+    prog.SetUniform("shininess", mesh.material.shininess);
 
-    scene->surfaceMesh.draw(surfaceProg); //todo index this into an array and loop over it
+    mesh.draw(prog);
 }
 
 void Renderer::PostPhysicsSync()

@@ -24,6 +24,10 @@ void Scene::init(const Renderer& r)
     surfaceMesh.loadFromFile("resources/sphere.obj");
     surfaceMesh.build(r.surfaceProg);
 
+    colliderMesh.loadFromFile("resources/sphere.obj");
+    colliderMesh.build(r.surfaceProg);
+    colliderMesh.scale /= 5.0f;
+
     //set light's shadow texture
     TextureParams params;
     params.wrapS = GL_CLAMP_TO_BORDER;

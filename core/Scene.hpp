@@ -10,7 +10,7 @@ class Scene
 {
 public:
     HairMesh hairMesh;
-    SurfaceMesh surfaceMesh;
+    SurfaceMesh surfaceMesh, colliderMesh;
     std::vector<ElasticRod> rods;
     Camera cam;
     struct Light {

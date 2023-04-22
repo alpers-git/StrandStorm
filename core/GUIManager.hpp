@@ -45,6 +45,7 @@ private:
     //Other ui components draw functions here
     void DrawHairMeshControls();
     void DrawSurfaceMeshControls();
+    void DrawColliderMeshControls();
     void DrawLightControls();
 
     void DrawSimulationControls();

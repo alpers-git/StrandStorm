@@ -115,6 +115,7 @@ void GUIManager::Draw()
 
     DrawHairMeshControls();
     DrawSurfaceMeshControls();
+    DrawColliderMeshControls();
     DrawLightControls();
 
     ImGui::End();
@@ -160,6 +161,23 @@ void GUIManager::DrawSurfaceMeshControls()
         ImGui::ColorEdit3("Specular", &scene->surfaceMesh.material.specular[0]);
         ImGui::ColorEdit3("Diffuse", &scene->surfaceMesh.material.diffuse[0]);
         ImGui::ColorEdit3("Ambient", &scene->surfaceMesh.material.ambient[0]);
+
+        if(ImGui::CollapsingHeader("Transform"))
+        {
+        ImGui::DragFloat3("Position", &scene->surfaceMesh.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->surfaceMesh.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->surfaceMesh.scale[0],0.01f);
+        }
+    }
+}
+
+void GUIManager::DrawColliderMeshControls()
+{
+    if(ImGui::CollapsingHeader("Collider Transform"))
+    {
+        ImGui::DragFloat3("Position", &scene->colliderMesh.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->colliderMesh.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->colliderMesh.scale[0],0.01f);
     }
 }
 

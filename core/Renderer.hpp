@@ -6,6 +6,7 @@
 #include <ComputeShader.hpp>
 
 class Scene;
+class SurfaceMesh;
 
 class Renderer
 {
@@ -13,6 +14,7 @@ public:
     ComputeShader csHair;
     OpenGLProgram hairProg = {"hair"};
     OpenGLProgram surfaceProg = {"surface"};
+    // OpenGLProgram colliderProg = {"surface"};
     OpenGLProgram shadowProg = {"shadow"};
     OpenGLProgram opacityShadowProg = {"opacity shadow"};
 
@@ -41,7 +43,7 @@ public:
 private:
     void RenderHairs();
     void RenderSurfaces();
-
+    void RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog);
 
     void RenderFirstPass();
     void RenderMainPass();
