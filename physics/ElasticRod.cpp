@@ -105,8 +105,8 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
     v.resize(verts.size());
     xRest.resize(verts.size());
 
-    x_temp.resize(verts.size());
-    corrections.resize(verts.size());
+    xUnconstrained.resize(verts.size());
+    correctionVecs.resize(verts.size());
 
     for (size_t i = 0; i < verts.size(); i++) 
     {
@@ -114,20 +114,20 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
         v[i] = Vector3f::Zero();
         xRest[i] = x[i];
 
-        x_temp[i] = Vector3f::Zero();
-        corrections[i] = Vector3f::Zero();        
+        xUnconstrained[i] = Vector3f::Zero();
+        correctionVecs[i] = Vector3f::Zero();        
     }
 }
 
 void ElasticRod::integrateFwEuler(float dt)
 {
-    Eigen::Vector3f v_temp = Vector3f::Zero();
-    x_temp[0] = xRest[0]; // so root position is known
+    Eigen::Vector3f vUnconstrained = Vector3f::Zero();
+    xUnconstrained[0] = xRest[0]; // so root position is known
     for (size_t i = 1; i < x.size(); i++) 
     {
-        v_temp = (force(i) + gravity) * dt;
-        v_temp -= 0.5f *drag * v_temp.squaredNorm() * v_temp.normalized() * dt;
-        x_temp[i] = x[i] + v_temp * dt;
+        vUnconstrained = (force(i) + gravity) * dt;
+        vUnconstrained -= 0.5f *drag * vUnconstrained.squaredNorm() * vUnconstrained.normalized() * dt;
+        xUnconstrained[i] = x[i] + vUnconstrained * dt;
     }
     this->enforceConstraints(dt);
 }
@@ -136,19 +136,20 @@ void ElasticRod::enforceConstraints(float dt)
 {
     for (size_t i = 1; i < x.size(); i++) 
     {
-        Eigen::Vector3f correctedX = x_temp[i] - x_temp[i-1];
-        correctedX = x_temp[i-1] + correctedX.normalized() * initEdgeLen(i-1);        
-        v[i] = (correctedX - x[i]) / dt;   
+        Eigen::Vector3f correctedX = xUnconstrained[i] - xUnconstrained[i-1];
+        correctedX = xUnconstrained[i-1] + correctedX.normalized() * initEdgeLen(i-1); 
+        v[i] = (correctedX - x[i]) / dt;
         x[i] = correctedX; 
-        corrections[i] = correctedX - x_temp[i];
+        correctionVecs[i] = correctedX - xUnconstrained[i];
     }
     for (size_t i = 1; i < x.size(); i++)
-        v[i] -= (i+1)==x.size() ? Eigen::Vector3f(0,0,0) : -inextensibility * corrections[i+1]/ dt;
+        v[i] -= (i+1)==x.size() ? Eigen::Vector3f(0,0,0) : -inextensibility * correctionVecs[i+1]/ dt;
 }
 
 void ElasticRod::reset()
 {
-    for (size_t i = 0; i < x.size(); i++) {
+    for (size_t i = 0; i < x.size(); i++)
+    {
         x[i] = xRest[i];
         v[i] = Vector3f::Zero();
     }

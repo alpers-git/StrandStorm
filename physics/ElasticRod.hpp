@@ -28,12 +28,17 @@ private:
     // Force acting on vertex i
     Vector3f force(size_t i);
 
-    std::vector<Vector3f> x_temp;
-    std::vector<Vector3f> corrections;
+    // Intergrated position of vertices before inextensibility constraint
+    std::vector<Vector3f> xUnconstrained; 
+    // Vertex offsets for inextensibility constraint
+    std::vector<Vector3f> correctionVecs; 
 
 public:
+    // particle positions at rest
     std::vector<Vector3f> xRest;
+    // particle positions
     std::vector<Vector3f> x;
+    // particle velocities
     std::vector<Vector3f> v;
     
 
