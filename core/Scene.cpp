@@ -19,15 +19,16 @@ void Scene::init(const Renderer& r)
             ctrlHair.push_back(hairMesh.controlVerts[j]);
         }
         rod.init(ctrlHair);
-        rod.setScene(r.scene); // TODO: find a better way to do this
     }
 
     surface.mesh.loadFromFile("resources/sphere.obj");
     surface.mesh.build(r.surfaceProg);
+    sceneObjects.push_back(surface);
 
     dummy.mesh.loadFromFile("resources/sphere.obj");
     dummy.mesh.build(r.surfaceProg);
-    dummy.mesh.scale /= 2.0f;
+    dummy.scale /= 2.0f;
+    sceneObjects.push_back(dummy);
 
     //set light's shadow texture
     TextureParams params;

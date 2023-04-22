@@ -25,8 +25,10 @@ void PhysicsIntegrator::TakeStep(float dt)
     // printf("Integrating physics with dt = %f numSteps = %d dt*numSteps = %f\r", dt, numSteps, dt*numSteps);
 
     //Integrate the elastic rod
-    for (ElasticRod& rod : scene->rods) {
+    for (ElasticRod& rod : scene->rods) 
+    {
         rod.integrateFwEuler(dt);
+        rod.enforceConstraints(dt,scene->sceneObjects);
     }
     // {std::stringstream s;
     // s << scene->rods[0].v[6];

@@ -7,6 +7,7 @@
 
 class Scene;
 class SurfaceMesh;
+struct SceneObject;
 
 class Renderer
 {
@@ -42,7 +43,7 @@ public:
 private:
     void RenderHairs();
     void RenderSurfaces();
-    void RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog);
+    void RenderSurface(SceneObject& mesh, OpenGLProgram& prog);
 
     void RenderFirstPass();
     void RenderMainPass();

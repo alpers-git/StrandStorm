@@ -55,9 +55,9 @@ public:
     static float alpha;
 
     void init(const std::vector<glm::vec3>& verts);
-    void setScene(std::shared_ptr<Scene> scene);
     void integrateFwEuler(float dt);
-    void enforceConstraints(float dt);
+    void handleCollisions(const std::vector<SceneObject>& colliders);
+    void enforceConstraints(float dt,const std::vector<SceneObject>& colliders);
     // Reset simulation to rest state
     void reset();
 };

@@ -165,19 +165,21 @@ void Renderer::RenderHairs()
 
 void Renderer::RenderSurfaces()
 {
-    RenderSurface(scene->surface.mesh, surfaceProg);
-    RenderSurface(scene->dummy.mesh, surfaceProg);
+    for(auto& surface : scene->sceneObjects)
+        RenderSurface(surface, surfaceProg);
+    // RenderSurface(scene->surface.mesh, surfaceProg);
+    // RenderSurface(scene->dummy.mesh, surfaceProg);
 }
 
-void Renderer::RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog)
+void Renderer::RenderSurface(SceneObject& sceneObj, OpenGLProgram& prog)
 {
     prog.Use();
     glm::mat4 IDENTITY_MAT4  = glm::mat4(1.0f);
-    glm::mat4 model_transform = glm::translate(IDENTITY_MAT4, mesh.position) 
-                            * glm::eulerAngleZYX(glm::radians(mesh.rotation.z), 
-                                                glm::radians(mesh.rotation.y), 
-                                                glm::radians(mesh.rotation.x)) 
-                            * glm::scale(IDENTITY_MAT4, mesh.scale);
+    glm::mat4 model_transform = glm::translate(IDENTITY_MAT4, sceneObj.position) 
+                            * glm::eulerAngleZYX(glm::radians(sceneObj.rotation.z), 
+                                                glm::radians(sceneObj.rotation.y), 
+                                                glm::radians(sceneObj.rotation.x)) 
+                            * glm::scale(IDENTITY_MAT4, sceneObj.scale);
 
     glm::mat4 to_view_space = scene->cam.view() * model_transform;
     glm::mat4 to_clip_space = scene->cam.proj({windowSize}) * to_view_space;
@@ -194,12 +196,12 @@ void Renderer::RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog)
     prog.SetUniform("light_dir", scene->light.dir);
     prog.SetUniform("light_color", scene->light.color);
     prog.SetUniform("light_intensity", scene->light.intensity);
-    prog.SetUniform("ambient", mesh.material.ambient);
-    prog.SetUniform("diffuse", mesh.material.diffuse);
-    prog.SetUniform("specular", mesh.material.specular);
-    prog.SetUniform("shininess", mesh.material.shininess);
+    prog.SetUniform("ambient", sceneObj.mesh.material.ambient);
+    prog.SetUniform("diffuse", sceneObj.mesh.material.diffuse);
+    prog.SetUniform("specular", sceneObj.mesh.material.specular);
+    prog.SetUniform("shininess", sceneObj.mesh.material.shininess);
 
-    mesh.draw(prog);
+    sceneObj.mesh.draw(prog);
 }
 
 void Renderer::PostPhysicsSync()

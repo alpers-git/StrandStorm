@@ -164,9 +164,9 @@ void GUIManager::DrawSurfaceMeshControls()
 
         if(ImGui::CollapsingHeader("Transform"))
         {
-        ImGui::DragFloat3("Position", &scene->surface.mesh.position[0],0.01f);
-        ImGui::DragFloat3("Rotation", &scene->surface.mesh.rotation[0],0.01f);
-        ImGui::DragFloat3("Scale", &scene->surface.mesh.scale[0],0.01f);
+        ImGui::DragFloat3("Position", &scene->surface.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->surface.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->surface.scale[0],0.01f);
         }
     }
 }
@@ -175,9 +175,9 @@ void GUIManager::DrawColliderMeshControls()
 {
     if(ImGui::CollapsingHeader("Collider Transform"))
     {
-        ImGui::DragFloat3("Position", &scene->dummy.mesh.position[0],0.01f);
-        ImGui::DragFloat3("Rotation", &scene->dummy.mesh.rotation[0],0.01f);
-        ImGui::DragFloat3("Scale", &scene->dummy.mesh.scale[0],0.01f);
+        ImGui::DragFloat3("Position", &scene->dummy.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->dummy.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->dummy.scale[0],0.01f);
     }
 }
 

@@ -11,6 +11,11 @@ struct SceneObject
 {
     SurfaceMesh mesh;
     std::shared_ptr<Collider> collider;
+    
+    // Transform parameters
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
 };
 
 class Scene
@@ -18,6 +23,7 @@ class Scene
 public:
     HairMesh hairMesh;
     SceneObject surface, dummy;
+    std::vector<SceneObject> sceneObjects;
     std::vector<ElasticRod> rods;
     Camera cam;
     struct Light {

@@ -125,10 +125,7 @@ public:
         float shininess = 32.0f;
     } material;
 
-    // Transform parameters
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f);
-    glm::vec3 scale = glm::vec3(1.0f);
+    
 
     SurfaceMesh() = default;
 
