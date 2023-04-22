@@ -1,17 +1,17 @@
 #pragma once
-#include <glm/glm.hpp>
+#include <Eigen/Dense>
 
 
 struct CollisionInfo
 {
-    glm::vec3 normal = glm::vec3(0.0f, 0.0f, 0.0f);
+    Eigen::Vector3f normal = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
     float penetration = 0.0f;
 };
 
 class Collider
 {
 public:
-    Collider(glm::vec3 center);
+    Collider(Eigen::Vector3f center);
     /*
     * Returns true if the collider is colliding with the other collider
     */
@@ -19,21 +19,21 @@ public:
     /*
     * Returns the distance from center of the collider in the direction from the center to pos
     */
-    virtual float GetBoundaryAt(glm::vec3 pos) = 0;
+    virtual float GetBoundaryAt(Eigen::Vector3f pos) = 0;
 
     float elasticity = 1.0f;
     float friction = 0.0f;
-    glm::vec3 center;
+    Eigen::Vector3f center;
 private:
 };
 
 class SphereCollider : public Collider
 {
 public:
-    SphereCollider(glm::vec3 center, float radius);
+    SphereCollider(Eigen::Vector3f center, float radius);
 
     bool IsCollidingWith(Collider& other, CollisionInfo& collision) override;
-    float GetBoundaryAt(glm::vec3 pos) override;
+    float GetBoundaryAt(Eigen::Vector3f pos) override;
 
     float radius;
 };
@@ -41,10 +41,10 @@ public:
 class BoxCollider : public Collider
 {
 public:
-    BoxCollider(glm::vec3 center, glm::vec3 size);
+    BoxCollider(Eigen::Vector3f center, Eigen::Vector3f size);
 
     bool IsCollidingWith(Collider& other, CollisionInfo& collision) override;
-    float GetBoundaryAt(glm::vec3 pos) override;
+    float GetBoundaryAt(Eigen::Vector3f pos) override;
 
-    glm::vec3 size;
+    Eigen::Vector3f size;
 };

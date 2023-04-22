@@ -1,20 +1,19 @@
 #include <Collider.hpp>
-#include <glm/gtx/component_wise.hpp>
 
-Collider::Collider(glm::vec3 center) 
+Collider::Collider(Eigen::Vector3f center) 
     : center(center) {}
 
-SphereCollider::SphereCollider(glm::vec3 center, float radius)
+SphereCollider::SphereCollider(Eigen::Vector3f center, float radius)
     : Collider(center), radius(radius) {}
 
-float SphereCollider::GetBoundaryAt(glm::vec3 pos) {
+float SphereCollider::GetBoundaryAt(Eigen::Vector3f pos) {
     return radius;
 }
 
 bool SphereCollider::IsCollidingWith(Collider& other, CollisionInfo& collision) {
     //apply minkowski difference
-    glm::vec3 diff = center - other.center;
-    float dist = glm::length(diff);
+    Eigen::Vector3f diff = center - other.center;
+    float dist = diff.norm();
     float boundary = GetBoundaryAt(diff) + other.GetBoundaryAt(-diff);
 
     collision.normal = diff / dist;
@@ -23,26 +22,26 @@ bool SphereCollider::IsCollidingWith(Collider& other, CollisionInfo& collision) 
     return dist < boundary;
 }
 
-BoxCollider::BoxCollider(glm::vec3 center, glm::vec3 size)
+BoxCollider::BoxCollider(Eigen::Vector3f center, Eigen::Vector3f size)
     : Collider(center), size(size) {}
 
-float BoxCollider::GetBoundaryAt(glm::vec3 pos) {
-    glm::vec3 direction = pos - center; // calculate direction from center to pos
-    glm::vec3 halfSize = size / 2.0f;   // calculate half of the box size in each dimension
+float BoxCollider::GetBoundaryAt(Eigen::Vector3f pos) {
+    Eigen::Vector3f direction = pos - center; // calculate direction from center to pos
+    Eigen::Vector3f halfSize = size / 2.0f;   // calculate half of the box size in each dimension
 
     // calculate the distances to the boundary planes in each dimension
-    glm::vec3 d = halfSize / glm::abs(direction);
+    Eigen::Vector3f d = halfSize.array() / direction.cwiseAbs().array();
 
     //project glm::compMin(d) onto the direction vector
-    float distance = glm::dot(direction, glm::normalize(d));
+    float distance = direction.dot(d.normalized());
 
     return distance;
 }
 
 bool BoxCollider::IsCollidingWith(Collider& other, CollisionInfo& collision) {
     //apply minkowski difference
-    glm::vec3 diff = center - other.center;
-    float dist = glm::length(diff);
+    Eigen::Vector3f diff = center - other.center;
+    float dist = diff.norm();
     float boundary = GetBoundaryAt(diff) + other.GetBoundaryAt(-diff);
 
     collision.normal = diff / dist;
