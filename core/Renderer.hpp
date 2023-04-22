@@ -14,7 +14,6 @@ public:
     ComputeShader csHair;
     OpenGLProgram hairProg = {"hair"};
     OpenGLProgram surfaceProg = {"surface"};
-    // OpenGLProgram colliderProg = {"surface"};
     OpenGLProgram shadowProg = {"shadow"};
     OpenGLProgram opacityShadowProg = {"opacity shadow"};
 

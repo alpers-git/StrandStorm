@@ -27,10 +27,15 @@ private:
     Vector3f initEdge(size_t i);
     // Force acting on vertex i
     Vector3f force(size_t i);
+
+    std::vector<Vector3f> x_temp;
+    std::vector<Vector3f> corrections;
+
 public:
     std::vector<Vector3f> xRest;
     std::vector<Vector3f> x;
     std::vector<Vector3f> v;
+    
 
     // Gravity force added to each free vertex
     static Vector3f gravity;
