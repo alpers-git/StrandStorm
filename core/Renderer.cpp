@@ -166,8 +166,9 @@ void Renderer::RenderHairs()
 void Renderer::RenderSurfaces()
 {
     surfaceProg.Use();
-
-    glm::mat4 to_clip_space = scene->cam.proj({windowSize}) * scene->cam.view();
+    glm::mat4 IDENTITY_MAT4  = glm::mat4(1.0f);
+    glm::mat4 to_clip_space = glm::translate(IDENTITY_MAT4, scene->surfaceMesh.position) * glm::eulerAngleZYX(glm::radians(scene->surfaceMesh.rotation.z), glm::radians(scene->surfaceMesh.rotation.y), glm::radians(scene->surfaceMesh.rotation.x)) * glm::scale(IDENTITY_MAT4, scene->surfaceMesh.scale);
+    to_clip_space = scene->cam.proj({windowSize}) * scene->cam.view() * to_clip_space;
     glm::mat4 to_view_space = scene->cam.view();
     glm::mat3 normals_to_view_space = glm::mat3(glm::transpose(glm::inverse(to_view_space)));
     surfaceProg.SetUniform("to_clip_space", to_clip_space);// mvp

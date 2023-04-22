@@ -53,7 +53,7 @@ public:
     //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
-    static constexpr uint32_t interpDensity = 40;
+    static constexpr uint32_t interpDensity = 8;
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Debug control hair duplication
@@ -124,6 +124,11 @@ public:
         glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
         float shininess = 32.0f;
     } material;
+
+    // Transform parameters
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
 
     SurfaceMesh() = default;
 
