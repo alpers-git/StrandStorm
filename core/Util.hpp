@@ -100,6 +100,11 @@ namespace gl {
     }
 };
 
+namespace Eigen
+{
+    Eigen::Vector3f make_vector3f(const glm::vec3& v);
+}
+
 Eigen::Matrix3f skew(const Eigen::Vector3f &v);
 template<typename T> T lerp(const T& a, const T& b, float t) {
     return a + (b - a) * t;

@@ -129,6 +129,14 @@ namespace glm {
     }
 };
 
+namespace Eigen
+{
+     Eigen::Vector3f make_vector3f(const glm::vec3& v)
+     {
+         return Eigen::Vector3f(v.x, v.y, v.z);
+     }
+}
+
 // --- GL Helpers ------------------------------------------------------------
 
 GLuint gl::buffer(GLenum target, size_t bytes, const void *data, GLenum usage)
