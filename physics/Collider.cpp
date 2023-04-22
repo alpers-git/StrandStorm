@@ -19,7 +19,7 @@ bool SphereCollider::IsCollidingWith(Collider& other, CollisionInfo& collision) 
     collision.normal = diff / dist;
     collision.penetration = dist - boundary;
 
-    return dist < boundary;
+    return dist < radius;
 }
 
 BoxCollider::BoxCollider(Eigen::Vector3f center, Eigen::Vector3f size)
