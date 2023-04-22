@@ -3,14 +3,21 @@
 #include <Mesh.hpp>
 #include <Camera.hpp>
 #include <ElasticRod.hpp>
+#include <Collider.hpp>
 
 class Renderer;
+
+struct SceneObject
+{
+    SurfaceMesh mesh;
+    std::shared_ptr<Collider> collider;
+};
 
 class Scene
 {
 public:
     HairMesh hairMesh;
-    SurfaceMesh surfaceMesh, colliderMesh;
+    SceneObject surface, dummy;
     std::vector<ElasticRod> rods;
     Camera cam;
     struct Light {

@@ -158,15 +158,15 @@ void GUIManager::DrawSurfaceMeshControls()
     {
         //ImGui::Checkbox("Show Surface Mesh", nullptr);
         ImGui::SeparatorText("Surface Mesh Material");
-        ImGui::ColorEdit3("Specular", &scene->surfaceMesh.material.specular[0]);
-        ImGui::ColorEdit3("Diffuse", &scene->surfaceMesh.material.diffuse[0]);
-        ImGui::ColorEdit3("Ambient", &scene->surfaceMesh.material.ambient[0]);
+        ImGui::ColorEdit3("Specular", &scene->surface.mesh.material.specular[0]);
+        ImGui::ColorEdit3("Diffuse", &scene->surface.mesh.material.diffuse[0]);
+        ImGui::ColorEdit3("Ambient", &scene->surface.mesh.material.ambient[0]);
 
         if(ImGui::CollapsingHeader("Transform"))
         {
-        ImGui::DragFloat3("Position", &scene->surfaceMesh.position[0],0.01f);
-        ImGui::DragFloat3("Rotation", &scene->surfaceMesh.rotation[0],0.01f);
-        ImGui::DragFloat3("Scale", &scene->surfaceMesh.scale[0],0.01f);
+        ImGui::DragFloat3("Position", &scene->surface.mesh.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->surface.mesh.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->surface.mesh.scale[0],0.01f);
         }
     }
 }
@@ -175,9 +175,9 @@ void GUIManager::DrawColliderMeshControls()
 {
     if(ImGui::CollapsingHeader("Collider Transform"))
     {
-        ImGui::DragFloat3("Position", &scene->colliderMesh.position[0],0.01f);
-        ImGui::DragFloat3("Rotation", &scene->colliderMesh.rotation[0],0.01f);
-        ImGui::DragFloat3("Scale", &scene->colliderMesh.scale[0],0.01f);
+        ImGui::DragFloat3("Position", &scene->dummy.mesh.position[0],0.01f);
+        ImGui::DragFloat3("Rotation", &scene->dummy.mesh.rotation[0],0.01f);
+        ImGui::DragFloat3("Scale", &scene->dummy.mesh.scale[0],0.01f);
     }
 }
 

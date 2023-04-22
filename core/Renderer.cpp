@@ -42,7 +42,7 @@ void Renderer::RenderFirstPass()
     shadowProg.Use();
     shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());// mvp
     scene->light.shadowTexture->Render([&]() {
-            scene->surfaceMesh.draw(shadowProg);
+            scene->surface.mesh.draw(shadowProg);
             scene->hairMesh.draw(shadowProg);//to be removed when opacity shadowmaps are done
         });
 
@@ -165,8 +165,8 @@ void Renderer::RenderHairs()
 
 void Renderer::RenderSurfaces()
 {
-    RenderSurface(scene->surfaceMesh, surfaceProg);
-    RenderSurface(scene->colliderMesh, surfaceProg);
+    RenderSurface(scene->surface.mesh, surfaceProg);
+    RenderSurface(scene->dummy.mesh, surfaceProg);
 }
 
 void Renderer::RenderSurface(SurfaceMesh& mesh, OpenGLProgram& prog)
