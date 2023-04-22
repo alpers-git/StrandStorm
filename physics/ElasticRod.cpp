@@ -1,5 +1,11 @@
 #include <ElasticRod.hpp>
 
+// Elastic rod sim constants
+float ElasticRod::drag = 200.0f;
+float ElasticRod::inextensibility = 0.1f;
+float ElasticRod::alpha = 0.1f;
+Vector3f ElasticRod::gravity = {0.0f, 0.0f, 0.0f};
+
 float ElasticRod::kappa(size_t i)
 {
     assert(i > 0);
@@ -98,8 +104,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
     x.resize(verts.size());
     v.resize(verts.size());
     xRest.resize(verts.size());
-    for (size_t i = 0; i < verts.size(); i++)
-    {
+    for (size_t i = 0; i < verts.size(); i++) {
         x[i] = Vector3f(verts[i][0], verts[i][1], verts[i][2]);
         v[i] = Vector3f::Zero();
         xRest[i] = x[i];
@@ -108,8 +113,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
 
 void ElasticRod::integrateFwEuler(float dt)
 {
-    for (size_t i = 1; i < x.size(); i++)
-    {
+    for (size_t i = 1; i < x.size(); i++) {
         v[i] += (force(i) + gravity) * dt;
         v[i] -= 0.5f *drag * v[i].squaredNorm() * v[i].normalized() * dt;
         x[i] += v[i] * dt;
@@ -119,17 +123,16 @@ void ElasticRod::integrateFwEuler(float dt)
 
 void ElasticRod::enforceConstraints(float dt)
 {
-    for (size_t i = 1; i < x.size(); i++)
-    {
+    for (size_t i = 1; i < x.size(); i++) {
         // Project vertex onto current edge with init length interp with current length
-        x[i] = x[i-1] + edge(i-1).normalized() * lerp(edge(i-1).norm(), initEdge(i-1).norm(), inextensability);
+        x[i] = x[i-1] + edge(i-1).normalized() * lerp(edge(i-1).norm(), initEdge(i-1).norm(), inextensibility);
     }
 }
 
-void ElasticRod::updateVerts(std::vector<glm::vec4> &verts)
+void ElasticRod::reset()
 {
-    for (size_t i = 0; i < x.size(); i++)
-    {
-        verts[i] = glm::vec4(x[i][0], x[i][1], x[i][2], 1.0f);
+    for (size_t i = 0; i < x.size(); i++) {
+        x[i] = xRest[i];
+        v[i] = Vector3f::Zero();
     }
 }

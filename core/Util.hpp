@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <imgui.h>
 
 namespace fs = std::filesystem;
 
@@ -86,7 +87,9 @@ std::array<glm::vec3, (N * (N + 1)) / 2> tessTriangleGrid(
 
 namespace glm {
     glm::vec3 make_vec3(const cy::Vec3f& v);
+    glm::vec2 make_vec2(const ImVec2& v);
 };
+ImVec2 make_ImVec2(const glm::vec2& v);
 
 namespace gl {
     GLuint buffer(GLenum target, size_t bytes, const void* data = nullptr, GLenum usage = GL_STATIC_DRAW);
