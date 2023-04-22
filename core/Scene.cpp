@@ -23,11 +23,14 @@ void Scene::init(const Renderer& r)
 
     surface.mesh.loadFromFile("resources/sphere.obj");
     surface.mesh.build(r.surfaceProg);
+    surface.collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 1.0f);
     sceneObjects.push_back(surface);
 
     dummy.mesh.loadFromFile("resources/sphere.obj");
     dummy.mesh.build(r.surfaceProg);
+    dummy.position = {0.0f, 2.0f, 0.0f};
     dummy.scale /= 2.0f;
+    dummy.collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 0.05f);
     sceneObjects.push_back(dummy);
 
     //set light's shadow texture

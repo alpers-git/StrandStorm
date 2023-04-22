@@ -134,18 +134,19 @@ void ElasticRod::integrateFwEuler(float dt)
 
 void ElasticRod::handleCollisions(const std::vector<SceneObject>& colliders)
 {
+    SphereCollider vertCollider(Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f);
+    CollisionInfo collisionInfo;
     for (size_t i = 1; i < x.size(); i++) 
     {   
-        Eigen::Vector3f colliderCenter = Eigen::Vector3f(colliders[0].position.x,
-                                                                colliders[0].position.y,
-                                                                colliders[0].position.z);
-        colliderCenter = Eigen::Vector3f(0,0,0);
-        
-        Eigen::Vector3f fromCollider = xUnconstrained[i] - colliderCenter;
-        float dist = fromCollider.norm();
-        float radius = 1.0f;
-        if(dist<radius)        
-            xUnconstrained[i] = colliderCenter + fromCollider.normalized()*radius*1.01;
+        for (size_t j = 0; j < colliders.size(); j++)
+        {
+            colliders[j].collider->center = Eigen::make_vector3f(colliders[j].position);
+            Eigen::Vector3f colliderCenter = colliders[j].collider->center;
+            vertCollider.center = xUnconstrained[i];
+            Eigen::Vector3f fromCollider = xUnconstrained[i] - colliderCenter;
+            if(colliders[j].collider->IsCollidingWith(vertCollider, collisionInfo))     
+                xUnconstrained[i] = colliderCenter - 1.01 * collisionInfo.normal * colliders[j].collider->GetBoundaryAt(xUnconstrained[i]);
+        }      
     }
 }
 
