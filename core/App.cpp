@@ -20,7 +20,7 @@ App::App(int argc, char *argv[])
 void App::Run(EventHandler &eventHandler)
 {
     while (eventHandler.IsRunning()) {
-        std::async(std::launch::async, [&] { physicsIntegrator->Integrate(); }); // Run the physics integrator in a separate thread
+        std::async(std::launch::async | std::launch::deferred, [&] { physicsIntegrator->Integrate(); }); // Run the physics integrator in a separate thread
         eventHandler.SwapBuffers();
         eventHandler.DispatchEvents(renderer);
         renderer.Render();
