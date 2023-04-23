@@ -117,7 +117,6 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
         xUnconstrained[i] = Vector3f::Zero();
         correctionVecs[i] = Vector3f::Zero();        
     }
-
 }
 
 
@@ -142,8 +141,6 @@ void ElasticRod::handleCollisions(const std::vector<std::shared_ptr<SceneObject>
         for (const std::shared_ptr<SceneObject>& c : colliders)
         {
             vertCollider.center = xUnconstrained[i];
-            ///NOTE: Is this supposed to be used?
-            Eigen::Vector3f fromCollider = xUnconstrained[i] - c->collider->center;
             if(c->collider->IsCollidingWith(vertCollider, collisionInfo))     
                 xUnconstrained[i] = c->collider->center - 1.01 * collisionInfo.normal * c->collider->GetBoundaryAt(xUnconstrained[i]);
         }      
@@ -154,6 +151,7 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
 {
     handleCollisions(colliders);
 
+    // Reset positions such that length is maintained and update velocities
     for (size_t i = 1; i < x.size(); i++) 
     {    
         Eigen::Vector3f correctedX = xUnconstrained[i] - xUnconstrained[i-1];
@@ -163,8 +161,24 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
         correctionVecs[i] = correctedX - xUnconstrained[i];
         // xUnconstrained[i] = correctedX; // Does this make sense?
     }
+
+    voxelMasses.clear();
+    voxelVelocities.clear();
+
     for (size_t i = 1; i < x.size()-1; i++)
+    {
+        // Update velocities so that mass distribution is maintained [Refer FTL paper by Muller et al.]
         v[i] -= -inextensibility * correctionVecs[i+1]/dt;
+
+        //Set grid velocities
+        setVoxelContributions(x[i], v[i]);
+    }
+
+    for (size_t i = 1; i < x.size()-1; i++)
+    {
+        v[i] = (1-friction) * v[i] + friction * getVoxelVelocity(x[i]);
+    }
+   
 }
 
 void ElasticRod::getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition)
@@ -179,8 +193,7 @@ void ElasticRod::getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vect
 }
 
 void ElasticRod::setVoxelContributions(const Eigen::Vector3f& position, const Eigen::Vector3f& velocity)
-{
-    
+{    
     Eigen::Vector3f firstVoxelCoord,localPosition;
     getVoxelCoordinates(position,firstVoxelCoord,localPosition);
     
@@ -204,6 +217,46 @@ void ElasticRod::setVoxelContributions(const Eigen::Vector3f& position, const Ei
                     voxelVelocities[hash] = corner.prod() * velocity;
                 }
             }
+}
+
+Eigen::Vector3f ElasticRod::getVoxelVelocity(const Eigen::Vector3f& position)
+{
+    Eigen::Vector3f firstVoxelCoord,localPosition,velocity;
+    getVoxelCoordinates(position,firstVoxelCoord,localPosition);
+    Eigen::Vector3f zeroVec = Eigen::Vector3f::Zero();
+
+    // Get the 8 velocities of the 8 corners of the voxel containing the sampling point
+    Eigen::Vector3f corner000, corner001,corner100, corner101, corner010, corner011, corner110, corner111;
+    sampleVoxelVelocity(corner000,firstVoxelCoord);
+    sampleVoxelVelocity(corner001,firstVoxelCoord+Eigen::Vector3f(0,0,1));
+    sampleVoxelVelocity(corner100,firstVoxelCoord+Eigen::Vector3f(1,0,0));
+    sampleVoxelVelocity(corner101,firstVoxelCoord+Eigen::Vector3f(1,0,1));
+    sampleVoxelVelocity(corner010,firstVoxelCoord+Eigen::Vector3f(0,1,0));
+    sampleVoxelVelocity(corner011,firstVoxelCoord+Eigen::Vector3f(0,1,1));
+    sampleVoxelVelocity(corner110,firstVoxelCoord+Eigen::Vector3f(1,1,0));
+    sampleVoxelVelocity(corner111,firstVoxelCoord+Eigen::Vector3f(1,1,1));
+
+    // Perform trilinear interpolation to get the velocity at the sampling point
+    Eigen::Vector3f lp_interp1 = (1.0f-localPosition[2])*corner000 + localPosition[2]*corner001;
+    Eigen::Vector3f lp_interp2 = (1.0f-localPosition[2])*corner100 + localPosition[2]*corner101;
+    Eigen::Vector3f lp = (1.0f-localPosition[0])*lp_interp1 + localPosition[0]*lp_interp2;
+
+    Eigen::Vector3f up_interp1 = (1.0f-localPosition[2])*corner010 + localPosition[2]*corner011;
+    Eigen::Vector3f up_interp2 = (1.0f-localPosition[2])*corner110 + localPosition[2]*corner111;
+    Eigen::Vector3f up = (1.0f-localPosition[0])*up_interp1 + localPosition[0]*up_interp2;
+
+    velocity = (1.0f-localPosition[1])*lp + localPosition[1]*up;
+
+    return velocity;
+}
+
+Eigen::Vector3f ElasticRod::sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index)
+{
+    size_t hash = getSpatialHash(index);
+    if(voxelMasses.find(hash) != voxelMasses.end())
+        return voxelVelocities[hash]/voxelMasses[hash];
+    else
+        return Eigen::Vector3f::Zero();
 }
 
 // Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"

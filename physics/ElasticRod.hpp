@@ -45,6 +45,8 @@ private:
     // Side length of each voxel
     float voxelSize = 0.1f;
 
+    float friction = 0.05f;
+
     // Stores the density of each voxel vertex, which is based on the number of hair vertices that are in the voxel
     std::unordered_map<size_t,float> voxelMasses;
     // Stores the average velocity around the voxel vertex
@@ -53,6 +55,7 @@ private:
     void getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition);
     void setVoxelContributions(const Eigen::Vector3f& position, const Eigen::Vector3f& velocity);
     Eigen::Vector3f getVoxelVelocity(const Eigen::Vector3f& position);
+    Eigen::Vector3f sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
 
     size_t getSpatialHash(Eigen::Vector3f pos);
 
