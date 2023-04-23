@@ -245,7 +245,7 @@ void GUIManager::DrawSimulationControls()
     if (ImGui::CollapsingHeader("Simulation Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
         float dt = physicsIntegrator->getDt();
-        if (ImGui::DragFloat("dt", &dt, 0.001f, 0.0f, 0.1f))
+        if (ImGui::DragFloat("dt", &dt, 0.0001f, 0.0f, 0.1f, "%.5f"))
             physicsIntegrator->setDt(dt);
         int numSteps = physicsIntegrator->getNumSteps();
         if (ImGui::InputInt("numSteps", &numSteps, 1, 1, ImGuiInputTextFlags_EnterReturnsTrue))
