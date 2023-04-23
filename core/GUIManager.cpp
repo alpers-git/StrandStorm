@@ -281,9 +281,9 @@ void GUIManager::DrawTimerInfo()
 {
     ImGui::TextColored(ImVec4(0, 0, 0, 1), "Frame time: %.3fms (%.1f FPS)",
                       stats::avgFrameTime * 1000.f, 1.f/stats::avgFrameTime);
-    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Render time: %.3fms (%.1f FPS)",
+    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Render time: %.3fms (%.1f UPS)",
                         stats::avgRenderTime * 1000.f, 1.f/stats::avgRenderTime);
-    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Physics time: %.3fms (%.1f FPS)",
+    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Physics time: %.3fms (%.1f UPS)",
                         stats::avgPhysicsTime * 1000.f, 1.f/stats::avgPhysicsTime);
 }
 
