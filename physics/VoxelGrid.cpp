@@ -9,13 +9,22 @@ void VoxelGrid::initVoxelGrid()
 {
     int numSteps = (int)(voxelGridExtent/voxelSize);
     size_t hash;
+    bool isFirstRun = voxelMasses.empty();
     for(int i = 0; i < numSteps; i++)    
         for(int j = 0; j < numSteps; j++)        
             for(int k = 0; k < numSteps; k++)
             {
-                hash = getSpatialHash(Eigen::Vector3f(i, j, k));
-                voxelMasses[hash] = 0;
-                voxelVelocities[hash] = Eigen::Vector3f::Zero();
+                if(isFirstRun)
+                {                    
+                    voxelMasses.emplace_back(0);
+                    voxelVelocities.emplace_back(Eigen::Vector3f::Zero());
+                }
+                else
+                {
+                    voxelMasses[i*numSteps*numSteps + j*numSteps + k] = 0;
+                    voxelVelocities[i*numSteps*numSteps + j*numSteps + k] = Eigen::Vector3f::Zero();
+                }               
+                    
             } 
 }
 
@@ -40,6 +49,8 @@ Eigen::Vector3f VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const
 // Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"
 size_t VoxelGrid::getSpatialHash(Eigen::Vector3f pos)
 {
-    size_t n = (size_t)pow((double)(voxelGridExtent/voxelSize),3.0);
-    return ((int)pos[0]*prime1^(int)pos[1]*prime2^(int)pos[2]*prime3) % n;
+    int numSteps = (int)(voxelGridExtent/voxelSize);
+    return pos[0]*numSteps*numSteps + pos[1]*numSteps + pos[2];
+    // size_t n = (size_t)pow((double)(voxelGridExtent/voxelSize),3.0);
+    // return ((int)pos[0]*prime1^(int)pos[1]*prime2^(int)pos[2]*prime3) % n;
 }

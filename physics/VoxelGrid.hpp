@@ -22,9 +22,9 @@ public:
 public:
     std::shared_ptr<std::mutex> voxelMutex;
     // Stores the density of each voxel vertex, which is based on the number of hair vertices that are in the voxel
-    std::unordered_map<size_t,float> voxelMasses;
+    std::vector<float> voxelMasses;
     // Stores the average velocity around the voxel vertex
-    std::unordered_map<size_t,Eigen::Vector3f> voxelVelocities;   
+    std::vector<Eigen::Vector3f> voxelVelocities;   
 
      // Side length of cube that makes up the voxel grid
     float voxelGridExtent = 4.0f;
