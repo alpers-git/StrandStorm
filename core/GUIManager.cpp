@@ -312,6 +312,8 @@ void GUIManager::DrawRodParameters()
                          &ElasticRod::inextensibility, 0.0001f, 0.0f, 1.0f, "%.4f");
         ImGui::DragFloat("bending modulus",
                          &ElasticRod::alpha, 0.0001f, 0.0f, 1.0f, "%.4f");
+        ImGui::DragFloat("bending stiffness",
+                         &ElasticRod::bendingStiffness, 0.1f, 0.0f, 1000.0f, "%.1f");
         ImGui::DragFloat("Voxel Friciton",
                          &ElasticRod::friction, 0.001f, 0.0f, 1.0f);
         ImGui::PopItemWidth();
