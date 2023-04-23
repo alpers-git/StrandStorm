@@ -36,10 +36,4 @@ void PhysicsIntegrator::TakeStep(float dt)
     {
         rod.enforceConstraints(dt, scene->sceneObjects);
     });
-    // {std::stringstream s;
-    // s << scene->rods[0].v[6];
-    // spdlog::debug("v = {}", s.str());}
-    // {std::stringstream s;
-    // s << scene->rods[0].x[6];
-    // spdlog::debug("x = {}", s.str());}
 }
