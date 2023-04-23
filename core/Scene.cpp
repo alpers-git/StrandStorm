@@ -13,12 +13,11 @@ void Scene::init(const Renderer& r)
     hairMesh.build(r.hairProg);
 
     for (size_t i = 0; i < hairMesh.numControlHairs(); i++) {
-        ElasticRod& rod = rods.emplace_back();
         std::vector<glm::vec3> ctrlHair;
         for (size_t j = i * HairMesh::controlHairLen; j < (i+1) * HairMesh::controlHairLen; j++) {
             ctrlHair.push_back(hairMesh.controlVerts[j]);
         }
-        rod.init(ctrlHair);
+        rods.emplace_back(ctrlHair);
     }
 
     surface = std::make_shared<SceneObject>();

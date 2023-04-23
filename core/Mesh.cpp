@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include <Mesh.hpp>
 #include <Logging.hpp>
 #include <ElasticRod.hpp>
@@ -55,7 +56,8 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
     // Grow the control hairs from the stored vertices
     if (controlHairDensity == 0) {
-        for (int i = 0; i < mesh.NV(); i++) {
+        for (int i = 0; i < (int)mesh.NV(); i++) {
+            if (maxControlHairs > 0 && i >= maxControlHairs) break;
             growControlHair(glm::make_vec3(mesh.V(i)), glm::normalize(glm::make_vec3(mesh.VN(i))));
         }
     } else {
@@ -74,8 +76,17 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     }
     // Triangles
     for (int i = 0; i < mesh.NF(); i++) {
+        const cy::TriMesh::TriFace& f = mesh.F(i);
+        bool skip = false;
         for (int j = 0; j < 3; j++) {
-            this->tris.push_back(mesh.F(i).v[j]);
+            if (f.v[j] >= this->numControlHairs()) {
+                skip = true;
+                break;
+            }
+        }
+        if (skip) continue;
+        for (int j = 0; j < 3; j++) {
+            this->tris.push_back(f.v[j]);
         }
     }
 
@@ -131,6 +142,7 @@ void HairMesh::bindToComputeShader(ComputeShader &cs) const
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
+    assert(dir.length() > 1e-6f);
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
         this->controlVerts.push_back({v, 1.0f});

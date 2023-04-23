@@ -23,7 +23,7 @@ void App::Run(EventHandler &eventHandler)
     while (eventHandler.IsRunning()) {
         auto start = std::chrono::high_resolution_clock::now();
 
-        std::async(std::launch::async, [&] {
+        std::async(std::launch::async | std::launch::deferred, [&] {
             auto startP = std::chrono::high_resolution_clock::now();
 
             physicsIntegrator->Integrate();

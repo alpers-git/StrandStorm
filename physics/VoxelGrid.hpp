@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <unordered_map>
+#include <memory>
 #include <mutex>
 
 // Used in spatial hashing

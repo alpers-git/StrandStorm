@@ -11,11 +11,11 @@ void PhysicsIntegrator::Initialize()
 
 void PhysicsIntegrator::Integrate()
 {
-    for (int i = 0; i < numSteps; i++)
+    for (int i = 0; i < numSteps; i++) {
         TakeStep(dt);
-
-    for (size_t i = 0; i < scene->rods.size(); i++)
-    {
+    }
+    //Call Event Handler to scynronize the rendering geometry with the physics
+    for (size_t i = 0; i < scene->rods.size(); i++) {
         scene->hairMesh.updateFrom(scene->rods[i], i);
     }
     // Call Event Handler to scynronize the rendering geometry with the physics
