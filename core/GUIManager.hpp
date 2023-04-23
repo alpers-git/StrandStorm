@@ -50,4 +50,6 @@ private:
 
     void DrawSimulationControls();
     void DrawRodParameters();
+
+    void DrawTimerInfo();
 };
