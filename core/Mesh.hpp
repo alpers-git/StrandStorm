@@ -45,21 +45,23 @@ private:
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
-    // Vertices for control hairs
-    std::vector<glm::vec4> controlVerts;
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 12;
-    // Number of subdivisions between each control hair vertex (M)
-    //  Includes start vertex, so needs to be >=1
+    static constexpr uint32_t controlHairLen = 8;
+    // Bezier hair interpolation subdivision, 1 = no interpolation
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
     static constexpr uint32_t interpDensity = 8;
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
-    // Debug control hair duplication
-    static constexpr uint32_t controlHairDensity = 0;
+    // Amount to randomly perturb control hair vertices
     static constexpr float controlHairRandomize = 0.1f;
-    static constexpr int maxControlHairs = 100;
+    ///DEBUG: control hair duplication
+    static constexpr uint32_t controlHairDensity = 0;
+    ///DEBUG: maximum allowed control hairs, -1 for no limit
+    static constexpr int maxControlHairs = 200;
+
+    // Vertices for control hairs
+    std::vector<glm::vec4> controlVerts;
 
     bool drawControlHairs = false;
 

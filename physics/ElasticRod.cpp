@@ -1,11 +1,12 @@
 #include <ElasticRod.hpp>
 
 // Elastic rod sim constants
-float ElasticRod::drag = 75.0f;
-float ElasticRod::inextensibility = 0.1f;
-float ElasticRod::alpha = 0.1f;
-float ElasticRod::friction = 0.05;
-Vector3f ElasticRod::gravity = {0.0f, -9.8f, 0.0f};
+float ElasticRod::drag = 5.0f;
+float ElasticRod::inextensibility = 0.9f;
+float ElasticRod::alpha = 0.9f;
+float ElasticRod::friction = 0.0f;
+float ElasticRod::bendingStiffness = 100.0f;
+Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
 Vector3f ElasticRod::kappaB(int i)
 {
@@ -68,6 +69,9 @@ Matrix<float, 2, 3> ElasticRod::omegaGrad(int i, int j, int k)
         m.row(1) = -M[j].m1;
         m *= kappaBGrad(i, k);
     }
+    // assert(!m.hasNaN());
+    // assert(!gradHolonomy(i, j).hasNaN());
+    // assert(!omega(k, j).hasNaN());
     return m - J * omega(k, j) * gradHolonomy(i, j).transpose();
 }
 
@@ -92,7 +96,10 @@ Vector3f ElasticRod::dEdX(int i)
     for (int k = 1; k < x.size(); k++) {
         Vector3f pf = Vector3f::Zero();
         for (int j = k-1; j <= k; j++) {
-            pf += omegaGrad(i, j, k).transpose() * B * (omega(k, j) - omega0[k][j-k]);
+            // assert(!omegaGrad(i, j, k).hasNaN());
+            // assert(!omega(k, j).hasNaN());
+            // assert(!omega0[k][j-k].hasNaN());
+            pf += omegaGrad(i, j, k).transpose() * this->bendingStiffness * Matrix2f::Identity() * (omega(k, j) - omega0[k][j-k]);
         }
         f += pf / initEdgeLen(k);
     }
@@ -210,70 +217,57 @@ void ElasticRod::integrateFwEuler(float dt)
     compMatFrames();
     compGradHolonomyTerms();
 
-    xUnconstrained[0] = xRest[0]; // so root position is known
     for (int i = 1; i < x.size(); i++) 
     {
-        Eigen::Vector3f vUnconstrained = (force(i) + gravity) * dt;
-        assert(!vUnconstrained.hasNaN());
-        vUnconstrained -= 0.5f *drag * vUnconstrained.squaredNorm() * vUnconstrained.normalized() * dt;
-        xUnconstrained[i] = x[i] + vUnconstrained * dt;
+        v[i] += (force(i) + gravity) * dt;
+        v[i] -= 0.5f * drag * v[i].squaredNorm() * v[i].normalized() * dt;
+        x[i] += v[i] * dt;
     }
 }
 
 void ElasticRod::handleCollisions(const std::vector<std::shared_ptr<SceneObject>>& colliders)
 {
-    SphereCollider vertCollider(Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f);
-    CollisionInfo collisionInfo;
+    SphereCollider vertCollider(Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.0001f);
+    CollisionInfo col;
     for (int i = 1; i < x.size(); i++) {
         for (const std::shared_ptr<SceneObject>& c : colliders) {
-            vertCollider.center = xUnconstrained[i];
-            if(c->collider->IsCollidingWith(vertCollider, collisionInfo))     
-                xUnconstrained[i] = c->collider->center - 1.01 * collisionInfo.normal * c->collider->GetBoundaryAt(xUnconstrained[i]);
-        }      
+            vertCollider.center = x[i];
+            if (c->collider->IsCollidingWith(vertCollider, col)) {
+                x[i] = c->collider->center - col.normal * c->collider->GetBoundaryAt(x[i]);
+            }
+        }
     }
 }
 
 void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders)
 {
     handleCollisions(colliders);
-
+    x[0] = xRest[0];
     for (int i = 1; i < x.size(); i++) {
-        Eigen::Vector3f correctedX = xUnconstrained[i] - xUnconstrained[i-1];
-        correctedX = xUnconstrained[i-1] + correctedX.normalized() * initEdgeLen(i-1); 
-        v[i] = (correctedX - x[i]) / dt;
-        x[i] = correctedX;
-        assert(!x[i].hasNaN());
-        correctionVecs[i] = correctedX - xUnconstrained[i];
+        x[i] = x[i-1] + edge(i-1).normalized() * lerp(edge(i-1).norm(), initEdge(i-1).norm(), inextensibility);
     }
-    for (int i = 1; i < x.size()-1; i++) {
-        v[i] -= -inextensibility * correctionVecs[i+1]/dt;
-    }
-
-   
 }
 
 
 void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGrid)
 {    
     Eigen::Vector3f firstVoxelCoord,localPosition;
-    for (size_t i = 1; i < x.size(); i++)
-    {
+    for (size_t i = 1; i < x.size(); i++) {
         voxelGrid->getVoxelCoordinates(x[i],firstVoxelCoord,localPosition);
         
         for(size_t i=0;i<=1;i++)
-            for(size_t j=0;j<=1;j++)
-                for(size_t k=0;k<=1;k++)
-                {
-                    Eigen::Vector3f corner = firstVoxelCoord + Eigen::Vector3f(i,j,k);
-                    size_t hash = voxelGrid->getSpatialHash(corner);
-                    corner -= localPosition;
-                    corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
-                    
-                    voxelGrid->voxelMutex->lock();            
-                    voxelGrid->voxelMasses[hash] += corner.prod();
-                    voxelGrid->voxelVelocities[hash] += corner.prod() * v[i];               
-                    voxelGrid->voxelMutex->unlock();
-                }
+        for(size_t j=0;j<=1;j++)
+        for(size_t k=0;k<=1;k++) {
+            Eigen::Vector3f corner = firstVoxelCoord + Eigen::Vector3f(i,j,k);
+            size_t hash = voxelGrid->getSpatialHash(corner);
+            corner -= localPosition;
+            corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
+            
+            voxelGrid->voxelMutex->lock();            
+            voxelGrid->voxelMasses[hash] += corner.prod();
+            voxelGrid->voxelVelocities[hash] += corner.prod() * v[i];
+            voxelGrid->voxelMutex->unlock();
+        }
     }
 }
 
@@ -307,7 +301,7 @@ void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>&
         Eigen::Vector3f up = (1.0f - localPosition[0]) * up_interp1 + localPosition[0] * up_interp2;
 
         velocity = (1.0f - localPosition[1]) * lp + localPosition[1] * up;
-        v[i] = (1-friction) * v[i] + friction * velocity;
+        v[i] = lerp(v[i], velocity, friction);
     }
 }
 
@@ -317,9 +311,4 @@ void ElasticRod::reset()
         x[i] = xRest[i];
         v[i] = Vector3f::Zero();
     }
-}
-
-void ElasticRod::bendingStiffness(float value)
-{
-    this->B = Matrix2f::Identity() * value;
 }

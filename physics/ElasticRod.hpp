@@ -96,7 +96,8 @@ public:
     static float inextensibility;
     // Bending modulus (resistance to bending)
     static float alpha;
-
+    // Bending stiffness
+    static float bendingStiffness;
     // Used in voxel velocity update
     static float friction;
 
@@ -115,6 +116,4 @@ public:
 
     // Reset simulation to rest state
     void reset();
-    // Sets the bending stiffness constant
-    void bendingStiffness(float value);
 };
