@@ -117,6 +117,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
         xUnconstrained[i] = Vector3f::Zero();
         correctionVecs[i] = Vector3f::Zero();        
     }
+
 }
 
 
@@ -166,21 +167,50 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
         v[i] -= -inextensibility * correctionVecs[i+1]/dt;
 }
 
-void ElasticRod::getVertsFromVoxelGrid(Eigen::Vector3f samplingPoint, float extentSize, float voxelSize)
+void ElasticRod::getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition)
 {
     // Use side length of cube that contains the voxel grid to determine the origin
-    Eigen::Vector3f origin = {-extentSize*0.5f, -extentSize*0.5f, -extentSize*0.5f};
+    Eigen::Vector3f origin = {-voxelGridExtent*0.5f, -voxelGridExtent*0.5f, -voxelGridExtent*0.5f};
+    Eigen::Vector3f coordsInVoxel = (position-origin)/voxelSize;
     // Get indices of voxel containing sampling point
-    Eigen::Vector3f indices =Eigen::Vector3f(((samplingPoint-origin)/voxelSize).array().floor());
-    Eigen::Vector3f boundMin = origin + indices * voxelSize;
-    int counter = 0;
+    Eigen::Vector3f indices = Eigen::Vector3f(coordsInVoxel.array().floor());
+    firstVoxelCoord = indices;
+    localPosition = coordsInVoxel - indices;
+}
+
+void ElasticRod::setVoxelContributions(const Eigen::Vector3f& position, const Eigen::Vector3f& velocity)
+{
+    
+    Eigen::Vector3f firstVoxelCoord,localPosition;
+    getVoxelCoordinates(position,firstVoxelCoord,localPosition);
+    
     for(size_t i=0;i<=1;i++)
         for(size_t j=0;j<=1;j++)
             for(size_t k=0;k<=1;k++)
             {
-                Eigen::Vector3f corner = boundMin + Eigen::Vector3f(i,j,k) * voxelSize;
-                std::cerr<<"Corner "<<" "<<counter++<<": "<<corner[0]<<" "<<corner[1]<<" "<<corner[2]<<std::endl;
+                Eigen::Vector3f corner = firstVoxelCoord + Eigen::Vector3f(i,j,k);
+                size_t hash = getSpatialHash(corner);
+                // corner += boundMin;
+                corner -= localPosition;
+                corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs());
+                if(voxelMasses.find(hash) != voxelMasses.end())
+                {
+                    voxelMasses[hash] += corner.prod();
+                    voxelVelocities[hash] += corner.prod() * velocity;
+                }
+                else
+                {
+                    voxelMasses[hash] = corner.prod();
+                    voxelVelocities[hash] = corner.prod() * velocity;
+                }
             }
+}
+
+// Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"
+size_t ElasticRod::getSpatialHash(Eigen::Vector3f pos)
+{
+    size_t n = (size_t)pow((double)(voxelGridExtent/voxelSize),3.0);
+    return ((int)pos[0]*prime1^(int)pos[1]*prime2^(int)pos[2]*prime3) % n;
 }
 
 void ElasticRod::reset()
