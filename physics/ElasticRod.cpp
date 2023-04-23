@@ -4,6 +4,7 @@
 float ElasticRod::drag = 75.0f;
 float ElasticRod::inextensibility = 0.1f;
 float ElasticRod::alpha = 0.1f;
+float ElasticRod::friction = 0.05;
 Vector3f ElasticRod::gravity = {0.0f, -9.8f, 0.0f};
 
 float ElasticRod::kappa(size_t i)
@@ -119,20 +120,6 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
     }
 }
 
-void ElasticRod::initVoxelGrid()
-{
-    voxelMutex = std::make_shared<std::mutex>();
-    int numSteps = (int)(voxelGridExtent/voxelSize);
-    size_t hash;
-    for(int i = 0; i < numSteps; i++)    
-        for(int j = 0; j < numSteps; j++)        
-            for(int k = 0; k < numSteps; k++)
-            {
-                hash = getSpatialHash(Eigen::Vector3f(i, j, k));
-                voxelMasses[hash] = 0;
-                voxelVelocities[hash] = Eigen::Vector3f::Zero();
-            } 
-}
 
 
 void ElasticRod::integrateFwEuler(float dt)
@@ -177,9 +164,6 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
         // xUnconstrained[i] = correctedX; // Does this make sense?
     }
 
-    voxelMasses.clear();
-    voxelVelocities.clear();
-
     for (size_t i = 1; i < x.size()-1; i++)
     {
         // Update velocities so that mass distribution is maintained [Refer FTL paper by Muller et al.]
@@ -190,60 +174,49 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
 }
 
 
-void ElasticRod::getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition)
-{
-    // Use side length of cube that contains the voxel grid to determine the origin
-    Eigen::Vector3f origin = {-voxelGridExtent*0.5f, -voxelGridExtent*0.5f, -voxelGridExtent*0.5f};
-    Eigen::Vector3f coordsInVoxel = (position-origin)/voxelSize;
-    // Get indices of voxel containing sampling point
-    Eigen::Vector3f indices = Eigen::Vector3f(coordsInVoxel.array().floor());
-    firstVoxelCoord = indices;
-    localPosition = coordsInVoxel - indices;
-}
-
-void ElasticRod::setVoxelContributions()
+void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGrid)
 {    
     Eigen::Vector3f firstVoxelCoord,localPosition;
     for (size_t i = 1; i < x.size(); i++)
     {
-        getVoxelCoordinates(x[i],firstVoxelCoord,localPosition);
+        voxelGrid->getVoxelCoordinates(x[i],firstVoxelCoord,localPosition);
         
         for(size_t i=0;i<=1;i++)
             for(size_t j=0;j<=1;j++)
                 for(size_t k=0;k<=1;k++)
                 {
                     Eigen::Vector3f corner = firstVoxelCoord + Eigen::Vector3f(i,j,k);
-                    size_t hash = getSpatialHash(corner);
+                    size_t hash = voxelGrid->getSpatialHash(corner);
                     corner -= localPosition;
                     corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
                     
-                    voxelMutex->lock();            
-                    voxelMasses[hash] += corner.prod();
-                    voxelVelocities[hash] += corner.prod() * v[i];               
-                    voxelMutex->unlock();
+                    voxelGrid->voxelMutex->lock();            
+                    voxelGrid->voxelMasses[hash] += corner.prod();
+                    voxelGrid->voxelVelocities[hash] += corner.prod() * v[i];               
+                    voxelGrid->voxelMutex->unlock();
                 }
     }
 }
 
 
-void ElasticRod::updateAllVelocitiesFromVoxels()
+void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>& voxelGrid)
 {
     Eigen::Vector3f firstVoxelCoord, localPosition, velocity;
     Eigen::Vector3f zeroVec = Eigen::Vector3f::Zero();
     for (size_t i = 1; i < x.size(); i++)
     {
-        getVoxelCoordinates(x[i], firstVoxelCoord, localPosition);
+        voxelGrid->getVoxelCoordinates(x[i], firstVoxelCoord, localPosition);
 
         // Get the 8 velocities of the 8 corners of the voxel containing the sampling point
         Eigen::Vector3f corner000, corner001, corner100, corner101, corner010, corner011, corner110, corner111;
-        sampleVoxelVelocity(corner000, firstVoxelCoord);
-        sampleVoxelVelocity(corner001, firstVoxelCoord + Eigen::Vector3f(0, 0, 1));
-        sampleVoxelVelocity(corner100, firstVoxelCoord + Eigen::Vector3f(1, 0, 0));
-        sampleVoxelVelocity(corner101, firstVoxelCoord + Eigen::Vector3f(1, 0, 1));
-        sampleVoxelVelocity(corner010, firstVoxelCoord + Eigen::Vector3f(0, 1, 0));
-        sampleVoxelVelocity(corner011, firstVoxelCoord + Eigen::Vector3f(0, 1, 1));
-        sampleVoxelVelocity(corner110, firstVoxelCoord + Eigen::Vector3f(1, 1, 0));
-        sampleVoxelVelocity(corner111, firstVoxelCoord + Eigen::Vector3f(1, 1, 1));
+        voxelGrid->sampleVoxelVelocity(corner000, firstVoxelCoord);
+        voxelGrid->sampleVoxelVelocity(corner001, firstVoxelCoord + Eigen::Vector3f(0, 0, 1));
+        voxelGrid->sampleVoxelVelocity(corner100, firstVoxelCoord + Eigen::Vector3f(1, 0, 0));
+        voxelGrid->sampleVoxelVelocity(corner101, firstVoxelCoord + Eigen::Vector3f(1, 0, 1));
+        voxelGrid->sampleVoxelVelocity(corner010, firstVoxelCoord + Eigen::Vector3f(0, 1, 0));
+        voxelGrid->sampleVoxelVelocity(corner011, firstVoxelCoord + Eigen::Vector3f(0, 1, 1));
+        voxelGrid->sampleVoxelVelocity(corner110, firstVoxelCoord + Eigen::Vector3f(1, 1, 0));
+        voxelGrid->sampleVoxelVelocity(corner111, firstVoxelCoord + Eigen::Vector3f(1, 1, 1));
 
         // Perform trilinear interpolation to get the velocity at the sampling point
         Eigen::Vector3f lp_interp1 = (1.0f - localPosition[2]) * corner000 + localPosition[2] * corner001;
@@ -257,20 +230,6 @@ void ElasticRod::updateAllVelocitiesFromVoxels()
         velocity = (1.0f - localPosition[1]) * lp + localPosition[1] * up;
         v[i] = (1-friction) * v[i] + friction * velocity;
     }
-}
-
-Eigen::Vector3f ElasticRod::sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index)
-{
-    size_t hash = getSpatialHash(index);
-    float norm = voxelMasses[hash] == 0 ? 1 : voxelMasses[hash];
-    return voxelVelocities[hash]/norm;
-}
-
-// Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"
-size_t ElasticRod::getSpatialHash(Eigen::Vector3f pos)
-{
-    size_t n = (size_t)pow((double)(voxelGridExtent/voxelSize),3.0);
-    return ((int)pos[0]*prime1^(int)pos[1]*prime2^(int)pos[2]*prime3) % n;
 }
 
 void ElasticRod::reset()

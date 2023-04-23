@@ -3,14 +3,11 @@
 #include <Util.hpp>
 #include <Eigen/Dense>
 #include <Scene.hpp>
-#include <mutex>
+#include <VoxelGrid.hpp>
 
 using namespace Eigen;
 
-// Used in spatial hashing
-static constexpr size_t prime1 = 73856093;
-static constexpr size_t prime2 = 19349663;
-static constexpr size_t prime3 = 83492791;
+
 
 class ElasticRod
 {
@@ -41,26 +38,7 @@ private:
     std::vector<Vector3f> correctionVecs; 
 
 
-    // Side length of cube that makes up the voxel grid
-    float voxelGridExtent = 4.0f;
-    // Side length of each voxel
-    float voxelSize = 0.1f;
-
-    float friction = 0.05f;
-
-    std::shared_ptr<std::mutex> voxelMutex;
-    // Stores the density of each voxel vertex, which is based on the number of hair vertices that are in the voxel
-    std::unordered_map<size_t,float> voxelMasses;
-    // Stores the average velocity around the voxel vertex
-    std::unordered_map<size_t,Eigen::Vector3f> voxelVelocities;    
-    
-    void initVoxelGrid();
-    void getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition);
-    void setVoxelContributions();
-    Eigen::Vector3f sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
-    void updateAllVelocitiesFromVoxels();
-
-    size_t getSpatialHash(Eigen::Vector3f pos);
+   
 
 public:
     // particle positions at rest
@@ -82,11 +60,19 @@ public:
     // Bending modulus (resistance to bending)
     static float alpha;
 
+    // Used in voxel velocity update
+    static float friction;
+
     void init(const std::vector<glm::vec3>& verts);
     void integrateFwEuler(float dt);
     void handleCollisions(const std::vector<std::shared_ptr<SceneObject>>& colliders);
     void enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders);
     
+
+    
+    void setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGrid);
+    void updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>& voxelGrid);
+
     // Reset simulation to rest state
     void reset();
 };

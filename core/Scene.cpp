@@ -58,6 +58,8 @@ void Scene::init(const Renderer& r)
         params);
 
     cam.orient({0.0f, 0.0f});
+
+    voxelGrid = std::make_shared<VoxelGrid>();
 }
 
 

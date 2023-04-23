@@ -4,6 +4,7 @@
 #include <Camera.hpp>
 #include <ElasticRod.hpp>
 #include <Collider.hpp>
+#include <VoxelGrid.hpp>
 
 class Renderer;
 
@@ -30,6 +31,7 @@ public:
     std::shared_ptr<SceneObject> surface, dummy;
     std::vector<std::shared_ptr<SceneObject>> sceneObjects;
     std::vector<ElasticRod> rods;
+    std::shared_ptr<VoxelGrid> voxelGrid;
     Camera cam;
     struct Light {
         glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.1f);

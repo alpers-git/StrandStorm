@@ -26,6 +26,7 @@ void PhysicsIntegrator::Integrate()
 
 void PhysicsIntegrator::TakeStep(float dt)
 {
+    scene->voxelGrid->initVoxelGrid();
     // Integrate the physics here
     std::for_each(std::execution::par_unseq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
     { 
@@ -36,5 +37,17 @@ void PhysicsIntegrator::TakeStep(float dt)
     {
         rod.enforceConstraints(dt, scene->sceneObjects);
     });
+
+    std::for_each(std::execution::par_unseq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
+    {
+        rod.setVoxelContributions(scene->voxelGrid);
+    });
+
+    std::for_each(std::execution::par_unseq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
+    {
+        rod.updateAllVelocitiesFromVoxels(scene->voxelGrid);
+    });
+
+    
     
 }
