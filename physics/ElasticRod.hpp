@@ -7,32 +7,27 @@
 
 using namespace Eigen;
 
-struct BishopFrame
-{
-    Vector3f u;
-    Vector3f v;
-    BishopFrame() = default;
-    BishopFrame(const Vector3f& u, const Vector3f& v) : u(u), v(v) {}
-};
-
-struct MaterialFrame
-{
-    Vector3f m1;
-    Vector3f m2;
-    MaterialFrame() = default;
-    MaterialFrame(const Vector3f& m1, const Vector3f& m2) : m1(m1), m2(m2) {}
-};
-
 class ElasticRod
 {
 private:
+    struct BishopFrame
+    {
+        Vector3f u = Vector3f::Zero();
+        Vector3f v = Vector3f::Zero();
+        BishopFrame() = default;
+        BishopFrame(const Vector3f& u, const Vector3f& v) : u(u), v(v) {}
+    };
 
-    // Curvature
-    float kappa(int i);
+    struct MaterialFrame
+    {
+        Vector3f m1 = Vector3f::Zero();
+        Vector3f m2 = Vector3f::Zero();
+        MaterialFrame() = default;
+        MaterialFrame(const Vector3f& m1, const Vector3f& m2) : m1(m1), m2(m2) {}
+    };
+
     // Curvature binormal
     Vector3f kappaB(int i);
-    // Bending energy
-    float bendingEnergy();
     // Initial edge length
     float initEdgeLen(int i);
     // Gradient holonomy term i,j
@@ -53,10 +48,13 @@ private:
     Matrix<float, 2, 3> omegaGrad(int i, int j, int k);
     // Compute gradient holonomy from gradient holonomy terms
     Vector3f gradHolonomy(int i, int j);
+    // Energy derivative dEdX for vertex i
+    Vector3f dEdX(int i);
+    // Energy derivative dE/dTheta for 
 
-    // Generates the bishop frames (only call at start)
-    void genBishopFrames();
-    // Recomputes the material frames (call every frame)
+    // Generates the bishop frames
+    void compBishopFrames();
+    // Recomputes the material frames
     void compMatFrames();
     // Computes gradient holonomy terms
     void compGradHolonomyTerms();
@@ -72,9 +70,9 @@ private:
     // Initial twisting vector
     Vector3f u0 = {0.0f, 0.0f, 0.0f};
     // Bending stiffness matrix B
-    Matrix2f B = Matrix2f::Identity() * 0.1f;
+    Matrix2f B = Matrix2f::Identity() * 1.0f;
     // Material curvature at rest for i, j, where j:(i-1, i, i+1)
-    std::vector<std::array<Vector2f, 3u>> omega0;
+    std::vector<std::array<Vector2f, 2u>> omega0;
     // Bending angles
     std::vector<float> theta;
     // Gradient holonomy terms (i-1, i, i+1) for each vertex
@@ -86,9 +84,6 @@ public:
     std::vector<Vector3f> x;
     // particle velocities
     std::vector<Vector3f> v;
-    
-    // Scene reference for collider access
-    std::shared_ptr<Scene> scene;
 
     // Gravity force added to each free vertex
     static Vector3f gravity;
@@ -98,6 +93,9 @@ public:
     static float inextensibility;
     // Bending modulus (resistance to bending)
     static float alpha;
+
+    ElasticRod() = default;
+    ElasticRod(const std::vector<glm::vec3>& verts);
 
     void init(const std::vector<glm::vec3>& verts);
     void integrateFwEuler(float dt);

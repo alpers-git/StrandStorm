@@ -8,8 +8,9 @@ void PhysicsIntegrator::Initialize()
 
 void PhysicsIntegrator::Integrate()
 {
-    for (int i = 0; i < numSteps; i++)
+    for (int i = 0; i < numSteps; i++) {
         TakeStep(dt);
+    }
     //Call Event Handler to scynronize the rendering geometry with the physics
     for (size_t i = 0; i < scene->rods.size(); i++) {
         scene->hairMesh.updateFrom(scene->rods[i], i);
@@ -21,19 +22,8 @@ void PhysicsIntegrator::Integrate()
 
 void PhysicsIntegrator::TakeStep(float dt)
 {
-    //Integrate the physics here
-    // printf("Integrating physics with dt = %f numSteps = %d dt*numSteps = %f\r", dt, numSteps, dt*numSteps);
-
-    //Integrate the elastic rod
-    for (ElasticRod& rod : scene->rods) 
-    {
-        rod.integrateFwEuler(dt);
-        rod.enforceConstraints(dt,scene->sceneObjects);
+    for (int i = 0; i < scene->rods.size(); i++)  {
+        scene->rods[i].integrateFwEuler(dt);
+        scene->rods[i].enforceConstraints(dt, scene->sceneObjects);
     }
-    // {std::stringstream s;
-    // s << scene->rods[0].v[6];
-    // spdlog::debug("v = {}", s.str());}
-    // {std::stringstream s;
-    // s << scene->rods[0].x[6];
-    // spdlog::debug("x = {}", s.str());}
 }
