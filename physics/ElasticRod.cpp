@@ -4,7 +4,7 @@
 
 // Elastic rod sim constants
 float ElasticRod::drag = 0.0f;
-float ElasticRod::inextensibility = 0.9f;
+float ElasticRod::inextensibility = 1.0f;
 float ElasticRod::alpha = 0.1f;
 float ElasticRod::friction = 0.0f;
 float ElasticRod::bendingStiffness = 0.1f;
@@ -144,25 +144,6 @@ void ElasticRod::compGradHolonomyTerms()
     }
 }
 
-Vector3f ElasticRod::parallelTransportFrame(int i, const Vector3f& u) {
-    const Vector3f e0 = edge(i-1);
-    const Vector3f e1 = edge(i);
-    Vector3f axis = (2.0f * e0.cross(e1)) / (e0.norm() * e1.norm() + e0.dot(e1));
-    
-    float magnitude = axis.dot(axis);
-    float cosPhi = std::sqrt(4.0f / (4.0f + magnitude));
-    float sinPhi = std::sqrt(magnitude / (4.0f + magnitude));
-    assert(cosPhi >= 0.0f && cosPhi <= 1.0f);
-
-    if (1.0f - cosPhi < 1e-6f) {
-        return e1.cross(u).cross(e1).normalized();
-    }
-    Quaternionf q({cosPhi, sinPhi * axis.normalized()});
-    Quaternionf p({0.0f, u});
-    Quaternionf r = q * p * q.conjugate();
-    return {r.y(), r.z(), r.w()};
-}
-
 Vector3f ElasticRod::edge(int i)
 {
     i = std::clamp(i, 0, (int)(x.size() - 2));
@@ -213,6 +194,7 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
     // Debug printing initial state
     std::stringstream ss;
     ss << "initial state:";
+    ss << fmt::format("\nu0 = ({:.3f},{:.3f},{:.3f})", u0.x(), u0.y(), u0.z());
     ss << "\nomega0:";
     for (const auto& omega : omega0) {
         ss << "\n\t";
