@@ -3,7 +3,7 @@
 #include <spdlog/fmt/fmt.h>
 
 // Elastic rod sim constants
-float ElasticRod::drag = 0.001f;
+float ElasticRod::drag = 0.01f;
 float ElasticRod::friction = 0.0f;
 float ElasticRod::bendingStiffness = 0.05f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
@@ -130,7 +130,7 @@ void ElasticRod::compMatFrames()
 Vector3f ElasticRod::edge(int i)
 {
     i = std::clamp(i, 0, (int)(x.size() - 2));
-    return x[i + 1] - x[i];
+    return e[i];
 }
 
 Vector3f ElasticRod::initEdge(int i)
@@ -148,6 +148,7 @@ Vector3f ElasticRod::force(int i)
 void ElasticRod::init(const std::vector<glm::vec3> &verts)
 {
     x.resize(verts.size(), Vector3f::Zero());
+    e.resize(verts.size()-1, Vector3f::Zero());
     v.resize(verts.size(), Vector3f::Zero());
     theta.resize(verts.size(), 0.0f);
     omega0.resize(verts.size());
@@ -179,9 +180,14 @@ ElasticRod::ElasticRod(const std::vector<glm::vec3> &verts)
 
 void ElasticRod::integrateFwEuler(float dt)
 {
+    for (int i = 0; i < e.size(); i++) {
+        e[i] = x[i+1] - x[i];
+    }
+
     compBishopFrames();
     compMatFrames();
 
+    px = x;
     for (int i = 1; i < x.size(); i++) 
     {
         v[i] += (force(i) + gravity) * dt;
@@ -208,12 +214,12 @@ void ElasticRod::enforceConstraints(float dt, const std::vector<std::shared_ptr<
 {
     handleCollisions(colliders);
     x[0] = xRest[0];
-    const std::vector<Vector3f> px = x;
     for (int i = 1; i < x.size(); i++) {
         // Inextensibility: needs to be perfectly inextensible otherwise problem
-        x[i] = x[i-1] + edge(i-1).normalized() * initEdge(i-1).norm();
+        x[i] = x[i-1] + (x[i] - x[i-1]).normalized() * initEdge(i-1).norm();
         // Velocity must be corrected according to position correction
         v[i] = (x[i] - px[i]) / dt;
+        v[i] -= 0.5f * drag * v[i].squaredNorm() * v[i].normalized() * dt;
     }
 }
 
