@@ -51,6 +51,7 @@ void Renderer::RenderFirstPass()
     shadowProg.Use();
     shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());
     depthTex->Render([&]() {
+            scene->surface->mesh.draw(shadowProg);
             scene->hairMesh.draw(shadowProg);
         });
     //render opacitymaps for opacity shadowmap
@@ -70,6 +71,7 @@ void Renderer::RenderFirstPass()
                 glBlendFunc(GL_ONE, GL_ONE) $gl_chk;
                 glBlendEquation(GL_FUNC_ADD) $gl_chk;
                 depthTex->Bind();
+                scene->surface->mesh.draw(opacityShadowProg);
                 scene->hairMesh.draw(opacityShadowProg);
                 glDisable(GL_BLEND) $gl_chk;
                 glEnable(GL_DEPTH_TEST) $gl_chk;

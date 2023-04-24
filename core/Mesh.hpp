@@ -46,7 +46,7 @@ private:
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 8;
+    static constexpr uint32_t controlHairLen = 10;
     // Bezier hair interpolation subdivision, 1 = no interpolation
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
@@ -58,7 +58,7 @@ public:
     ///DEBUG: control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
     ///DEBUG: maximum allowed control hairs, -1 for no limit
-    static constexpr int maxControlHairs = 10;
+    static constexpr int maxControlHairs = 1000;
 
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;
