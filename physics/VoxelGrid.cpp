@@ -4,14 +4,13 @@
 VoxelGrid::VoxelGrid()
 {
     voxelMasses.resize(nVoxels(), 0.0f);
-    voxelVelocities.resize(nVoxels(), Eigen::Vector3f::Zero());
-    voxelMutex = std::make_shared<std::mutex>();
+    voxelVelocities.resize(nVoxels(), Eigen::Vector3f(0.0f, 0.0f, 0.0f));
 }
 
 void VoxelGrid::initVoxelGrid()
 {
     voxelMasses.assign(nVoxels(), 0.0f);
-    voxelVelocities.assign(nVoxels(), Eigen::Vector3f::Zero());
+    voxelVelocities.assign(nVoxels(), Eigen::Vector3f(0.0f, 0.0f, 0.0f));
 }
 
 void VoxelGrid::getVoxelCoordinates(const Eigen::Vector3f &position, Eigen::Vector3f &firstVoxelCoord, Eigen::Vector3f &localPosition)
@@ -22,16 +21,20 @@ void VoxelGrid::getVoxelCoordinates(const Eigen::Vector3f &position, Eigen::Vect
     Eigen::Vector3f coordsInVoxel = (position-corner)/voxelSize;
     // Get indices of voxel containing sampling point
     Eigen::Vector3f indices = Eigen::Vector3f(coordsInVoxel.array().floor())
-        .cwiseMin(extent).cwiseMax(Eigen::Vector3f::Zero());
+        .cwiseMin(extent).cwiseMax(Eigen::Vector3f(0.0f, 0.0f, 0.0f));
     firstVoxelCoord = indices;
     localPosition = coordsInVoxel - indices;
+    assert(!localPosition.hasNaN());
+    assert(!firstVoxelCoord.hasNaN());
 }
 
 Eigen::Vector3f VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const Eigen::Vector3f &index)
 {
     size_t hash = getSpatialHash(index);
+    assert(hash >= 0 && hash < nVoxels());
     float norm = voxelMasses[hash] == 0 ? 1 : voxelMasses[hash];
-    return voxelVelocities[hash]/norm;
+    assert(!(voxelVelocities[hash]/norm).hasNaN());
+    vertexVel = voxelVelocities[hash]/norm;
 }
 
 // Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"

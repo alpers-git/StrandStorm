@@ -4,7 +4,7 @@
 float ElasticRod::drag = 5.0f;
 float ElasticRod::inextensibility = 0.9f;
 float ElasticRod::alpha = 0.9f;
-float ElasticRod::friction = 0.0f;
+float ElasticRod::friction = 0.01f;
 float ElasticRod::bendingStiffness = 100.0f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
@@ -263,10 +263,10 @@ void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGr
             corner -= localPosition;
             corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
             
-            voxelGrid->voxelMutex->lock();            
+            // voxelGrid->voxelMutex.lock();
             voxelGrid->voxelMasses[hash] += corner.prod();
             voxelGrid->voxelVelocities[hash] += corner.prod() * v[i];
-            voxelGrid->voxelMutex->unlock();
+            // voxelGrid->voxelMutex.unlock();
         }
     }
 }
@@ -275,7 +275,8 @@ void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGr
 void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>& voxelGrid)
 {
     Eigen::Vector3f firstVoxelCoord, localPosition, velocity;
-    Eigen::Vector3f zeroVec = Eigen::Vector3f::Zero();
+    Eigen::Vector3f zeroVec;
+    zeroVec.setZero();
     for (size_t i = 1; i < x.size(); i++)
     {
         voxelGrid->getVoxelCoordinates(x[i], firstVoxelCoord, localPosition);
@@ -301,6 +302,7 @@ void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>&
         Eigen::Vector3f up = (1.0f - localPosition[0]) * up_interp1 + localPosition[0] * up_interp2;
 
         velocity = (1.0f - localPosition[1]) * lp + localPosition[1] * up;
+        assert(!velocity.hasNaN());
         v[i] = lerp(v[i], velocity, friction);
     }
 }

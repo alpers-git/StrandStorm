@@ -101,6 +101,8 @@ void GUIManager::Initialize()
 void GUIManager::Draw()
 {
     NewFrame();
+    ImGui::PushFont(this->font);
+
     glm::vec2 win = glm::make_vec2(ImGui::GetContentRegionAvail()) * (float)this->scalingFactor;
 
     ImGui::SetWindowPos("Renderer Controls",
@@ -140,6 +142,7 @@ void GUIManager::Draw()
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize);
     DrawTimerInfo();
     ImGui::End();
+    ImGui::PopFont();
     ImGui::Render();
     ImGuiIO &io = ImGui::GetIO();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
@@ -317,6 +320,4 @@ void GUIManager::NewFrame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    ImGui::PushFont(this->font);
 }

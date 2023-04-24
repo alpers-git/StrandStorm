@@ -58,7 +58,7 @@ public:
     ///DEBUG: control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
     ///DEBUG: maximum allowed control hairs, -1 for no limit
-    static constexpr int maxControlHairs = 200;
+    static constexpr int maxControlHairs = 10;
 
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;

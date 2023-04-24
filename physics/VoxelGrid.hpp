@@ -19,7 +19,7 @@ public:
     Eigen::Vector3f sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
     size_t getSpatialHash(const Eigen::Vector3f& pos);
 
-    std::shared_ptr<std::mutex> voxelMutex;
+    std::mutex voxelMutex;
     // Stores the density of each voxel vertex, which is based on the number of hair vertices that are in the voxel
     std::vector<float> voxelMasses;
     // Stores the average velocity around the voxel vertex

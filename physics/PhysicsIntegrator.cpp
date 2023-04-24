@@ -38,15 +38,15 @@ void PhysicsIntegrator::TakeStep(float dt)
         rod.enforceConstraints(dt, scene->sceneObjects);
     });
 
-    // std::for_each(std::execution::par_unseq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
-    // {
-    //     rod.setVoxelContributions(scene->voxelGrid);
-    // });
+    std::for_each(std::execution::seq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
+    {
+        rod.setVoxelContributions(scene->voxelGrid);
+    });
 
-    // std::for_each(std::execution::par_unseq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
-    // {
-    //     rod.updateAllVelocitiesFromVoxels(scene->voxelGrid);
-    // });
+    std::for_each(std::execution::seq, scene->rods.begin(), scene->rods.end(), [&](ElasticRod &rod)
+    {
+        rod.updateAllVelocitiesFromVoxels(scene->voxelGrid);
+    });
 
     
     
