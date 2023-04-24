@@ -165,8 +165,10 @@ void Renderer::RenderHairs()
     scene->hairMesh.lut1->Bind();
     hairProg.SetUniform("lut1", (int)scene->hairMesh.lut1->texUnit - GL_TEXTURE0, false);
 
+    hairProg.SetUniform("shadingModel", scene->hairMesh.shadingModel);
     hairProg.SetUniform("diffuseFalloff",scene->hairMesh.diffuseFalloff,false);
     hairProg.SetUniform("diffuseAzimuthFalloff",scene->hairMesh.diffuseAzimuthFalloff,false);
+    hairProg.SetUniform("scaleM",scene->hairMesh.scaleM,false);
     hairProg.SetUniform("scaleDiffuse",scene->hairMesh.scaleDiffuse,false);
     hairProg.SetUniform("scaleR",scene->hairMesh.scaleR,false);
     hairProg.SetUniform("scaleTT",scene->hairMesh.scaleTT,false);

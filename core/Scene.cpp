@@ -41,8 +41,8 @@ void Scene::init(const Renderer& r)
     lutParams.internalFormat = GL_RGBA8;
     lutParams.format = GL_RGBA;
     lutParams.type = GL_UNSIGNED_BYTE;
-    hairMesh.lut0 = std::make_shared<Texture>("resources/Textures/lut0.png", GL_TEXTURE0, lutParams);
-    hairMesh.lut1 = std::make_shared<Texture>("resources/Textures/lut1.png", GL_TEXTURE1, lutParams);
+    hairMesh.lut0 = std::make_shared<Texture>("resources/Textures/lookup1.png", GL_TEXTURE0, lutParams);
+    hairMesh.lut1 = std::make_shared<Texture>("resources/Textures/lookup2.png", GL_TEXTURE1, lutParams);
 
 
     //set light's shadow texture

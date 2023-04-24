@@ -107,12 +107,15 @@ public:
     std::shared_ptr<Texture> lut1;
     std::shared_ptr<Texture> lut2;
 
+    int shadingModel = 1;
+
     float diffuseFalloff = 0.4f;
     float diffuseAzimuthFalloff = 0.4f;
     float scaleDiffuse = 0.4f; 
     float scaleR = 2.5f;
     float scaleTT = 0.9f;
     float scaleTRT = 1.0f;
+    float scaleM = 30.0f;
 
     bool show = true;
     bool shadowsEnable = true;
