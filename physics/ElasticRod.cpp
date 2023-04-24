@@ -38,7 +38,7 @@ Vector3f ElasticRod::psiGrad(int i, int j)
 
 Matrix3f ElasticRod::kappaBGrad(int i, int j)
 {
-    if (j < i-1 || j > i+1) {
+    if (j < i-1 || j > i+1 || j < 0 || j >= x.size()) {
         return Matrix3f::Zero();
     }
     const Vector3f kb = kappaB(i);

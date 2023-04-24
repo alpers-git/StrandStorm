@@ -23,7 +23,7 @@ void App::Run(EventHandler &eventHandler)
     while (eventHandler.IsRunning()) {
         auto start = std::chrono::high_resolution_clock::now();
 
-        std::async(std::launch::async | std::launch::deferred, [&] {
+        auto f = std::async(std::launch::async | std::launch::deferred, [&] {
             auto startP = std::chrono::high_resolution_clock::now();
 
             physicsIntegrator->Integrate();
@@ -48,6 +48,7 @@ void App::Run(EventHandler &eventHandler)
         stats::avgFrameTime = stats::avgFrameTime * 0.99f + stats::lastFrameTime * 0.01f; // rolling average
 
         gui.Draw();
+        f.wait();
     }
 
     // Clean up here
