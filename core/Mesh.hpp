@@ -109,13 +109,13 @@ public:
 
     int shadingModel = 1;
 
-    float diffuseFalloff = 0.4f;
+    float diffuseFalloff = 1.0f;
     float diffuseAzimuthFalloff = 0.4f;
-    float scaleDiffuse = 0.4f; 
-    float scaleR = 2.5f;
-    float scaleTT = 0.9f;
+    float scaleDiffuse = 1.0f; 
+    float scaleR = 1.0f;
+    float scaleTT = 1.0f;
     float scaleTRT = 1.0f;
-    float scaleM = 30.0f;
+    float scaleM = 1.0f;
 
     bool show = true;
     bool shadowsEnable = true;
