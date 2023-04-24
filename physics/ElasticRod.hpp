@@ -43,8 +43,6 @@ private:
     Vector3f initEdge(int i);
     // Force acting on vertex i
     Vector3f force(int i);
-    // Computes next u vector via parallel transport
-    Vector3f parallelTransportFrame(int i, const Vector3f& u);
     // Material curvature for (i,j)
     Vector2f omega(int i, int j);
     // Gradient of material curvature
@@ -53,7 +51,6 @@ private:
     Vector3f gradHolonomy(int i, int j);
     // Energy derivative dEdX for vertex i
     Vector3f dEdX(int i);
-    // Energy derivative dE/dTheta for 
 
     // Generates the bishop frames
     void compBishopFrames();
