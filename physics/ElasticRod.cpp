@@ -4,7 +4,7 @@
 float ElasticRod::drag = 5.0f;
 float ElasticRod::inextensibility = 0.9f;
 float ElasticRod::alpha = 0.9f;
-float ElasticRod::friction = 0.01f;
+float ElasticRod::friction = 0.0f;
 float ElasticRod::bendingStiffness = 100.0f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
@@ -263,10 +263,10 @@ void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGr
             corner -= localPosition;
             corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
             
-            // voxelGrid->voxelMutex.lock();
+            voxelGrid->voxelMutex.lock();
             voxelGrid->voxelMasses[hash] += corner.prod();
             voxelGrid->voxelVelocities[hash] += corner.prod() * v[i];
-            // voxelGrid->voxelMutex.unlock();
+            voxelGrid->voxelMutex.unlock();
         }
     }
 }

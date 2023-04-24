@@ -17,7 +17,7 @@ void VoxelGrid::getVoxelCoordinates(const Eigen::Vector3f &position, Eigen::Vect
 {
     // Use side length of cube that contains the voxel grid to determine the origin
     Eigen::Vector3f extent(Eigen::Vector3f::Constant(voxelGridExtent));
-    Eigen::Vector3f corner(-extent / 2.0f);
+    Eigen::Vector3f corner(origin - (extent / 2.0f));
     Eigen::Vector3f coordsInVoxel = (position-corner)/voxelSize;
     // Get indices of voxel containing sampling point
     Eigen::Vector3f indices = Eigen::Vector3f(coordsInVoxel.array().floor())
