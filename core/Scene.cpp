@@ -34,6 +34,17 @@ void Scene::init(const Renderer& r)
     dummy->collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 0.5f);
     sceneObjects.push_back(dummy);
 
+    //set Marschner luts
+    TextureParams lutParams;
+    lutParams.wrapS = GL_CLAMP_TO_BORDER;
+    lutParams.wrapT = GL_CLAMP_TO_BORDER;
+    lutParams.internalFormat = GL_RGBA8;
+    lutParams.format = GL_RGBA;
+    lutParams.type = GL_UNSIGNED_BYTE;
+    hairMesh.lut0 = std::make_shared<Texture>("resources/Textures/lookup1.png", GL_TEXTURE0, lutParams);
+    hairMesh.lut1 = std::make_shared<Texture>("resources/Textures/lookup2.png", GL_TEXTURE1, lutParams);
+
+
     //set light's shadow texture
     TextureParams params;
     params.wrapS = GL_CLAMP_TO_BORDER;

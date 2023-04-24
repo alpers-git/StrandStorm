@@ -157,11 +157,42 @@ void GUIManager::DrawHairMeshControls()
         ImGui::ColorEdit4("Color##0", &scene->hairMesh.color[0]);
         ImGui::ColorEdit4("Ambient##0", &scene->hairMesh.ambient[0]);
         ImGui::ColorEdit4("Specular##0", &scene->hairMesh.specular[0]);
-        ImGui::InputFloat("Shininess##0", &scene->hairMesh.shininess);
+        ImGui::DragFloat("Shininess##0", &scene->hairMesh.shininess, 2.0f, 0.0f, 500.0f);
         // ImGui::SameLine();
         // ImGui::Checkbox("Show Control Hairs", nullptr);
         // ImGui::InputInt("Guide hair count", nullptr);
         // ImGui::InputFloat("Guide hair length", nullptr);
+
+        if (ImGui::CollapsingHeader("Hair parameters"))
+        {
+           auto width = ImGui::GetContentRegionAvail().x;
+            // Show the shadow maps
+            ImGui::BeginGroup();
+            ImGui::Text("LUT0");
+            ImGui::Image((void *)scene->hairMesh.lut0->glID,
+                         ImVec2(width / 2, width / 2));
+            ImGui::EndGroup();
+            ImGui::SameLine();
+            ImGui::BeginGroup();
+            ImGui::Text("LUT1");
+            ImGui::Image((void *)scene->hairMesh.lut1->glID,
+                         ImVec2(width / 2, width / 2));
+            ImGui::EndGroup();
+
+            const char* items[] = { "Kajiya-Kay", "Marschner LUT" };
+            ImGui::Combo("Shading Model", &scene->hairMesh.shadingModel, items, IM_ARRAYSIZE(items));
+            if(scene->hairMesh.shadingModel==1)
+            {
+                ImGui::SeparatorText("Marshner Parameters");            
+                ImGui::DragFloat("diffuseFalloff",&scene->hairMesh.diffuseFalloff, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("diffuseAzimuthFalloff",&scene->hairMesh.diffuseAzimuthFalloff, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("scaleDiffuse",&scene->hairMesh.scaleDiffuse, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("scaleM",&scene->hairMesh.scaleM, 0.01f, 50.0f, 5.0f);
+                ImGui::DragFloat("scaleR",&scene->hairMesh.scaleR, 0.01f, 0.0f, 15.0f);
+                ImGui::DragFloat("scaleTT",&scene->hairMesh.scaleTT, 0.01f, 0.0f, 15.0f);
+                ImGui::DragFloat("scaleTRT",&scene->hairMesh.scaleTRT, 0.01f, 0.0f, 15.0f);
+            }
+        }
     }
 }
 

@@ -44,7 +44,7 @@ struct TextureParams
 
 struct Texture
 {
-    //Texture(const char* path, GLenum texUnit = GL_TEXTURE0);
+    Texture(const char* path, GLenum texUnit = GL_TEXTURE0, TextureParams params = TextureParams());
     Texture(glm::uvec2 dims, GLenum texUnit = GL_TEXTURE0, TextureParams params = TextureParams());
     ~Texture() {};
 

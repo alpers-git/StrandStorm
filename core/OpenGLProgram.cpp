@@ -1,5 +1,6 @@
 #include <OpenGLProgram.hpp>
 #include <Logging.hpp>
+#include <lodepng.h>
 
 Shader::~Shader()
 {
@@ -56,6 +57,34 @@ void Shader::SetSourceFromFile(const char* filePath, bool compile)
     fileStream.close();
     SetSource(content, compile);
 }
+
+//----------- Image Texture -----------------------
+Texture::Texture(const char* path, GLenum texUnit, TextureParams params)
+    : dims(dims), texUnit(texUnit)
+{
+    glGenTextures(1, &glID); $gl_chk
+    glBindTexture(GL_TEXTURE_2D, glID); $gl_chk
+
+    std::vector<unsigned char> imageData;
+	unsigned int texWidth, texHeight;
+    lodepng::decode(imageData, texWidth, texHeight,path);
+
+    glTexImage2D(GL_TEXTURE_2D, params.mipMapLevel, 
+        params.internalFormat, 
+        texWidth, texHeight, 
+        0, params.format, 
+        params.type, imageData.data()); $gl_chk
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magFilter); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, params.wrapS); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, params.wrapT); $gl_chk
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, params.wrapR); $gl_chk//?
+
+    //create mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D); $gl_chk
+}
+
 
 // --- ShadowTexture ----------------------------------------------------------
 
