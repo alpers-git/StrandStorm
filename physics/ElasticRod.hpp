@@ -56,13 +56,7 @@ private:
     void compBishopFrames();
     // Recomputes the material frames
     void compMatFrames();
-    // Computes gradient holonomy terms
-    void compGradHolonomyTerms();
 
-    // Intergrated position of vertices before inextensibility constraint
-    std::vector<Vector3f> xUnconstrained; 
-    // Vertex offsets for inextensibility constraint
-    std::vector<Vector3f> correctionVecs; 
     // Bishop (rest) frames
     std::vector<BishopFrame> bishopFrames;
     // Material (active) frames
@@ -73,8 +67,6 @@ private:
     std::vector<std::array<Vector2f, 2u>> omega0;
     // Bending angles
     std::vector<float> theta;
-    // Gradient holonomy terms (i-1, i, i+1) for each vertex
-    std::vector<std::array<Vector3f, 3u>> gradHolonomyTerms;
 public:
     // particle positions at rest
     std::vector<Vector3f> xRest;
@@ -87,10 +79,6 @@ public:
     static Vector3f gravity;
     // [0,1] Simple velocity reduction factor
     static float drag;
-    // [0,1] Interpolation factor for enforcing inextensibility constraint
-    static float inextensibility;
-    // Bending modulus (resistance to bending)
-    static float alpha;
     // Bending stiffness
     static float bendingStiffness;
     // Used in voxel velocity update

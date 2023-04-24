@@ -54,11 +54,11 @@ public:
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Amount to randomly perturb control hair vertices
-    static constexpr float controlHairRandomize = 0.0f;
+    static constexpr float controlHairRandomize = 0.01f;
     ///DEBUG: control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
     ///DEBUG: maximum allowed control hairs, -1 for no limit
-    static constexpr int maxControlHairs = 10;
+    static constexpr int maxControlHairs = -1;
 
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;
