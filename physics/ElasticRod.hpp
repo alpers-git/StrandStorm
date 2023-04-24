@@ -72,8 +72,6 @@ private:
     std::vector<MaterialFrame> M;
     // Initial twisting vector
     Vector3f u0 = {0.0f, 0.0f, 0.0f};
-    // Bending stiffness matrix B
-    Matrix2f B = Matrix2f::Identity() * 1.0f;
     // Material curvature at rest for i, j, where j:(i-1, i, i+1)
     std::vector<std::array<Vector2f, 2u>> omega0;
     // Bending angles

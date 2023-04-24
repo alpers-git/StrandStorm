@@ -1,11 +1,13 @@
 #include <ElasticRod.hpp>
+#include <Logging.hpp>
+#include <spdlog/fmt/fmt.h>
 
 // Elastic rod sim constants
-float ElasticRod::drag = 5.0f;
+float ElasticRod::drag = 0.0f;
 float ElasticRod::inextensibility = 0.9f;
-float ElasticRod::alpha = 0.9f;
+float ElasticRod::alpha = 0.1f;
 float ElasticRod::friction = 0.0f;
-float ElasticRod::bendingStiffness = 100.0f;
+float ElasticRod::bendingStiffness = 0.1f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
 Vector3f ElasticRod::kappaB(int i)
@@ -16,8 +18,7 @@ Vector3f ElasticRod::kappaB(int i)
 
 float ElasticRod::initEdgeLen(int i)
 {
-    i = std::clamp(i, 0, (int)(xRest.size() - 2));
-    return (xRest[i + 1] - xRest[i]).norm();
+    return edge(i-1).norm() + edge(i).norm();
 }
 
 Vector3f ElasticRod::psiGrad(int i, int j)
@@ -26,13 +27,13 @@ Vector3f ElasticRod::psiGrad(int i, int j)
     const Vector3f kb = kappaB(i);
     if (j == i - 1)
     {
-        return kb / (2.0f * initEdgeLen(i - 1));
+        return kb / (2.0f * edge(i - 1).norm());
     }
     else if (j == i + 1)
     {
-        return -kb / (2.0f * initEdgeLen(i));
+        return -kb / (2.0f * edge(i).norm());
     }
-    return -kb / (2.0f * initEdgeLen(i - 1)) - kb / (2.0f * initEdgeLen(i));
+    return -kb / (2.0f * edge(i - 1).norm()) - kb / (2.0f * edge(i).norm());
 }
 
 Matrix3f ElasticRod::kappaBGrad(int i, int j)
@@ -69,9 +70,6 @@ Matrix<float, 2, 3> ElasticRod::omegaGrad(int i, int j, int k)
         m.row(1) = -M[j].m1;
         m *= kappaBGrad(i, k);
     }
-    // assert(!m.hasNaN());
-    // assert(!gradHolonomy(i, j).hasNaN());
-    // assert(!omega(k, j).hasNaN());
     return m - J * omega(k, j) * gradHolonomy(i, j).transpose();
 }
 
@@ -92,14 +90,12 @@ Vector3f ElasticRod::gradHolonomy(int i, int j)
 
 Vector3f ElasticRod::dEdX(int i)
 {
+    const Matrix2f B = Matrix2f::Identity() * this->bendingStiffness;
     Vector3f f = Vector3f::Zero();
     for (int k = 1; k < x.size(); k++) {
         Vector3f pf = Vector3f::Zero();
         for (int j = k-1; j <= k; j++) {
-            // assert(!omegaGrad(i, j, k).hasNaN());
-            // assert(!omega(k, j).hasNaN());
-            // assert(!omega0[k][j-k].hasNaN());
-            pf += omegaGrad(i, j, k).transpose() * this->bendingStiffness * Matrix2f::Identity() * (omega(k, j) - omega0[k][j-k]);
+            pf += omegaGrad(i, j, k).transpose() * B * (omega(k, j) - omega0[k][j-k]);
         }
         f += pf / initEdgeLen(k);
     }
@@ -108,16 +104,16 @@ Vector3f ElasticRod::dEdX(int i)
 
 void ElasticRod::compBishopFrames()
 {
-    bishopFrames[0] = {u0, edge(0).cross(u0).normalized()};
+    bishopFrames[0] = {u0, edge(0).normalized().cross(u0).normalized()};
     for (int i = 1; i < x.size(); i++) {
-        float d = edge(i).dot(edge(i-1));
-        float cosTheta = d / (edge(i).norm() * edge(i-1).norm());
+        const float cosTheta = edge(i).dot(edge(i-1)) / (edge(i).norm() * edge(i-1).norm());
         if (std::abs(cosTheta) < 1e-6 || cosTheta > 1.0f - 1e-6) {
             bishopFrames[i] = bishopFrames[i-1];
         } else {
             float angle = std::acos(cosTheta);
             assert(!std::isnan(angle));
-            Vector3f u = AngleAxisf(angle, kappaB(i)) * bishopFrames[i-1].u;
+            AngleAxisf P_i(angle, kappaB(i));
+            Vector3f u = (P_i * bishopFrames[i-1].u).normalized();
             Vector3f v = edge(i).normalized().cross(u).normalized();
             bishopFrames[i] = {u, v};
         }
@@ -126,10 +122,15 @@ void ElasticRod::compBishopFrames()
 
 void ElasticRod::compMatFrames()
 {
-    for (int i = 0; i < x.size() - 1; i++) {
-        M[i] = {
+    for (int i = 0; i < x.size(); i++) {
+        // Since theta is always zero in our case, material frame is same as bishop frame
+        /* M[i] = {
             std::cos(theta[i]) * bishopFrames[i].u + std::sin(theta[i]) * bishopFrames[i].v,
             -std::sin(theta[i]) * bishopFrames[i].u + std::cos(theta[i]) * bishopFrames[i].v
+        }; */
+        M[i] = {
+            bishopFrames[i].u,
+            bishopFrames[i].v
         };
     }
 }
@@ -196,6 +197,11 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
         x[i] = Vector3f(verts[i].x, verts[i].y, verts[i].z);
     }
     xRest = x;
+    u0 = edge(0).cross(Vector3f::UnitX()).cross(edge(0)).normalized();
+
+    compBishopFrames();
+    compMatFrames();
+    compGradHolonomyTerms();
 
     // Compute initial material curvature
     for (int i = 0; i < verts.size(); i++) {
@@ -203,6 +209,25 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
             omega0[i][j] = omega(i, i + j-1);
         }
     }
+
+    // Debug printing initial state
+    std::stringstream ss;
+    ss << "initial state:";
+    ss << "\nomega0:";
+    for (const auto& omega : omega0) {
+        ss << "\n\t";
+        for (const Vector2f& v : omega) {
+            ss << fmt::format("<{:.3f},{:.3f}>, ", v.x(), v.y());
+        }
+    }
+    ss << "\nM:";
+    for (const MaterialFrame& m : M) {
+        ss << fmt::format("\n\t<m1=({:.3f},{:.3f},{:.3f}), m2=({:.3f},{:.3f},{:.3f})>",
+            m.m1.x(), m.m1.y(), m.m1.z(),
+            m.m2.x(), m.m2.y(), m.m2.z());
+    }
+    
+    spdlog::debug(ss.str());
 }
 
 ElasticRod::ElasticRod(const std::vector<glm::vec3> &verts)
