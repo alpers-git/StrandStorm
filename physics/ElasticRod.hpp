@@ -67,6 +67,10 @@ private:
     std::vector<std::array<Vector2f, 2u>> omega0;
     // Bending angles
     std::vector<float> theta;
+    // Edge vectors
+    std::vector<Vector3f> e;
+    // Previous positions
+    std::vector<Vector3f> px;
 public:
     // particle positions at rest
     std::vector<Vector3f> xRest;
