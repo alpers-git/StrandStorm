@@ -104,12 +104,38 @@ bool RNG::test(float probability) {
     return this->rdist(gen, params) < probability;
 }
 
+ImVec2 make_ImVec2(const glm::vec2 &v)
+{
+    return ImVec2(v.x, v.y);
+}
+
+Eigen::Matrix3f skew(const Eigen::Vector3f &v)
+{
+    Eigen::Matrix3f m; m <<
+        0.0f, -v.z(), v.y(),
+        v.z(), 0.0f, -v.x(),
+        -v.y(), v.x(), 0.0f;
+    return m;
+}
+
 namespace glm {
     vec3 make_vec3(const cy::Vec3f &v)
     {
         return make_vec3((const float*)&v[0]);
     }
+    glm::vec2 make_vec2(const ImVec2 &v)
+    {
+        return glm::vec2(v.x, v.y);
+    }
 };
+
+namespace Eigen
+{
+     Eigen::Vector3f make_vector3f(const glm::vec3& v)
+     {
+         return Eigen::Vector3f(v.x, v.y, v.z);
+     }
+}
 
 // --- GL Helpers ------------------------------------------------------------
 

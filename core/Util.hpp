@@ -5,9 +5,11 @@
 #include <filesystem>
 #include <glad/glad.h>
 #include <cyVector.h>
+#include <Eigen/Dense>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <imgui.h>
 
 namespace fs = std::filesystem;
 
@@ -17,9 +19,12 @@ void APIENTRY GLDebugMessageCallback(
     GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const GLchar *msg, const void *data);
 
+
 constexpr float tau = 6.283185307179586f;
 constexpr float tau2 = 3.141592653589793f;
 constexpr float tau4 = 1.5707963267948966f;
+constexpr float pi = tau2;
+constexpr float pi2 = tau4;
 
 inline glm::vec3 spherePoint(float phi, float theta) {
     return {
@@ -82,7 +87,9 @@ std::array<glm::vec3, (N * (N + 1)) / 2> tessTriangleGrid(
 
 namespace glm {
     glm::vec3 make_vec3(const cy::Vec3f& v);
+    glm::vec2 make_vec2(const ImVec2& v);
 };
+ImVec2 make_ImVec2(const glm::vec2& v);
 
 namespace gl {
     GLuint buffer(GLenum target, size_t bytes, const void* data = nullptr, GLenum usage = GL_STATIC_DRAW);
@@ -92,3 +99,13 @@ namespace gl {
         return gl::buffer(target, (size_t)(data.size() * sizeof(T)), (const void*)data.data(), usage);
     }
 };
+
+namespace Eigen
+{
+    Eigen::Vector3f make_vector3f(const glm::vec3& v);
+}
+
+Eigen::Matrix3f skew(const Eigen::Vector3f &v);
+template<typename T> T lerp(const T& a, const T& b, float t) {
+    return a + (b - a) * t;
+}

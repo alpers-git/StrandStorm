@@ -6,6 +6,8 @@
 #include <ComputeShader.hpp>
 
 class Scene;
+class SurfaceMesh;
+struct SceneObject;
 
 class Renderer
 {
@@ -32,6 +34,7 @@ public:
     std::shared_ptr<Scene> scene;
 
     void Initialize();
+    void PostPhysicsSync();
     void Render();
     void OnWindowResize(int width, int height);
     void OnMouseMove(double x, double y);
@@ -40,6 +43,7 @@ public:
 private:
     void RenderHairs();
     void RenderSurfaces();
+    void RenderSurface(SceneObject& mesh, OpenGLProgram& prog);
 
     void RenderFirstPass();
     void RenderMainPass();

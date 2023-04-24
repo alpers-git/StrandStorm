@@ -12,8 +12,27 @@ void Scene::init(const Renderer& r)
     hairMesh.loadFromFile("resources/sphere.obj");
     hairMesh.build(r.hairProg);
 
-    surfaceMesh.loadFromFile("resources/sphere.obj");
-    surfaceMesh.build(r.surfaceProg);
+    for (size_t i = 0; i < hairMesh.numControlHairs(); i++) {
+        std::vector<glm::vec3> ctrlHair;
+        for (size_t j = i * HairMesh::controlHairLen; j < (i+1) * HairMesh::controlHairLen; j++) {
+            ctrlHair.push_back(hairMesh.controlVerts[j]);
+        }
+        rods.emplace_back(ctrlHair);
+    }
+
+    surface = std::make_shared<SceneObject>();
+    surface->mesh.loadFromFile("resources/sphere.obj");
+    surface->mesh.build(r.surfaceProg);
+    surface->collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 1.0f);
+    sceneObjects.push_back(surface);
+
+    dummy = std::make_shared<SceneObject>();
+    dummy->mesh.loadFromFile("resources/sphere.obj");
+    dummy->mesh.build(r.surfaceProg);
+    dummy->position = {0.0f, 2.0f, 0.0f};
+    dummy->scale /= 2.0f;
+    dummy->collider = std::make_shared<SphereCollider>(Eigen::Vector3f(0.0f,0.0f,0.0f), 0.5f);
+    sceneObjects.push_back(dummy);
 
     //set Marschner luts
     TextureParams lutParams;
@@ -49,6 +68,16 @@ void Scene::init(const Renderer& r)
         params);
 
     cam.orient({0.0f, 0.0f});
+
+    voxelGrid = std::make_shared<VoxelGrid>();
+}
+
+
+void Scene::reset()
+{
+    for (ElasticRod& rod : rods) {
+        rod.reset();
+    }
 }
 
 glm::mat4 Scene::Light::CalculateLightSpaceMatrix() const
@@ -68,4 +97,18 @@ glm::mat4 Scene::Light::CalculateLightTexSpaceMatrix() const
         0.0, 0.0, 0.5,   0.0,
         0.5, 0.5, 0.498, 1.0);
     return shadowMatrix * this->CalculateLightSpaceMatrix();
+}
+
+void SceneObject::setTransform(const glm::vec3 &pos, const glm::vec3 &rot, const glm::vec3 &scale)
+{
+    this->position = pos;
+    this->rotation = rot;
+    this->scale = scale;
+    this->collider->center = Eigen::Vector3f(&pos[0]);
+}
+
+void SceneObject::setTransform()
+{
+    this->collider->center = Eigen::Vector3f(&position[0]);
+    ///TODO: set rotation and scale
 }

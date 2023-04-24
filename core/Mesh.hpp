@@ -7,6 +7,7 @@
 #include <string>
 
 class ComputeShader;
+class ElasticRod;
 
 class Mesh
 {
@@ -28,8 +29,6 @@ class HairMesh : public Mesh
 private:
     // Random number gen for making control hairs
     RNG rng = {0};
-    // Vertices for control hairs
-    std::vector<glm::vec4> controlVerts;
     // Triangles for interpolating hairs
     std::vector<GLuint> tris;
     // VBO for control hairs
@@ -46,25 +45,31 @@ private:
     // Grow control hair from a root position and direction, adding to my vertices and indices
     void growControlHair(const glm::vec3& root, const glm::vec3& dir);
 public:
+    // Vertices for control hairs
+    std::vector<glm::vec4> controlVerts;
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 5;
+    static constexpr uint32_t controlHairLen = 12;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
-    static constexpr uint32_t interpDensity = 128;
+    static constexpr uint32_t interpDensity = 8;
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Debug control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
+    static constexpr float controlHairRandomize = 0.1f;
+    static constexpr int maxControlHairs = 100;
 
     bool drawControlHairs = false;
 
     HairMesh() = default;
 
     void build(const OpenGLProgram& prog) override;
-    void loadFromFile(const std::string& modelPath, bool compNormals = true) override;
+    void updateBuffer();
+    void loadFromFile(const std::string &modelPath, bool compNormals = true) override;
     void draw(const OpenGLProgram& prog) override;
+    void updateFrom(const ElasticRod& rod, size_t idx);
 
     void bindToComputeShader(ComputeShader& cs) const;
 
@@ -131,6 +136,8 @@ public:
         glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
         float shininess = 32.0f;
     } material;
+
+    
 
     SurfaceMesh() = default;
 

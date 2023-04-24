@@ -39,12 +39,17 @@ public:
     std::shared_ptr<PhysicsIntegrator> physicsIntegrator;
 private:
     ImFont* font = nullptr;
+    int scalingFactor = 1;
 
     void NewFrame();
     //Other ui components draw functions here
     void DrawHairMeshControls();
     void DrawSurfaceMeshControls();
+    void DrawColliderMeshControls();
     void DrawLightControls();
 
     void DrawSimulationControls();
+    void DrawRodParameters();
+
+    void DrawTimerInfo();
 };

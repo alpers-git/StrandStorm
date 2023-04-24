@@ -2,14 +2,36 @@
 
 #include <Mesh.hpp>
 #include <Camera.hpp>
+#include <ElasticRod.hpp>
+#include <Collider.hpp>
+#include <VoxelGrid.hpp>
 
 class Renderer;
+
+struct SceneObject
+{
+    SurfaceMesh mesh;
+    std::shared_ptr<Collider> collider;
+    
+    // Transform parameters
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+
+    // Sets position, rotation and scale from given arguments
+    void setTransform(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scale);
+    // Updates position, rotation and scale from stored variables
+    void setTransform();
+};
 
 class Scene
 {
 public:
     HairMesh hairMesh;
-    SurfaceMesh surfaceMesh;
+    std::shared_ptr<SceneObject> surface, dummy;
+    std::vector<std::shared_ptr<SceneObject>> sceneObjects;
+    std::vector<ElasticRod> rods;
+    std::shared_ptr<VoxelGrid> voxelGrid;
     Camera cam;
     struct Light {
         glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.1f);
@@ -31,6 +53,8 @@ public:
 
     // Called by Renderer::Initialize()
     void init(const Renderer& r);
+    // Resets entire simulation
+    void reset();
 private:
     /* data */
 };

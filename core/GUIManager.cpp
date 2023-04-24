@@ -1,5 +1,6 @@
 #include <GUIManager.hpp>
 #include <EventHandler.hpp>
+#include <Stats.hpp>
 
 void StyleColorsAlteredDracula()
 {
@@ -82,7 +83,8 @@ void StyleColorsAlteredDracula()
 void GUIManager::Initialize()
 {
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO(); (void)io;
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
 
     // ImGui::StyleColorsDark();
     StyleColorsAlteredDracula();
@@ -98,40 +100,56 @@ void GUIManager::Initialize()
 
 void GUIManager::Draw()
 {
-    //place the window in the top left corner
-    //printf("window size: %f, %f\n", windowSize.x, windowSize.y);
     NewFrame();
-    auto windowSize = ImGui::GetContentRegionAvail();
+    glm::vec2 win = glm::make_vec2(ImGui::GetContentRegionAvail()) * (float)this->scalingFactor;
 
-    ImGui::SetWindowPos("Renderer Controls", ImVec2(windowSize.x/50, windowSize.y/50), ImGuiCond_Once);
-    ImGui::SetWindowSize("Renderer Controls", ImVec2(0.9 * windowSize.x,  1.25f * windowSize.y), ImGuiCond_Once);
-    ImGui::SetWindowPos("Physics Controls", ImVec2(windowSize.x/50, windowSize.y/10 + 1.25f * windowSize.y), ImGuiCond_Once);
-    ImGui::SetWindowSize("Physics Controls", ImVec2(0.9 * windowSize.x, 0.50f * windowSize.y), ImGuiCond_Once);
+    ImGui::SetWindowPos("Renderer Controls",
+                        make_ImVec2(win / 50.0f), ImGuiCond_Once);
+    ImGui::SetWindowSize("Renderer Controls",
+                         make_ImVec2(win * glm::vec2(0.9f, 1.25f)), ImGuiCond_Once);
+    ImGui::SetWindowPos("Physics Controls",
+                        ImVec2(win.x / 50.0f, win.y / 10.0f + 1.25f * win.y), ImGuiCond_Once);
+    ImGui::SetWindowSize("Physics Controls",
+                         ImVec2(0.9f * win.x, 0.50f * win.y), ImGuiCond_Once);
+    // ImGui::SetWindowPos("Timing",
+    //     ImVec2(win.x*2.88f, win.y/50.f), ImGuiCond_Always);
 
     ImGui::Begin("Renderer Controls", 0, windowFlags);
 
     DrawHairMeshControls();
     DrawSurfaceMeshControls();
+    DrawColliderMeshControls();
     DrawLightControls();
 
     ImGui::End();
     //-------------------------------------------------------------------
-    //place the window in the top right corner
     ImGui::Begin("Physics Controls", 0, windowFlags);
 
     DrawSimulationControls();
+    DrawRodParameters();
 
     ImGui::End();
+
+    //-------------------------------------------------------------------
+    ImGui::SetNextWindowPos(
+        ImVec2((ImGui::GetIO().DisplaySize.x - 260.f) * (float)this->scalingFactor, 
+        70.f * (float)this->scalingFactor),
+         ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+    ImGui::Begin("Timing", NULL, ImGuiWindowFlags_NoMove | 
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize);
+    DrawTimerInfo();
+    ImGui::End();
     ImGui::Render();
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void GUIManager::DrawHairMeshControls()
 {
-   if(ImGui::CollapsingHeader("Hair Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
-   {
+    if (ImGui::CollapsingHeader("Hair Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    {
         ImGui::Checkbox("Show", &scene->hairMesh.show);
         ImGui::SameLine();
         ImGui::Checkbox("Shadows", &scene->hairMesh.shadowsEnable);
@@ -140,52 +158,47 @@ void GUIManager::DrawHairMeshControls()
         ImGui::ColorEdit4("Ambient##0", &scene->hairMesh.ambient[0]);
         ImGui::ColorEdit4("Specular##0", &scene->hairMesh.specular[0]);
         ImGui::InputFloat("Shininess##0", &scene->hairMesh.shininess);
-
-        ImGui::SeparatorText("Marshner Parameters");
-        ImGui::DragFloat("diffuseFalloff",&scene->hairMesh.diffuseFalloff, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("diffuseAzimuthFalloff",&scene->hairMesh.diffuseAzimuthFalloff, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("scaleDiffuse",&scene->hairMesh.scaleDiffuse, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("scaleR",&scene->hairMesh.scaleR, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("scaleTT",&scene->hairMesh.scaleTT, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("scaleTRT",&scene->hairMesh.scaleTRT, 0.01f, 0.0f, 5.0f);
-
-        ImGui::SeparatorText("LUT images");
-
-        auto width = ImGui::GetContentRegionAvail().x;
-        ImGui::BeginGroup();
-        ImGui::Text("LUT0");
-        ImGui::Image((void*)scene->hairMesh.lut0->glID, 
-            ImVec2(width/2, width/2));
-        ImGui::EndGroup();
-        ImGui::SameLine();
-        ImGui::BeginGroup();
-        ImGui::Text("LUT1");
-        ImGui::Image((void*)scene->hairMesh.lut1->glID, 
-            ImVec2(width/2, width/2));
-        ImGui::EndGroup();
-
         // ImGui::SameLine();
         // ImGui::Checkbox("Show Control Hairs", nullptr);
         // ImGui::InputInt("Guide hair count", nullptr);
         // ImGui::InputFloat("Guide hair length", nullptr);
-   }
+    }
 }
 
 void GUIManager::DrawSurfaceMeshControls()
 {
-    if(ImGui::CollapsingHeader("Surface Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Surface Mesh Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        //ImGui::Checkbox("Show Surface Mesh", nullptr);
+        // ImGui::Checkbox("Show Surface Mesh", nullptr);
         ImGui::SeparatorText("Surface Mesh Material");
-        ImGui::ColorEdit3("Specular", &scene->surfaceMesh.material.specular[0]);
-        ImGui::ColorEdit3("Diffuse", &scene->surfaceMesh.material.diffuse[0]);
-        ImGui::ColorEdit3("Ambient", &scene->surfaceMesh.material.ambient[0]);
+        ImGui::ColorEdit3("Specular", &scene->surface->mesh.material.specular[0]);
+        ImGui::ColorEdit3("Diffuse", &scene->surface->mesh.material.diffuse[0]);
+        ImGui::ColorEdit3("Ambient", &scene->surface->mesh.material.ambient[0]);
+
+        if (ImGui::CollapsingHeader("Transform"))
+        {
+            ImGui::DragFloat3("Position", &scene->surface->position.x, 0.01f);
+            ImGui::DragFloat3("Rotation", &scene->surface->rotation.x, 0.01f);
+            ImGui::DragFloat3("Scale", &scene->surface->scale.x, 0.01f);
+            scene->surface->setTransform();
+        }
+    }
+}
+
+void GUIManager::DrawColliderMeshControls()
+{
+    if (ImGui::CollapsingHeader("Collider Transform"))
+    {
+        ImGui::DragFloat3("Position", &scene->dummy->position.x, 0.01f);
+        ImGui::DragFloat3("Rotation", &scene->dummy->rotation.x, 0.01f);
+        ImGui::DragFloat3("Scale", &scene->dummy->scale.x, 0.01f);
+        scene->dummy->setTransform();
     }
 }
 
 void GUIManager::DrawLightControls()
 {
-    if(ImGui::CollapsingHeader("Light Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Light Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::SeparatorText("Light 1");
         auto width = ImGui::GetContentRegionAvail().x;
@@ -196,9 +209,9 @@ void GUIManager::DrawLightControls()
         ImGui::PushItemWidth(width * 0.55f);
         ImGui::ColorEdit3("Color##1", &scene->light.color[0]);
         ImGui::PopItemWidth();
-        if(ImGui::DragFloat3("Direction", &scene->light.dir[0], 0.01f))
+        if (ImGui::DragFloat3("Direction", &scene->light.dir[0], 0.01f))
             scene->light.opacityShadowMaps.dirty = true;
-        if(ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("Op. Shadow Map", ImGuiTreeNodeFlags_DefaultOpen))
         {
             static float dk = scene->light.opacityShadowMaps.dk;
             if (ImGui::DragFloat("dk", &dk, 0.001f, 0.0001f, 1.0f))
@@ -206,21 +219,20 @@ void GUIManager::DrawLightControls()
                 scene->light.opacityShadowMaps.dk = std::max(dk, 0.0001f);
                 scene->light.opacityShadowMaps.dirty = true;
             }
-            
+
             auto width = ImGui::GetContentRegionAvail().x;
-            //Show the shadow maps
+            // Show the shadow maps
             ImGui::BeginGroup();
             ImGui::Text("Depth Map");
-            ImGui::Image((void*)scene->light.opacityShadowMaps.depthTex->glID, 
-                ImVec2(width/2, width/2));
+            ImGui::Image((void *)scene->light.opacityShadowMaps.depthTex->glID,
+                         ImVec2(width / 2, width / 2));
             ImGui::EndGroup();
             ImGui::SameLine();
             ImGui::BeginGroup();
             ImGui::Text("Opacity Map");
-            ImGui::Image((void*)scene->light.opacityShadowMaps.opacitiesTex->glID, 
-                ImVec2(width/2, width/2));
-            ImGui::EndGroup();            
-            
+            ImGui::Image((void *)scene->light.opacityShadowMaps.opacitiesTex->glID,
+                         ImVec2(width / 2, width / 2));
+            ImGui::EndGroup();
         }
         // ImGui::SeparatorText("Light 2");
         // ImGui::ColorEdit3("Color", &scene->light2.color[0]);
@@ -230,15 +242,51 @@ void GUIManager::DrawLightControls()
 
 void GUIManager::DrawSimulationControls()
 {
-    if(ImGui::CollapsingHeader("Simulation Controls", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Simulation Controls", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        float dt =  physicsIntegrator->getDt();
-        if(ImGui::DragFloat("dt", &dt, 0.001f, 0.0f, 1.0f)) 
+        float dt = physicsIntegrator->getDt();
+        if (ImGui::DragFloat("dt", &dt, 0.0001f, 0.0f, 0.1f, "%.5f"))
             physicsIntegrator->setDt(dt);
         int numSteps = physicsIntegrator->getNumSteps();
-        if(ImGui::InputInt("numSteps", &numSteps , 1, 1, ImGuiInputTextFlags_EnterReturnsTrue)) 
+        if (ImGui::InputInt("numSteps", &numSteps, 1, 1, ImGuiInputTextFlags_EnterReturnsTrue))
             physicsIntegrator->setNumSteps(numSteps);
     }
+}
+
+void GUIManager::DrawRodParameters()
+{
+    if (ImGui::CollapsingHeader("Elactic Rods", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        auto width = ImGui::GetContentRegionAvail().x;
+        ImGui::PushItemWidth(width * 0.45f);
+
+        ImGui::DragFloat3("gravity",
+                          &ElasticRod::gravity[0], 0.001f, -50.0f, 50.0f);
+        ImGui::DragFloat("drag",
+                         &ElasticRod::drag, 0.0001f, 0.0f, 400.0f, "%.4f");
+        ImGui::DragFloat("inextensibility",
+                         &ElasticRod::inextensibility, 0.0001f, 0.0f, 1.0f, "%.4f");
+        ImGui::DragFloat("bending modulus",
+                         &ElasticRod::alpha, 0.0001f, 0.0f, 1.0f, "%.4f");
+        ImGui::DragFloat("Voxel Friciton",
+                         &ElasticRod::friction, 0.001f, 0.0f, 1.0f);
+        ImGui::PopItemWidth();
+
+        if (ImGui::Button("reset"))
+        {
+            scene->reset();
+        }
+    }
+}
+
+void GUIManager::DrawTimerInfo()
+{
+    ImGui::TextColored(ImVec4(0, 0, 0, 1), "Frame time: %.3fms (%.1f FPS)",
+                      stats::avgFrameTime * 1000.f, 1.f/stats::avgFrameTime);
+    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Render time: %.3fms (%.1f UPS)",
+                        stats::avgRenderTime * 1000.f, 1.f/stats::avgRenderTime);
+    ImGui::TextColored(ImVec4(0.1, 0.1, 0.1, 1), "Physics time: %.3fms (%.1f UPS)",
+                        stats::avgPhysicsTime * 1000.f, 1.f/stats::avgPhysicsTime);
 }
 
 void GUIManager::Terminate()
@@ -259,6 +307,7 @@ void GUIManager::SetScaling(int scalingFactor)
     fontConfig.SizePixels = 16.0f * scalingFactor;
     this->font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
         "resources/fonts/RobotoMono-Medium.ttf", 16.0f, &fontConfig);
+    this->scalingFactor = scalingFactor;
 }
 
 void GUIManager::NewFrame()
@@ -266,4 +315,6 @@ void GUIManager::NewFrame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ImGui::PushFont(this->font);
 }

@@ -231,6 +231,9 @@ void EventHandler::DispatchEvents(Renderer& renderer)
             case Event::Type::MouseScroll:
                 // renderer.OnMouseScroll(e.mouseScroll.x, e.mouseScroll.y);
                 break;
+            case Event::Type::PhysicsSync:
+                renderer.PostPhysicsSync();
+                break;
             // case Event::Type::GeometryChange:
             //     renderer.OnGeometryChange(e.geometryChange.e, e.geometryChange.toBeRemoved);
             //     break;

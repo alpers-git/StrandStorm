@@ -1,5 +1,7 @@
+#include <unordered_set>
 #include <Mesh.hpp>
 #include <Logging.hpp>
+#include <ElasticRod.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
@@ -26,6 +28,13 @@ void HairMesh::build(const OpenGLProgram &prog)
     prog.SetAttribPointer(vboTangents, "vTangent", 4, GL_FLOAT);
 }
 
+void HairMesh::updateBuffer()
+{
+    glBindVertexArray(vao) $gl_chk;
+    glBindBuffer(GL_ARRAY_BUFFER, vboControl) $gl_chk;
+    glBufferSubData(GL_ARRAY_BUFFER, 0, controlVerts.size() * sizeof(glm::vec4), controlVerts.data()) $gl_chk;
+}
+
 void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 {
     spdlog::assrt(fs::exists(modelPath), "model '{}' not found", modelPath);
@@ -39,7 +48,7 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
     // normalize the mesh to fit in a 5x5x5 cube
     mesh.ComputeBoundingBox();
-    const auto scale =  5.0f / (mesh.GetBoundMax() - mesh.GetBoundMin()).Length();
+    const auto scale =  1.0f / mesh.GetBoundMax().y;
     //go over the vertices and scale them
     for (int i = 0; i < mesh.NV(); i++) {
         mesh.V(i) *= scale;
@@ -47,7 +56,8 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
 
     // Grow the control hairs from the stored vertices
     if (controlHairDensity == 0) {
-        for (int i = 0; i < mesh.NV(); i++) {
+        for (int i = 0; i < (int)mesh.NV(); i++) {
+            if (maxControlHairs > 0 && i >= maxControlHairs) break;
             growControlHair(glm::make_vec3(mesh.V(i)), glm::normalize(glm::make_vec3(mesh.VN(i))));
         }
     } else {
@@ -66,8 +76,17 @@ void HairMesh::loadFromFile(const std::string &modelPath, bool compNormals)
     }
     // Triangles
     for (int i = 0; i < mesh.NF(); i++) {
+        const cy::TriMesh::TriFace& f = mesh.F(i);
+        bool skip = false;
         for (int j = 0; j < 3; j++) {
-            this->tris.push_back(mesh.F(i).v[j]);
+            if (f.v[j] >= this->numControlHairs()) {
+                skip = true;
+                break;
+            }
+        }
+        if (skip) continue;
+        for (int j = 0; j < 3; j++) {
+            this->tris.push_back(f.v[j]);
         }
     }
 
@@ -97,6 +116,15 @@ void HairMesh::draw(const OpenGLProgram &prog)
     glDrawElements(GL_LINES, numInterpElements(), GL_UNSIGNED_INT, nullptr) $gl_chk;
 }
 
+void HairMesh::updateFrom(const ElasticRod& rod, size_t idx)
+{
+    for (size_t i = 0; i < controlHairLen; i++)
+    {
+        Eigen::Vector3f x = rod.x[i];
+        controlVerts[controlHairLen * idx + i] = glm::vec4(x[0], x[1], x[2], 1.0f);
+    }
+}
+
 void HairMesh::bindToComputeShader(ComputeShader &cs) const
 {
     assert(this->vaoInitialized);
@@ -114,10 +142,11 @@ void HairMesh::bindToComputeShader(ComputeShader &cs) const
 
 void HairMesh::growControlHair(const glm::vec3 &root, const glm::vec3 &dir)
 {
+    assert(dir.length() > 1e-6f);
     glm::vec3 v = root;
     for (int i = 0; i < controlHairLen; i++) {
         this->controlVerts.push_back({v, 1.0f});
-        v += dir * hairGrowth + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * 0.1f;
+        v += dir * hairGrowth + rng.vec(glm::vec3(-1.0f), glm::vec3(1.0f)) * controlHairRandomize;
     }
 }
 
@@ -136,9 +165,9 @@ void SurfaceMesh::loadFromFile(const std::string &modelPath, bool compNormals)
         mesh.ComputeNormals();
     }
 
-    // normalize the mesh to fit in a 5x5x5 cube
+    // normalize the mesh to fit in a 4x4x4 cube
     mesh.ComputeBoundingBox();
-    const auto scale =  5.0f / (mesh.GetBoundMax() - mesh.GetBoundMin()).Length();
+    const auto scale =  1.0f / mesh.GetBoundMax().y;
     //go over the vertices and scale them
     for (int i = 0; i < mesh.NV(); i++) {
         mesh.V(i) *= scale;
