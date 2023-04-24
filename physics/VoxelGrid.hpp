@@ -16,7 +16,7 @@ public:
     VoxelGrid();
     void initVoxelGrid();
     void getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition);
-    Eigen::Vector3f sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
+    void sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
     size_t getSpatialHash(const Eigen::Vector3f& pos);
 
     std::mutex voxelMutex;
