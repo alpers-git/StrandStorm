@@ -166,15 +166,22 @@ void Renderer::RenderHairs()
     hairProg.SetUniform("lut1", (int)scene->hairMesh.lut1->texUnit - GL_TEXTURE0, false);
 
     hairProg.SetUniform("shadingModel", scene->hairMesh.shadingModel);
+
+    // Marschner LUT parameters 
     hairProg.SetUniform("diffuseFalloff",scene->hairMesh.diffuseFalloff,false);
     hairProg.SetUniform("diffuseAzimuthFalloff",scene->hairMesh.diffuseAzimuthFalloff,false);
-    hairProg.SetUniform("scaleM",scene->hairMesh.scaleM,false);
     hairProg.SetUniform("scaleDiffuse",scene->hairMesh.scaleDiffuse,false);
     hairProg.SetUniform("scaleR",scene->hairMesh.scaleR,false);
     hairProg.SetUniform("scaleTT",scene->hairMesh.scaleTT,false);
     hairProg.SetUniform("scaleTRT",scene->hairMesh.scaleTRT,false);
 
-    hairProg.SetUniform("resolution", windowSize, false);
+    // Marschner procedural parameters
+    hairProg.SetUniform("roughness",glm::radians(scene->hairMesh.roughness),false);
+    hairProg.SetUniform("shift",glm::radians(scene->hairMesh.shift),false);
+    hairProg.SetUniform("refractiveIndex",scene->hairMesh.refractiveIndex,false);
+    hairProg.SetUniform("procScaleR",scene->hairMesh.procScaleR,false);
+    hairProg.SetUniform("procScaleTT",scene->hairMesh.procScaleTT,false);
+    hairProg.SetUniform("procScaleTRT",scene->hairMesh.procScaleTRT,false);
 
     scene->hairMesh.draw(hairProg); //todo index this into an array and loop over it
 }

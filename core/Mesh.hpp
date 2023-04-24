@@ -109,13 +109,21 @@ public:
 
     int shadingModel = 1;
 
+    // Marschner LUT parameters
     float diffuseFalloff = 1.0f;
     float diffuseAzimuthFalloff = 0.4f;
     float scaleDiffuse = 1.0f; 
     float scaleR = 1.0f;
     float scaleTT = 1.0f;
     float scaleTRT = 1.0f;
-    float scaleM = 1.0f;
+
+    // Marschner procedural parameters
+    float roughness = 20.0f;
+    float shift = -5.0f;
+    float refractiveIndex = 1.55f;
+    float procScaleR = 30.0f;
+    float procScaleTT = 10.0f;
+    float procScaleTRT = 20.0f;
 
     bool show = true;
     bool shadowsEnable = true;
