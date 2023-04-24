@@ -71,6 +71,7 @@ void Renderer::RenderFirstPass()
                 glBlendFunc(GL_ONE, GL_ONE) $gl_chk;
                 glBlendEquation(GL_FUNC_ADD) $gl_chk;
                 depthTex->Bind();
+                scene->surface->mesh.draw(opacityShadowProg);
                 scene->hairMesh.draw(opacityShadowProg);
                 glDisable(GL_BLEND) $gl_chk;
                 glEnable(GL_DEPTH_TEST) $gl_chk;

@@ -23,7 +23,7 @@ void App::Run(EventHandler &eventHandler)
     while (eventHandler.IsRunning()) {
         auto start = std::chrono::high_resolution_clock::now();
 
-        // std::async(std::launch::async | std::launch::deferred, [&] {
+        std::async(std::launch::async | std::launch::deferred, [&] {
             auto startP = std::chrono::high_resolution_clock::now();
 
             physicsIntegrator->Integrate();
@@ -32,7 +32,7 @@ void App::Run(EventHandler &eventHandler)
 
             stats::lastPhysicsTime = std::chrono::duration_cast<std::chrono::milliseconds>(endP - startP).count() / 1000.0f;
             stats::avgPhysicsTime = stats::avgPhysicsTime * 0.99f + stats::lastPhysicsTime * 0.01f; // rolling average
-        // }); // Run the physics integrator in a separate thread
+        }); // Run the physics integrator in a separate thread
 
         eventHandler.SwapBuffers();
         eventHandler.DispatchEvents(renderer);
