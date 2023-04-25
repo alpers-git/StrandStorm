@@ -177,15 +177,25 @@ void main() {
         if (i >= N-1 && j > 0) {
             break;
         }
+        const uvec3 tIdx = uvec3(
+            getOutVertIdx(tris[h*3 + 0], i, j),
+            getOutVertIdx(tris[h*3 + 1], i, j),
+            getOutVertIdx(tris[h*3 + 2], i, j)
+        );
         const vec3 tri[3] = {
-            outV[getOutVertIdx(tris[h*3 + 0], i, j)].xyz,
-            outV[getOutVertIdx(tris[h*3 + 1], i, j)].xyz,
-            outV[getOutVertIdx(tris[h*3 + 2], i, j)].xyz
+            outV[tIdx[0]].xyz,
+            outV[tIdx[1]].xyz,
+            outV[tIdx[2]].xyz
         };
+        if (i == N-1) {
+            outTangents[tIdx[0]] = outTangents[tIdx[0]-1];
+            outTangents[tIdx[1]] = outTangents[tIdx[1]-1];
+            outTangents[tIdx[2]] = outTangents[tIdx[2]-1];
+        }
         const vec3 triTan[3] = {
-            outTangents[getOutVertIdx(tris[h*3 + 0], i, j)].xyz,
-            outTangents[getOutVertIdx(tris[h*3 + 1], i, j)].xyz,
-            outTangents[getOutVertIdx(tris[h*3 + 2], i, j)].xyz
+            outTangents[tIdx[0]].xyz,
+            outTangents[tIdx[1]].xyz,
+            outTangents[tIdx[2]].xyz
         };
         for (uint n = 0; n < D; n++) {
             // Random barycentric coordinates
