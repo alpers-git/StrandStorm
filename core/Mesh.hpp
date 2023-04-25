@@ -48,18 +48,18 @@ public:
     // Vertices for control hairs
     std::vector<glm::vec4> controlVerts;
     // Number of vertices in each control hair (N)
-    static constexpr uint32_t controlHairLen = 12;
+    static constexpr uint32_t controlHairLen = 10;
     // Number of subdivisions between each control hair vertex (M)
     //  Includes start vertex, so needs to be >=1
     static constexpr uint32_t subdivide = 3;
     // Number of additional hairs to interpolate across each face
-    static constexpr uint32_t interpDensity = 8;
+    static constexpr uint32_t interpDensity = 16;
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Debug control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
     static constexpr float controlHairRandomize = 0.1f;
-    static constexpr int maxControlHairs = 100;
+    static constexpr int maxControlHairs = 900;
 
     bool drawControlHairs = false;
 

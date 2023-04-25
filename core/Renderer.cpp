@@ -51,6 +51,7 @@ void Renderer::RenderFirstPass()
     shadowProg.Use();
     shadowProg.SetUniform("to_clip_space", scene->light.CalculateLightSpaceMatrix());
     depthTex->Render([&]() {
+            scene->surface->mesh.draw(shadowProg);
             scene->hairMesh.draw(shadowProg);
         });
     //render opacitymaps for opacity shadowmap
