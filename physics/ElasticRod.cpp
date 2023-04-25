@@ -216,7 +216,7 @@ void ElasticRod::integrateFwEuler(float dt)
         Eigen::Vector3f vUnconstrained = (force(i) + gravity) * dt;
         assert(!vUnconstrained.hasNaN());
         vUnconstrained -= 0.5f *drag * vUnconstrained.squaredNorm() * vUnconstrained.normalized() * dt;
-        xUnconstrained[i] = x[i] + vUnconstrained * dt;
+        xUnconstrained[i] = x[i] +  (vUnconstrained + v[i]) * dt;
     }
 }
 
@@ -236,17 +236,21 @@ void ElasticRod::handleCollisions(const std::vector<std::shared_ptr<SceneObject>
 void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<SceneObject>>& colliders)
 {
     handleCollisions(colliders);
-
+    //set all vs to 0
+    for (int i = 0; i < v.size(); i++) {
+        v[i] = Vector3f::Zero();
+    }
     for (int i = 1; i < x.size(); i++) {
         Eigen::Vector3f correctedX = xUnconstrained[i] - xUnconstrained[i-1];
         correctedX = xUnconstrained[i-1] + correctedX.normalized() * initEdgeLen(i-1); 
-        v[i] = (correctedX - x[i]) / dt;
+        //v[i] = (correctedX - x[i]) / dt;
         x[i] = correctedX;
         assert(!x[i].hasNaN());
         correctionVecs[i] = correctedX - xUnconstrained[i];
     }
     for (int i = 1; i < x.size()-1; i++) {
         v[i] -= -inextensibility * correctionVecs[i+1]/dt;
+        assert(!v[i].hasNaN());
     }
 
    
