@@ -5,7 +5,7 @@
 // Elastic rod sim constants
 float ElasticRod::drag = 10.0f;
 float ElasticRod::friction = 0.0f;
-float ElasticRod::bendingStiffness = 0.01f;
+float ElasticRod::bendingStiffness = 0.003f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
 Vector3f ElasticRod::kappaB(int i)
