@@ -27,7 +27,7 @@ public:
     std::vector<Eigen::Vector3f> voxelVelocities;   
 
      // Side length of cube that makes up the voxel grid
-    float voxelGridExtent = 4.0f;
+    float voxelGridExtent = 6.0f;
     // Side length of each voxel
     float voxelSize = 0.5f;     
 };

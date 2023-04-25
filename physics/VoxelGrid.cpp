@@ -21,8 +21,8 @@ void VoxelGrid::initVoxelGrid()
                 }
                 else
                 {
-                    voxelMasses[i*numSteps*numSteps + j*numSteps + k] = 0;
-                    voxelVelocities[i*numSteps*numSteps + j*numSteps + k] = Eigen::Vector3f::Zero();
+                    voxelMasses[i + j*numSteps + k*numSteps*numSteps] = 0;
+                    voxelVelocities[i + j*numSteps + k*numSteps*numSteps] = Eigen::Vector3f::Zero();
                 }               
                     
             } 
@@ -50,7 +50,10 @@ Eigen::Vector3f VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const
 size_t VoxelGrid::getSpatialHash(Eigen::Vector3f pos)
 {
     int numSteps = (int)(voxelGridExtent/voxelSize);
-    return pos[0]*numSteps*numSteps + pos[1]*numSteps + pos[2];
+    int hash = pos[0] + pos[1]*numSteps + pos[2]*numSteps*numSteps;
+    if(hash >= numSteps*numSteps*numSteps)
+        printf("Hash out of bounds: %d\n", hash);
+    return hash;
     // size_t n = (size_t)pow((double)(voxelGridExtent/voxelSize),3.0);
     // return ((int)pos[0]*prime1^(int)pos[1]*prime2^(int)pos[2]*prime3) % n;
 }

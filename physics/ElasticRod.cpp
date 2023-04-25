@@ -260,15 +260,17 @@ void ElasticRod::enforceConstraints(float dt,const std::vector<std::shared_ptr<S
 void ElasticRod::setVoxelContributions(const std::shared_ptr<VoxelGrid>& voxelGrid)
 {    
     Eigen::Vector3f firstVoxelCoord,localPosition;
-    for (size_t i = 1; i < x.size(); i++)
+    for (size_t ind = 1; ind < x.size(); ind++)
     {
-        voxelGrid->getVoxelCoordinates(x[i],firstVoxelCoord,localPosition);
-        
+        voxelGrid->getVoxelCoordinates(x[ind],firstVoxelCoord,localPosition);
+        int numSteps = (int)(voxelGrid->voxelGridExtent/voxelGrid->voxelSize);
         for(size_t i=0;i<=1;i++)
             for(size_t j=0;j<=1;j++)
                 for(size_t k=0;k<=1;k++)
                 {
                     Eigen::Vector3f corner = firstVoxelCoord + Eigen::Vector3f(i,j,k);
+                    if(corner(0)>=numSteps || corner(1)>=numSteps || corner(2)>=numSteps)
+                        continue;
                     size_t hash = voxelGrid->getSpatialHash(corner);
                     corner -= localPosition;
                     corner = Eigen::Vector3f(1.0f,1.0f,1.0f) - Eigen::Vector3f(corner.array().abs()); 
