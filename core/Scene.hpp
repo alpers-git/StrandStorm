@@ -42,7 +42,7 @@ public:
         struct {
             std::shared_ptr<DepthTexture> depthTex;
             std::shared_ptr<RenderedTexture> opacitiesTex;
-            float dk = 0.015f; //distance between layers
+            float dk = 0.210f; //distance between layers
             bool dirty = true;
         } opacityShadowMaps;
         glm::mat4 CalculateLightSpaceMatrix() const;

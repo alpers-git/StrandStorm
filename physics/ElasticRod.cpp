@@ -92,7 +92,7 @@ Vector3f ElasticRod::dEdX(int i)
     for (int k = 1; k < x.size(); k++) {
         Vector3f pf = Vector3f::Zero();
         for (int j = k-1; j <= k; j++) {
-            pf += omegaGrad(i, j, k).transpose() * B * (omega(k, j) - omega0[k][j-k]);
+            pf += omegaGrad(i, j, k).transpose() * B * (omega(k, j) - omega0[k][k-j]);
         }
         f += pf / initEdgeLen(k);
     }
