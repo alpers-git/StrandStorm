@@ -228,7 +228,7 @@ void ElasticRod::handleCollisions(const std::vector<std::shared_ptr<SceneObject>
         for (const std::shared_ptr<SceneObject>& c : colliders) {
             vertCollider.center = xUnconstrained[i];
             if(c->collider->IsCollidingWith(vertCollider, collisionInfo))     
-                xUnconstrained[i] = c->collider->center - 1.01 * collisionInfo.normal * c->collider->GetBoundaryAt(xUnconstrained[i]);
+                xUnconstrained[i] = c->collider->center - collisionInfo.normal * c->collider->GetBoundaryAt(xUnconstrained[i]);
         }      
     }
 }
