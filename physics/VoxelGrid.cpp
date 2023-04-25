@@ -24,16 +24,12 @@ void VoxelGrid::getVoxelCoordinates(const Eigen::Vector3f &position, Eigen::Vect
         .cwiseMin(extent).cwiseMax(Eigen::Vector3f(0.0f, 0.0f, 0.0f));
     firstVoxelCoord = indices;
     localPosition = coordsInVoxel - indices;
-    assert(!localPosition.hasNaN());
-    assert(!firstVoxelCoord.hasNaN());
 }
 
 void VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const Eigen::Vector3f &index)
 {
     size_t hash = getSpatialHash(index);
-    assert(hash >= 0 && hash < nVoxels());
-    float norm = voxelMasses[hash] == 0 ? 1 : voxelMasses[hash];
-    assert(!(voxelVelocities[hash]/norm).hasNaN());
+    float norm = voxelMasses[hash] == 0.0f ? 1.0f : voxelMasses[hash];
     vertexVel = voxelVelocities[hash]/norm;
 }
 

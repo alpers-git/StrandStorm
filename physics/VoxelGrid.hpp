@@ -36,7 +36,7 @@ public:
      // Side length of cube that makes up the voxel grid
     float voxelGridExtent = 8.0f;
     // Side length of each voxel
-    float voxelSize = 0.25f;
+    float voxelSize = 1.0f;
     // Center of voxel grid
     Eigen::Vector3f origin = {0.0f, 0.0f, 0.0f};
 };

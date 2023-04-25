@@ -58,6 +58,7 @@ public:
     static constexpr float controlHairRandomize = 0.01f;
     ///DEBUG: control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
+    ///DEBUG: max number of control hairs, -1 for unlimited
     static constexpr int maxControlHairs = -1;
 
     // Vertices for control hairs
