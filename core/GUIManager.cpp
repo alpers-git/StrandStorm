@@ -140,6 +140,7 @@ void GUIManager::Draw()
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize);
     DrawTimerInfo();
     ImGui::End();
+    ImGui::PopFont();
     ImGui::Render();
     ImGuiIO &io = ImGui::GetIO();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
