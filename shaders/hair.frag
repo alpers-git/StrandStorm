@@ -1,5 +1,8 @@
 #version 460
 
+#define SQRT_TWO_PI_INV 0.3989422804
+#define ROOT_THREE_BY_TWO 0.86602540378
+
 in vec3 light_clip_pos;
 in vec3 fTangent;
 in vec3 viewDir;
@@ -20,19 +23,27 @@ uniform int shadingModel;
 
 uniform sampler2D lut0,lut1;
 
-
+// Marschner LUT parameters
 uniform float diffuseFalloff;
 uniform float diffuseAzimuthFalloff;
-
-uniform float scaleDiffuse; //Strength of the 'fake' diffuse shading
+uniform float scaleDiffuse;
 uniform float scaleR;
 uniform float scaleTT;
 uniform float scaleTRT;
-uniform float scaleM;
 
-uniform vec2 resolution;
+// Marschner Procedural parameters
+uniform float roughness;
+uniform float shift;
+uniform float refractiveIndex;
+uniform float procScaleR;
+uniform float procScaleTT;
+uniform float procScaleTRT;
 
-in float sinThetaI,sinThetaR,cosPhiD,cosThetaI,cosHalfPhi;
+in float sinThetaI,sinThetaR,cosThetaI,cosThetaR;
+in float cosPhiD,cosThetaD;
+in float cosHalfPhi,lightViewDot;
+
+// ============== UTILITY FUNCTIONS ==============
 
 const vec2 poissonDisk[4] = vec2[](
   vec2( -0.94201624, -0.39906216 ),
@@ -40,6 +51,20 @@ const vec2 poissonDisk[4] = vec2[](
   vec2( -0.094184101, -0.92938870 ),
   vec2( 0.34495938, 0.29387760 )
 );
+
+
+// Return gausssian lobe. beta is based on roughness, alpha is based on the cuticle angle
+float gaussian(float alpha,float beta) 
+{
+    return exp(-0.5 * pow(sinThetaI+sinThetaR-alpha,2) / pow(beta,2)) * SQRT_TWO_PI_INV / beta;
+}
+
+float schlickFresnel(float angle)
+{
+    float reflectionCoeff = pow((1-refractiveIndex)/(1+refractiveIndex),2);
+    return reflectionCoeff + (1-reflectionCoeff) * pow(1-angle,5);
+}
+// ================= SHADOWS ===================
 
 float getOpacity() {
     float absorption = 0.0;
@@ -62,12 +87,14 @@ float getOpacity() {
     return 1.0 - (absorption / 4.0);
 }
 
+// ============== LIGHTING MODELS ==============
+
 void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
 {
     vec3 viewSpaceLightDir = normalize((uTView*vec4(light_dir, 0.0)).xyz);
     vec3 viewSpaceTangent = normalize(fTangent);
     float cosL = dot(viewSpaceTangent, viewSpaceLightDir);
-    float sinL = clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
+    float sinL =  clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
     shadedColor = hair_color.rgb * sinL;
     vec3 viewDirNorm = normalize(viewDir);
     float cosV = dot(viewSpaceTangent, viewDirNorm);
@@ -76,24 +103,68 @@ void CalculateKajiyaKay(out vec3 shadedColor,float shadowFraction)
     shadedColor = shadedColor * shadowFraction + hair_color.rgb * sinL * ambient;
 }
 
-void CalculateMarschner(out vec3 shadedColor,float shadowFraction)
+void CalculateMarschnerLUT(out vec3 shadedColor,float shadowFraction)
 {
     vec2 uv0 = vec2( sinThetaI * 0.5 + 0.5, 1.0 - ( sinThetaR * 0.5 + 0.5 ));
-    vec4 scales = vec4( vec3(scaleM), 1.0 );
-	vec4 comps1 = texture( lut0, uv0 )* scales;
-    vec2 uv1 = vec2( cosPhiD * 0.5 + 0.5, 1.0 - comps1.a);
-    vec4 comps2 = texture(lut1, uv1);
-    // vec3 marschner = vec3( comps1.x  * scaleR ) + vec3( comps1.y * scaleTT ) + vec3(comps1.z  * scaleTRT);
-    vec3 marschner = vec3( comps1.x * scaleR ) + ( comps1.y * comps2.xyz * scaleTT ) + (comps1.z * comps2.xyz * scaleTRT);
+	vec4 N = texture( lut0, uv0 );
+    vec2 uv1 = vec2( cosPhiD * 0.5 + 0.5, 1.0 - N.a);
+    vec4 M = texture(lut1, uv1);
 
+    vec3 viewSpaceLightDir = normalize((uTView*vec4(light_dir, 0.0)).xyz);
+    vec3 viewSpaceTangent = normalize(fTangent);
+    float cosL = dot(viewSpaceTangent, viewSpaceLightDir);
+    float sinL =  clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
 
-	vec3 diffuse = hair_color.rgb * mix( 1.0, cosThetaI, diffuseFalloff ) * mix( 1.0, cosHalfPhi, diffuseAzimuthFalloff ) * scaleDiffuse; 
+    vec3 marschner = vec3( N.r * M.a * scaleR ) + ( N.g * M.rgb * scaleTT ) + (N.b * M.rgb * scaleTRT);
+	vec3 diffuse = hair_color.rgb * mix( 1.0, cosThetaI, diffuseFalloff ) * mix( 1.0, cosHalfPhi, diffuseAzimuthFalloff ) * scaleDiffuse * sinL; 
     shadedColor = diffuse*hair_color.rgb + marschner * specular;
-    // shadedColor = marschner;
-    // shadedColor = vec3( comps2.b ) + vec3( comps2.g ) + vec3( comps2.r ) ;
-    // shadedColor = diffuse;
-    shadedColor = shadedColor * shadowFraction + diffuse*hair_color.rgb * ambient;  
-    
+    shadedColor = shadedColor * shadowFraction + diffuse * ambient;      
+}
+
+// Based on "Physcially Based Hair Shading in Unreal" by Brian Karis
+void CalculateMarschnerProcedural(out vec3 shadedColor,float shadowFraction)
+{
+    shadedColor = vec3(0.0);
+
+    // === Longitudinal scattering lobes ===
+    float Mr = gaussian(shift,roughness);
+    float Mtt = gaussian(-shift*0.5,roughness*0.5);
+    float Mtrt = gaussian(-3 *shift * 0.5,roughness*2);
+
+    // === Azimuthal scattering lobes ===
+    float a,h,D,f;
+    vec3 T,A;
+
+    // Nr
+    f = schlickFresnel(lightViewDot);
+    float Nr = 0.25 * cosHalfPhi * f; // Check if lightViewDot should be remapped to 01
+
+    // Ntt
+    a = 1.55/ (refractiveIndex * (1.19/cosThetaD + 0.36 * cosThetaD));
+    h = (1+a*(0.6-0.8 * cosPhiD)) * cosHalfPhi;
+    T = pow(hair_color.rgb,vec3(sqrt(1-h*h*a*a)/2*cosThetaD));
+    D = exp(-3.65*cosPhiD-3.98);
+    f = schlickFresnel(cosThetaD * sqrt(1-h*h));
+    A = pow(1-f,2) * T;
+    vec3 Ntt = 0.5 * A * D;
+
+    // Ntrt
+    T = pow(hair_color.rgb,vec3(0.8/cosThetaD));
+    D = exp(17*cosPhiD-16.78);
+    f = schlickFresnel(cosThetaD*0.5);
+    A = pow(1-f,2) * f * T * T;
+    vec3 Ntrt = 0.5 * A * D;
+
+    // === Final shading ===
+    vec3 viewSpaceLightDir = normalize((uTView*vec4(light_dir, 0.0)).xyz);
+    vec3 viewSpaceTangent = normalize(fTangent);
+    float cosL = dot(viewSpaceTangent, viewSpaceLightDir);
+    float sinL =  clamp(sqrt(1.0 - cosL * cosL), 0.0, 1.0);
+
+    vec3 marschner = vec3(Mr * Nr * procScaleR) + Mtt * Ntt * procScaleTT + Mtrt * Ntrt * procScaleTRT;
+    vec3 diffuse = hair_color.rgb * mix( 1.0, cosThetaI, diffuseFalloff ) * mix( 1.0, cosHalfPhi, diffuseAzimuthFalloff ) * scaleDiffuse * sinL; 
+    shadedColor = diffuse*hair_color.rgb + marschner * specular;
+    shadedColor = shadedColor * shadowFraction + diffuse * ambient;     
 }
 
 out vec4 fragColor;
@@ -107,7 +178,9 @@ void main()
     if(shadingModel == 0)
         CalculateKajiyaKay(shadedColor,shadowFraction);
     else if(shadingModel == 1)
-        CalculateMarschner(shadedColor,shadowFraction);
+        CalculateMarschnerLUT(shadedColor,shadowFraction);
+    else
+        CalculateMarschnerProcedural(shadedColor,shadowFraction);
     
     fragColor = vec4(shadedColor, hair_color.a);
 }

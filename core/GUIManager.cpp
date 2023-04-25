@@ -179,7 +179,7 @@ void GUIManager::DrawHairMeshControls()
                          ImVec2(width / 2, width / 2));
             ImGui::EndGroup();
 
-            const char* items[] = { "Kajiya-Kay", "Marschner LUT" };
+            const char* items[] = { "Kajiya-Kay", "Marschner LUT", "Marschner Procedural" };
             ImGui::Combo("Shading Model", &scene->hairMesh.shadingModel, items, IM_ARRAYSIZE(items));
             if(scene->hairMesh.shadingModel==1)
             {
@@ -187,10 +187,22 @@ void GUIManager::DrawHairMeshControls()
                 ImGui::DragFloat("diffuseFalloff",&scene->hairMesh.diffuseFalloff, 0.01f, 0.0f, 1.0f);
                 ImGui::DragFloat("diffuseAzimuthFalloff",&scene->hairMesh.diffuseAzimuthFalloff, 0.01f, 0.0f, 1.0f);
                 ImGui::DragFloat("scaleDiffuse",&scene->hairMesh.scaleDiffuse, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("scaleM",&scene->hairMesh.scaleM, 0.01f, 50.0f, 5.0f);
                 ImGui::DragFloat("scaleR",&scene->hairMesh.scaleR, 0.01f, 0.0f, 15.0f);
                 ImGui::DragFloat("scaleTT",&scene->hairMesh.scaleTT, 0.01f, 0.0f, 15.0f);
                 ImGui::DragFloat("scaleTRT",&scene->hairMesh.scaleTRT, 0.01f, 0.0f, 15.0f);
+            }
+            else if(scene->hairMesh.shadingModel==2)
+            {
+                ImGui::SeparatorText("Marshner Procedural Parameters");
+                ImGui::DragFloat("diffuseFalloff",&scene->hairMesh.diffuseFalloff, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("diffuseAzimuthFalloff",&scene->hairMesh.diffuseAzimuthFalloff, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("scaleDiffuse",&scene->hairMesh.scaleDiffuse, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("roughness",&scene->hairMesh.roughness, 0.01f, -10.0f, 50.0f);
+                ImGui::DragFloat("shift",&scene->hairMesh.shift, 0.01f, -10.0f, 0.0f);
+                ImGui::DragFloat("refractive index",&scene->hairMesh.refractiveIndex, 0.01f, 0.0f, 15.0f);
+                ImGui::DragFloat("scaleR",&scene->hairMesh.procScaleR, 0.01f, 0.0f, 30.0f);
+                ImGui::DragFloat("scaleTT",&scene->hairMesh.procScaleTT, 0.01f, 0.0f, 30.0f);
+                ImGui::DragFloat("scaleTRT",&scene->hairMesh.procScaleTRT, 0.01f, 0.0f, 30.0f);
             }
         }
     }
