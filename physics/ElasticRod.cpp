@@ -3,9 +3,9 @@
 #include <spdlog/fmt/fmt.h>
 
 // Elastic rod sim constants
-float ElasticRod::drag = 0.01f;
+float ElasticRod::drag = 10.0f;
 float ElasticRod::friction = 0.0f;
-float ElasticRod::bendingStiffness = 0.05f;
+float ElasticRod::bendingStiffness = 0.01f;
 Vector3f ElasticRod::gravity = {0.0f, -0.1f, 0.0f};
 
 Vector3f ElasticRod::kappaB(int i)
@@ -159,17 +159,8 @@ void ElasticRod::init(const std::vector<glm::vec3> &verts)
         x[i] = Vector3f(verts[i].x, verts[i].y, verts[i].z);
     }
     xRest = x;
-    u0 = edge(0).cross(-Vector3f::UnitY()).cross(edge(0)).normalized();
 
-    compBishopFrames();
-    compMatFrames();
-
-    // Compute initial material curvature
-    for (int i = 0; i < verts.size(); i++) {
-        for (int j = 0; j < 2; j++) {
-            omega0[i][j] = omega(i, i + j-1);
-        }
-    }
+    reset();
 }
 
 ElasticRod::ElasticRod(const std::vector<glm::vec3> &verts)
@@ -214,12 +205,17 @@ void ElasticRod::enforceConstraints(float dt, const std::vector<std::shared_ptr<
 {
     handleCollisions(colliders);
     x[0] = xRest[0];
+    std::vector<Vector3f> dx(x.size());
+    dx[0] = Vector3f::Zero();
     for (int i = 1; i < x.size(); i++) {
         // Inextensibility: needs to be perfectly inextensible otherwise problem
-        x[i] = x[i-1] + (x[i] - x[i-1]).normalized() * initEdge(i-1).norm();
+        dx[i] = x[i-1] + (x[i] - x[i-1]).normalized() * initEdge(i-1).norm() - x[i];
+        x[i] += dx[i];
+        // v[i] -= 0.5f * drag * v[i].squaredNorm() * v[i].normalized() * dt;
+    }
+    for (int i = 1; i < x.size()-1; i++) {
         // Velocity must be corrected according to position correction
-        v[i] = (x[i] - px[i]) / dt;
-        v[i] -= 0.5f * drag * v[i].squaredNorm() * v[i].normalized() * dt;
+        v[i] = (x[i] - px[i]) / dt - 0.25f * (dx[i+1] / dt);
     }
 }
 
@@ -284,8 +280,21 @@ void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>&
 
 void ElasticRod::reset()
 {
+    x = xRest;
+    v.assign(v.size(), Vector3f::Zero());
+
+    for (int i = 0; i < e.size(); i++) {
+        e[i] = x[i+1] - x[i];
+    }
+    u0 = edge(0).cross(Vector3f::UnitX()).cross(edge(0)).normalized();
+
+    compBishopFrames();
+    compMatFrames();
+
+    // Compute initial material curvature
     for (int i = 0; i < x.size(); i++) {
-        x[i] = xRest[i];
-        v[i] = Vector3f::Zero();
+        for (int j = 0; j < 2; j++) {
+            omega0[i][j] = omega(i, i + j-1);
+        }
     }
 }
