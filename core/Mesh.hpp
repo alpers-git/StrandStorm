@@ -55,10 +55,9 @@ public:
     // Hair growth amount per control vert
     static constexpr float hairGrowth = 0.05f;
     // Amount to randomly perturb control hair vertices
-    static constexpr float controlHairRandomize = 0.01f;
+    static constexpr float controlHairRandomize = 0.0f;
     ///DEBUG: control hair duplication
     static constexpr uint32_t controlHairDensity = 0;
-    static constexpr float controlHairRandomize = 0.1f;
     static constexpr int maxControlHairs = 900;
 
     // Vertices for control hairs
