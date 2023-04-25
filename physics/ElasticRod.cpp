@@ -5,6 +5,7 @@ float ElasticRod::drag = 75.0f;
 float ElasticRod::inextensibility = 0.1f;
 float ElasticRod::alpha = 0.1f;
 float ElasticRod::friction = 0.05;
+float ElasticRod::sampledVelocityScale = 50.0f;
 Vector3f ElasticRod::gravity = {0.0f, -9.8f, 0.0f};
 
 Vector3f ElasticRod::kappaB(int i)
@@ -313,6 +314,7 @@ void ElasticRod::updateAllVelocitiesFromVoxels(const std::shared_ptr<VoxelGrid>&
         Eigen::Vector3f up = (1.0f - localPosition[0]) * up_interp1 + localPosition[0] * up_interp2;
 
         velocity = (1.0f - localPosition[1]) * lp + localPosition[1] * up;
+        velocity *= sampledVelocityScale;
         v[i] = (1-friction) * v[i] + friction * velocity;
     }
 }

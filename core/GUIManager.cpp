@@ -314,6 +314,8 @@ void GUIManager::DrawRodParameters()
                          &ElasticRod::alpha, 0.0001f, 0.0f, 1.0f, "%.4f");
         ImGui::DragFloat("Voxel Friciton",
                          &ElasticRod::friction, 0.001f, 0.0f, 1.0f);
+        ImGui::DragFloat("Sample Scaling",
+                         &ElasticRod::sampledVelocityScale, 0.1f, 0.0f, 100.0f);
         ImGui::PopItemWidth();
 
         if (ImGui::Button("reset"))

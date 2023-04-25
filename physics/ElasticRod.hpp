@@ -98,7 +98,7 @@ public:
     static float alpha;
 
     // Used in voxel velocity update
-    static float friction;
+    static float friction, sampledVelocityScale;
 
     ElasticRod() = default;
     ElasticRod(const std::vector<glm::vec3>& verts);

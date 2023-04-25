@@ -39,11 +39,11 @@ void VoxelGrid::getVoxelCoordinates(const Eigen::Vector3f &position, Eigen::Vect
     localPosition = coordsInVoxel - indices;
 }
 
-Eigen::Vector3f VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const Eigen::Vector3f &index)
+void VoxelGrid::sampleVoxelVelocity(Eigen::Vector3f &vertexVel, const Eigen::Vector3f &index)
 {
     size_t hash = getSpatialHash(index);
     float norm = voxelMasses[hash] == 0 ? 1 : voxelMasses[hash];
-    return voxelVelocities[hash]/norm;
+    vertexVel = voxelVelocities[hash]/norm;
 }
 
 // Based on the paper "Real-time 3D Reconstruction at Scale using Voxel Hashing"

@@ -16,7 +16,7 @@ public:
     VoxelGrid();
     void initVoxelGrid();
     void getVoxelCoordinates(const Eigen::Vector3f& position,Eigen::Vector3f& firstVoxelCoord,Eigen::Vector3f& localPosition);
-    Eigen::Vector3f sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
+    void sampleVoxelVelocity(Eigen::Vector3f& vertexVel,const Eigen::Vector3f& index);
     size_t getSpatialHash(Eigen::Vector3f pos);
 
 public:
@@ -27,8 +27,8 @@ public:
     std::vector<Eigen::Vector3f> voxelVelocities;   
 
      // Side length of cube that makes up the voxel grid
-    float voxelGridExtent = 6.0f;
+    float voxelGridExtent = 8.0f;
     // Side length of each voxel
-    float voxelSize = 0.5f;     
+    float voxelSize = 1.0f;     
 };
 
