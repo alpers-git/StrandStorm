@@ -14,9 +14,9 @@ Vector3f ElasticRod::kappaB(int i)
            (initEdge(i).norm() * initEdge(i-1).norm() + edge(i-1).dot(edge(i)));
 }
 
-float ElasticRod::initEdgeLen(int i)
+float ElasticRod::restEdgeLen(int i)
 {
-    return edge(i-1).norm() + edge(i).norm();
+    return initEdge(i).norm();
 }
 
 Vector3f ElasticRod::psiGrad(int i, int j)
@@ -93,7 +93,7 @@ Vector3f ElasticRod::dEdX(int i)
         for (int j = k-1; j <= k; j++) {
             pf += omegaGrad(i, j, k).transpose() * B * (omega(k, j) - omega0[k][j-k]);
         }
-        f += pf / initEdgeLen(k);
+        f += pf / restEdgeLen(k);
     }
     return -f;
 }
@@ -207,15 +207,25 @@ void ElasticRod::enforceConstraints(float dt, const std::vector<std::shared_ptr<
     x[0] = xRest[0];
     std::vector<Vector3f> dx(x.size());
     dx[0] = Vector3f::Zero();
-    for (int i = 1; i < x.size(); i++) {
-        // Inextensibility: needs to be perfectly inextensible otherwise problem
-        dx[i] = x[i-1] + (x[i] - x[i-1]).normalized() * initEdge(i-1).norm() - x[i];
-        x[i] += dx[i];
-        // v[i] -= 0.5f * drag * v[i].squaredNorm() * v[i].normalized() * dt;
+    for (int i = 0; i < x.size()-1; i++) {
+		Vector3f e = x[i + 1] - x[i];
+		float l = 1.0f - 2.0f * restEdgeLen(i) * restEdgeLen(i) / (restEdgeLen(i) * restEdgeLen(i) + e.squaredNorm());
+        float l1, l2;
+        if (i == 0) {
+            l1 = 0.0f;
+            l2 = -l;
+        }
+        else {
+            l1 = l/2.0f;
+            l2 = -l/2.0f;
+        }
+
+		x[i] += l1 * e;
+        x[i + 1] += l2 * e;
+
     }
-    for (int i = 1; i < x.size()-1; i++) {
-        // Velocity must be corrected according to position correction
-        v[i] = (x[i] - px[i]) / dt - 0.25f * (dx[i+1] / dt);
+    for (int i = 0; i < x.size(); i++) {
+        v[i] = (x[i] - px[i]) / dt;
     }
 }
 

@@ -32,7 +32,7 @@ private:
     // Curvature binormal
     Vector3f kappaB(int i);
     // Initial edge length
-    float initEdgeLen(int i);
+    float restEdgeLen(int i);
     // Gradient holonomy term i,j
     Vector3f psiGrad(int i, int j);
     // Gradient of curvature binormal i wrt x j
