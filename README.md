@@ -10,7 +10,7 @@
 - Hair-to-hair and surface-to-hair collisions with lenght constraints [6]
 - Basic phong shading and shadow maps for surface illmunation.
 
- <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzM0NTc3MjkzZjU4YjUxY2Q2NjlkYzRhMmYyYjZlYmNkNGEwYzlkNiZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/vRtz7sp39Y7JdsH2ki/giphy.gif" width=30% /> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzliZmRmNTI3YmIxYTI2MWM0ZDc0NmRkODc2ZDI4YzM2OGFlOWI5MCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/AiDTf08BBnfyQxG9Rn/giphy.gif" width=31.2% /> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTUxZGQ3NmY5MzcyN2FkZWMzYTIxYzU5MzgyNThlYzU5NDY3OGMzNiZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/fyy201yCxjJLCKJgut/giphy.gif" width=30% />
+ <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzM0NTc3MjkzZjU4YjUxY2Q2NjlkYzRhMmYyYjZlYmNkNGEwYzlkNiZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/vRtz7sp39Y7JdsH2ki/giphy.gif" width=30% /> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzliZmRmNTI3YmIxYTI2MWM0ZDc0NmRkODc2ZDI4YzM2OGFlOWI5MCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/AiDTf08BBnfyQxG9Rn/giphy.gif" width=31% /> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTUxZGQ3NmY5MzcyN2FkZWMzYTIxYzU5MzgyNThlYzU5NDY3OGMzNiZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/fyy201yCxjJLCKJgut/giphy.gif" width=30% />
 
 #### How to build & run:
 1. Clone repository.
